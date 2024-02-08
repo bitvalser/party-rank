@@ -1,0 +1,9 @@
+{
+  "extends": ["ts-react-important-stuff", "plugin:prettier/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "no-void": "off",
+    "jsx-a11y/media-has-caption": "off",
+  },
+}
