@@ -5,6 +5,7 @@
   "tabWidth": 2,
   "useTabs": false,
   "singleQuote": true,
+  "importOrderParserPlugins": ["typescript", "decorators-legacy", "jsx"],
   "importOrder": ["^@", "^[./]"],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true

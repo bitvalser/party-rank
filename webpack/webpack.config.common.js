@@ -5,6 +5,11 @@ module.exports = () => {
   return {
     resolve: {
       extensions: [".js", ".jsx", ".ts", ".tsx"],
+      alias: {
+        '@core': resolve(__dirname, '../src/core/'),
+        '@assets': resolve(__dirname, '../src/assets/'),
+        '@pages': resolve(__dirname, '../src/pages/'),
+      },
     },
     context: resolve(__dirname, "../src"),
     module: {
@@ -27,7 +32,6 @@ module.exports = () => {
           test: /\.(jpe?g|png|svg|gif)$/i,
           use: [
             "file-loader?hash=sha512&digest=hex&name=img/[contenthash].[ext]",
-            "image-webpack-loader?bypassOnDebug&optipng.optimizationLevel=7&gifsicle.interlaced=false",
           ],
         },
         {

@@ -1,0 +1,41 @@
+import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
+import * as express from 'express';
+import * as admin from 'firebase-admin';
+import * as http from 'http';
+
+import './dotenv';
+import { appDiscordRouter } from './routes/discord.routes';
+import { appTestRouter } from './routes/test.routes';
+
+const serviceAccount = require('../party-rank-firebase-adminsdk-ayjnj-450d6abbba.json');
+
+class App {
+  public app: express.Application;
+  public server: http.Server;
+
+  constructor() {
+    this.app = express();
+    this.server = http.createServer(this.app);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    this.config();
+  }
+
+  private config(): void {
+    this.app.use(bodyParser.json());
+    this.app.use(cors());
+    this.app.use('/test', appTestRouter);
+    this.app.use('/discord', appDiscordRouter);
+    this.app.use((err, req, res, next) => {
+      if (err) {
+        console.error(err.stack);
+        res.status(500).send('Something went wrong!');
+      }
+    });
+  }
+}
+
+const app = new App();
+export default app;
