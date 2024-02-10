@@ -56,6 +56,15 @@ export class AppDiscordController {
               displayName: userResult.global_name,
               photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
             });
+          await admin
+            .app()
+            .firestore()
+            .collection('users')
+            .doc(oauthUser.uid)
+            .update({
+              displayName: userResult.global_name,
+              photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
+            });
           const customToken = await admin.app().auth().createCustomToken(oauthUser.uid);
           return res.redirect(`${process.env.APP_URL || 'http://localhost:3001'}/discord-oauth?token=${customToken}`);
         } else {
@@ -73,6 +82,16 @@ export class AppDiscordController {
             expiresAt,
             refreshToken: tokenResponseData.refresh_token,
           });
+          await admin
+            .app()
+            .firestore()
+            .collection('users')
+            .doc(newUser.uid)
+            .set({
+              uid: newUser.uid,
+              displayName: userResult.global_name,
+              photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
+            });
           const customToken = await admin.app().auth().createCustomToken(newUser.uid);
           return res.redirect(`${process.env.APP_URL}/discord-oauth?token=${customToken}`);
         }

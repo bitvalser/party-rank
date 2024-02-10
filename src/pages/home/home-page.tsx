@@ -6,6 +6,7 @@ import { AppBar, Avatar, Box, ButtonBase, Container, Grid, Menu, MenuItem, Typog
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { AppTypes } from '../../core/services/types';
+import { PartyRankPage } from '../party-rank/party-rank-page';
 import { PartiesListPage } from './parties-list-page';
 
 export const HomePage = () => {
@@ -32,7 +33,15 @@ export const HomePage = () => {
   };
 
   return (
-    <Container maxWidth="xl">
+    <Container
+      sx={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'auto',
+      }}
+      maxWidth="xl"
+    >
       <AppBar
         sx={{
           padding: 2,
@@ -113,8 +122,9 @@ export const HomePage = () => {
           )}
         </Grid>
       </AppBar>
-      <Box component="main" sx={{ p: 3 }}>
+      <Box component="main" sx={{ display: 'flex', flex: 1, p: 3, position: 'relative', flexDirection: 'column' }}>
         <Routes>
+          <Route path="/party-rank/:id" Component={PartyRankPage} />
           <Route path="/" Component={PartiesListPage} />
         </Routes>
       </Box>

@@ -19,7 +19,7 @@ export const AppRouter = () => {
       <Routes>
         {user && (
           <>
-            <Route path="/" Component={HomePage} />
+            <Route path="/*" Component={HomePage} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>
         )}
