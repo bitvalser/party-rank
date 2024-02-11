@@ -42,10 +42,11 @@ const DEFAULT_VALUES: RankItemFromValues = {
 
 export interface AddNewItemProps {
   partyId: string;
+  disabled?: boolean;
   onAddNew?: (item: RankItem) => void;
 }
 
-export const AddNewItem = ({ partyId, onAddNew = () => null }: AddNewItemProps) => {
+export const AddNewItem = ({ partyId, disabled = false, onAddNew = () => null }: AddNewItemProps) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const { addRankItem } = useInjectable(AppTypes.PartyRanks);
@@ -58,7 +59,7 @@ export const AddNewItem = ({ partyId, onAddNew = () => null }: AddNewItemProps) 
     control,
     handleSubmit,
     watch,
-    formState: { isValid, errors },
+    formState: { errors },
   } = form;
 
   const handleOpen = () => {
@@ -77,6 +78,7 @@ export const AddNewItem = ({ partyId, onAddNew = () => null }: AddNewItemProps) 
         setLoading(false);
         onAddNew(result);
         setShowModal(false);
+        form.reset();
       });
   };
 
@@ -249,6 +251,7 @@ export const AddNewItem = ({ partyId, onAddNew = () => null }: AddNewItemProps) 
         color="primary"
         variant="extended"
         aria-label="Add New"
+        disabled={disabled}
       >
         <AddIcon sx={{ mr: 1 }} />
         Добавить предложение

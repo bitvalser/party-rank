@@ -1,18 +1,21 @@
 import { useState } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useMatch, useNavigate } from 'react-router-dom';
 
-import { AppBar, Avatar, Box, ButtonBase, Container, Grid, Menu, MenuItem, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, Button, ButtonBase, Container, Grid, Menu, MenuItem, Typography } from '@mui/material';
 
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { AppTypes } from '../../core/services/types';
 import { PartyRankPage } from '../party-rank/party-rank-page';
+import { PartyRankTablePage } from '../party-rank/party-rank-table-page';
 import { PartiesListPage } from './parties-list-page';
+import { SettingsPage } from './settings-page';
 
 export const HomePage = () => {
   const [anchorElUser, setAnchorElUser] = useState<HTMLElement>(null);
   const { signOut, user$ } = useInjectable(AppTypes.AuthService);
   const navigate = useNavigate();
+  const match = useMatch('/');
   const user = useSubscription(user$);
 
   const handleLogout = () => {
@@ -30,6 +33,10 @@ export const HomePage = () => {
 
   const handleHome = () => {
     navigate('/');
+  };
+
+  const handleSettings = () => {
+    navigate('/settings');
   };
 
   return (
@@ -77,9 +84,14 @@ export const HomePage = () => {
             item
             direction="row"
           >
-            {/* <Button sx={{ color: '#fff' }}>Тест 1</Button>
-            <Button sx={{ color: '#fff' }}>Тест 2</Button>
-            <Button sx={{ color: '#fff' }}>Тест 3</Button> */}
+            {!match && (
+              <Button sx={{ color: '#fff' }} onClick={handleHome}>
+                Список Ранков
+              </Button>
+            )}
+            <Button sx={{ color: '#fff' }} onClick={handleSettings}>
+              Настройки
+            </Button>
           </Grid>
           {user && (
             <Grid item>
@@ -122,10 +134,16 @@ export const HomePage = () => {
           )}
         </Grid>
       </AppBar>
-      <Box component="main" sx={{ display: 'flex', flex: 1, p: 3, position: 'relative', flexDirection: 'column' }}>
+      <Box
+        component="main"
+        sx={{ display: 'flex', flex: 1, p: 3, pb: 10, position: 'relative', flexDirection: 'column' }}
+      >
         <Routes>
+          <Route path="/party-rank/:id/table" Component={PartyRankTablePage} />
           <Route path="/party-rank/:id" Component={PartyRankPage} />
+          <Route path="/settings" Component={SettingsPage} />
           <Route path="/" Component={PartiesListPage} />
+          <Route path="/*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
     </Container>

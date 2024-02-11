@@ -1,0 +1,68 @@
+import { Box, Typography } from '@mui/material';
+
+interface GradeMarkProps {
+  value: number;
+  size: number;
+  backgroundColor?: string;
+  fontSize?: string | number;
+  showDecimal?: number;
+}
+
+const COLORS = [
+  '#FF0000',
+  '#FF3300',
+  '#FF6600',
+  '#FF9900',
+  '#FFCC00',
+  '#FFFF00',
+  '#B1DE00',
+  '#CCFF00',
+  '#99FF00',
+  '#66FF00',
+  // '#00fff9',
+];
+
+export const GradeMark = ({ value, size, fontSize = '16px', backgroundColor, showDecimal = 0 }: GradeMarkProps) => {
+  const color = value > 0 ? COLORS[Math.round(value - 1)] || '#000' : '#fff';
+
+  return (
+    <Box
+      sx={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: `conic-gradient(black ${360 - (value / 10) * 360}deg, ${color} ${360 - (value / 10) * 360}deg)`,
+      }}
+    >
+      <Box
+        sx={{
+          width: size * 0.75,
+          height: size * 0.75,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: (theme) => backgroundColor || theme.palette.grey[900],
+        }}
+      >
+        <Typography
+          sx={{
+            mb: '-1px',
+            letterSpacing: '-2px',
+            ml: '-2px',
+            textAlign: 'left',
+          }}
+          fontSize={fontSize}
+          color={color}
+          fontWeight="bold"
+        >
+          {value === 0 && '-'}
+          {value > 0 && <>{showDecimal > 0 ? value.toFixed(showDecimal) : value}</>}
+        </Typography>
+      </Box>
+    </Box>
+  );
+};

@@ -18,6 +18,10 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
     navigate(`/party-rank/${id}`);
   };
 
+  const handleTableView = () => {
+    navigate(`/party-rank/${id}/table`);
+  };
+
   return (
     <Card>
       <CardContent>
@@ -76,8 +80,12 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
           )}
           {status === PartyRankStatus.Finished && (
             <>
-              <Button size="small">Смотреть результаты</Button>
-              <Button size="small">Итоговая таблица</Button>
+              <Button onClick={handleTableView} size="small">
+                Итоговая таблица
+              </Button>
+              <Button onClick={handleView} size="small">
+                Перейти
+              </Button>
             </>
           )}
         </Grid>

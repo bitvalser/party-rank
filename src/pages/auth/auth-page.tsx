@@ -1,10 +1,8 @@
-import { getAuth, signInWithCustomToken } from 'firebase/auth';
-
 import { Button, Container, Grid, Paper, Typography } from '@mui/material';
 
 import * as Styled from './auth-page.styles';
 
-const DISCORD_OAUTH_URL =
+export const DISCORD_OAUTH_URL =
   'https://discord.com/api/oauth2/authorize?client_id=1205222499114160129&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A4200%2Fdiscord%2Fauth&scope=identify';
 
 export const AuthPage = () => {
@@ -48,6 +46,7 @@ export const AuthPage = () => {
                 variant="contained"
                 startIcon={<Styled.DiscordIcon />}
                 href={DISCORD_OAUTH_URL}
+                fullWidth
                 target="_self"
               >
                 Войти через дискорд

@@ -1,13 +1,18 @@
-import { AudioHTMLAttributes, useMemo, useRef, useState } from 'react';
+import { AudioHTMLAttributes, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import musicBgImage from '@assets/images/music-bg.jpg';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Box, IconButton } from '@mui/material';
 
-interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {}
+interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {
+  width?: string | number;
+  height?: string | number;
+  buttonFontSize?: string;
+  hideControls?: boolean;
+}
 
-export const AudioVisualizer = (props: AudioVisualizerProps) => {
+export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps>((props, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>();
   const audioRef = useRef<HTMLAudioElement>();
   const containerRef = useRef<HTMLDivElement>();
@@ -15,6 +20,9 @@ export const AudioVisualizer = (props: AudioVisualizerProps) => {
   const [paused, setPaused] = useState(true);
   const audioContextRef = useRef<AudioContext>();
   const canPlay = useMemo(() => new AudioContext().state === 'running', []);
+  const { width, height, buttonFontSize = '4em', hideControls, ...rest } = props;
+
+  useImperativeHandle(ref, () => audioRef.current, []);
 
   const handlePause = () => {
     setPaused(true);
@@ -127,73 +135,76 @@ export const AudioVisualizer = (props: AudioVisualizerProps) => {
     <Box
       ref={containerRef}
       sx={{
-        width: '100%',
-        height: '100%',
+        width: width || '100%',
+        height: height || '100%',
         position: 'relative',
         backgroundImage: `url(${musicBgImage})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
+        overflow: 'hidden',
       }}
     >
-      <audio {...props} ref={audioRef} autoPlay={canPlay} loop onPlay={handlePlay} onPause={handlePause} hidden />
+      <audio {...rest} ref={audioRef} autoPlay={canPlay} loop onPlay={handlePlay} onPause={handlePause} hidden />
       {/* <canvas width="100%" height="100%" ref={canvasRef} /> */}
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          top: 0,
-          left: 0,
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: paused ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
-        }}
-      >
-        {!paused && (
-          <IconButton
-            onClick={handleButtonPause}
-            disableRipple
-            sx={{
-              borderRadius: '50%',
-              padding: 3,
-              fontSize: '4em',
-              background: 'rgba(0, 0, 0, 0.6)',
-              transition: (theme) =>
-                theme.transitions.create('opacity', {
-                  duration: theme.transitions.duration.shortest,
-                }),
-              '&:hover': {
-                opacity: 0.9,
-              },
-            }}
-          >
-            <PauseIcon fontSize="inherit" />
-          </IconButton>
-        )}
-        {paused && (
-          <IconButton
-            onClick={handleButtonPlay}
-            disableRipple
-            sx={{
-              borderRadius: '50%',
-              padding: 3,
-              fontSize: '4em',
-              background: 'rgba(0, 0, 0, 0.6)',
-              transition: (theme) =>
-                theme.transitions.create('opacity', {
-                  duration: theme.transitions.duration.shortest,
-                }),
-              '&:hover': {
-                opacity: 0.9,
-              },
-            }}
-          >
-            <PlayArrowIcon fontSize="inherit" />
-          </IconButton>
-        )}
-      </Box>
+      {!hideControls && (
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            top: 0,
+            left: 0,
+            position: 'absolute',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: paused ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
+          }}
+        >
+          {!paused && (
+            <IconButton
+              onClick={handleButtonPause}
+              disableRipple
+              sx={{
+                borderRadius: '50%',
+                padding: 3,
+                fontSize: buttonFontSize,
+                background: 'rgba(0, 0, 0, 0.6)',
+                transition: (theme) =>
+                  theme.transitions.create('opacity', {
+                    duration: theme.transitions.duration.shortest,
+                  }),
+                '&:hover': {
+                  opacity: 0.9,
+                },
+              }}
+            >
+              <PauseIcon fontSize="inherit" />
+            </IconButton>
+          )}
+          {paused && (
+            <IconButton
+              onClick={handleButtonPlay}
+              disableRipple
+              sx={{
+                borderRadius: '50%',
+                padding: 3,
+                fontSize: buttonFontSize,
+                background: 'rgba(0, 0, 0, 0.6)',
+                transition: (theme) =>
+                  theme.transitions.create('opacity', {
+                    duration: theme.transitions.duration.shortest,
+                  }),
+                '&:hover': {
+                  opacity: 0.9,
+                },
+              }}
+            >
+              <PlayArrowIcon fontSize="inherit" />
+            </IconButton>
+          )}
+        </Box>
+      )}
     </Box>
   );
-};
+});

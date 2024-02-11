@@ -15,7 +15,7 @@ export class AppDiscordController {
   }
 
   public async auth(req: Request, res: Response) {
-    const { code } = req.query;
+    const { code, state } = req.query;
 
     if (code) {
       try {
@@ -66,7 +66,9 @@ export class AppDiscordController {
               photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
             });
           const customToken = await admin.app().auth().createCustomToken(oauthUser.uid);
-          return res.redirect(`${process.env.APP_URL || 'http://localhost:3001'}/discord-oauth?token=${customToken}`);
+          return res.redirect(
+            `${process.env.APP_URL || 'http://localhost:3001'}/discord-oauth?token=${customToken}&state=${state}`,
+          );
         } else {
           const newUser = await admin
             .app()
@@ -93,7 +95,7 @@ export class AppDiscordController {
               photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
             });
           const customToken = await admin.app().auth().createCustomToken(newUser.uid);
-          return res.redirect(`${process.env.APP_URL}/discord-oauth?token=${customToken}`);
+          return res.redirect(`${process.env.APP_URL}/discord-oauth?token=${customToken}&state=${state}`);
         }
       } catch (error) {
         console.error(error);

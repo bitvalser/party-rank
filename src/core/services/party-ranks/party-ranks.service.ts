@@ -1,13 +1,25 @@
 import { FirebaseApp } from 'firebase/app';
-import { Firestore, collection, doc, getDoc, getDocs, getFirestore, setDoc } from 'firebase/firestore';
+import {
+  Firestore,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  setDoc,
+  updateDoc,
+} from 'firebase/firestore';
 import { inject, injectable } from 'inversify';
 import { DateTime } from 'luxon';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
 import { FirestoreCollection } from '../../constants/firestore-collection.constants';
+import { AppUser } from '../../interfaces/app-user.interface';
 import { PartyRank } from '../../interfaces/party-rank.interface';
 import { RankItem } from '../../interfaces/rank-item.interface';
+import { UserRank } from '../../interfaces/user-rank.interface';
 import { IAuthService } from '../auth/auth.types';
 import { AppTypes } from '../types';
 import { IPartyRanks } from './party-ranks.types';
@@ -27,9 +39,14 @@ export class PartyRanks implements IPartyRanks {
     this.authService = authService;
     this.createPartyRank = this.createPartyRank.bind(this);
     this.getParties = this.getParties.bind(this);
+    this.updatePartyRank = this.updatePartyRank.bind(this);
     this.getPartyRank = this.getPartyRank.bind(this);
     this.addRankItem = this.addRankItem.bind(this);
     this.getRankItems = this.getRankItems.bind(this);
+    this.deleteRankItem = this.deleteRankItem.bind(this);
+    this.getUserRank = this.getUserRank.bind(this);
+    this.updateUserRank = this.updateUserRank.bind(this);
+    this.getUserRanks = this.getUserRanks.bind(this);
   }
 
   public createPartyRank(payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id'>): Observable<PartyRank> {
@@ -50,6 +67,26 @@ export class PartyRanks implements IPartyRanks {
         this.parties$.next({
           ...this.parties$.getValue(),
           [item.id]: item,
+        });
+      }),
+    );
+  }
+
+  public updatePartyRank(
+    id: string,
+    payload: Partial<Omit<PartyRank, 'creator' | 'creatorId' | 'id'>>,
+  ): Observable<PartyRank> {
+    return of(void 0).pipe(
+      switchMap(() => updateDoc(doc(this.firestore, FirestoreCollection.Parties, id), payload)),
+      withLatestFrom(this.parties$),
+      map(([, parties]) => ({
+        ...parties[id],
+        ...payload,
+      })),
+      tap((partyRank) => {
+        this.parties$.next({
+          ...this.parties$.getValue(),
+          [partyRank.id]: partyRank,
         });
       }),
     );
@@ -129,6 +166,64 @@ export class PartyRanks implements IPartyRanks {
       ),
       tap((items) => {
         this.partyItems$.next(items.reduce((acc, val) => ({ ...acc, [val.id]: val }), this.partyItems$.getValue()));
+      }),
+    );
+  }
+
+  public deleteRankItem(partyId: string, id: string): Observable<void> {
+    return of(void 0).pipe(
+      switchMap(() =>
+        deleteDoc(doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items, id)),
+      ),
+    );
+  }
+
+  public getUserRank(partyId: string): Observable<UserRank> {
+    return of(void 0).pipe(
+      withLatestFrom(this.authService.user$),
+      switchMap(([, currentUser]) =>
+        getDoc(doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks, currentUser.uid)),
+      ),
+      map((snapshot) => snapshot.data() || {}),
+    );
+  }
+
+  public updateUserRank(partyId: string, payload: Partial<UserRank>): Observable<void> {
+    return of(void 0).pipe(
+      withLatestFrom(this.authService.user$),
+      switchMap(([, currentUser]) =>
+        setDoc(
+          doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks, currentUser.uid),
+          payload,
+          { merge: true },
+        ),
+      ),
+    );
+  }
+
+  public getUserRanks(
+    partyId: string,
+    options: { includeUser?: boolean } = {},
+  ): Observable<(UserRank & { uid: string; author?: AppUser })[]> {
+    return of(void 0).pipe(
+      switchMap(() =>
+        getDocs(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks)),
+      ),
+      map((snapshot) =>
+        snapshot.docs
+          .map((item) => ({
+            uid: item.id,
+            ...item.data(),
+          }))
+          .filter(Boolean),
+      ),
+      switchMap((items) => {
+        if (options.includeUser) {
+          return forkJoin(
+            items.map((item) => this.authService.getUser(item.uid).pipe(map((author) => ({ ...item, author })))),
+          );
+        }
+        return of(items);
       }),
     );
   }
