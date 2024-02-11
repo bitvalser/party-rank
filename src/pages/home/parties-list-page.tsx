@@ -23,6 +23,13 @@ export const PartiesListPage = () => {
         withLatestFrom(partyKeysRef.current, parties$),
         map(([, keys, parties]) => keys.map((key) => parties[key])),
       ),
+    ).pipe(
+      map((items) =>
+        items.sort(
+          (partyA, partyB) =>
+            new Date(partyB.createdDate).getMilliseconds() - new Date(partyA.createdDate).getMilliseconds(),
+        ),
+      ),
     ),
     [],
   );

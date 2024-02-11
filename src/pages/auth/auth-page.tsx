@@ -44,7 +44,7 @@ export const AuthPage = () => {
                 }}
                 variant="contained"
                 startIcon={<Styled.DiscordIcon />}
-                href={DISCORD_OAUTH_URL}
+                href={`${DISCORD_OAUTH_URL}&state=${btoa('/')}`}
                 fullWidth
                 target="_self"
               >

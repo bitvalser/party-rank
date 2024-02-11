@@ -34,7 +34,13 @@ export const useSortedPartyItems = (
             ? rankBy.grades[item.id].reduce((acc, val) => acc + val) / rankBy.grades[item.id].length
             : null,
         }))
-        .sort((rankA, rankB) => rankB.grade - rankA.grade);
+        .sort((rankA, rankB) => {
+          const rank = rankB.grade - rankA.grade;
+          if (rank === 0) {
+            return rankB.favoriteCount - rankA.favoriteCount;
+          }
+          return rank;
+        });
     }
     return [];
   }, [partyItems, usersRank]);

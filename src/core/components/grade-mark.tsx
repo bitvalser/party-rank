@@ -22,7 +22,7 @@ const COLORS = [
   // '#00fff9',
 ];
 
-export const GradeMark = ({ value, size, fontSize = '16px', backgroundColor, showDecimal = 0 }: GradeMarkProps) => {
+export const GradeMark = ({ value, size, fontSize = '16px', backgroundColor, showDecimal = 1 }: GradeMarkProps) => {
   const color = value > 0 ? COLORS[Math.round(value - 1)] || '#000' : '#fff';
 
   return (
@@ -60,7 +60,7 @@ export const GradeMark = ({ value, size, fontSize = '16px', backgroundColor, sho
           fontWeight="bold"
         >
           {value === 0 && '-'}
-          {value > 0 && <>{showDecimal > 0 ? value.toFixed(showDecimal) : value}</>}
+          {value > 0 && <>{showDecimal > 0 ? parseFloat(value.toFixed(showDecimal)) : value.toFixed(0)}</>}
         </Typography>
       </Box>
     </Box>

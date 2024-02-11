@@ -41,10 +41,10 @@ export class AppDiscordController {
           },
         }).then((response) => response.json());
 
-        const firebaseUser = await admin.app().firestore().collection('discord-oauth').doc(userResult.id).get();
+        const firebaseUser = await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).get();
         if (firebaseUser.exists) {
           const oauthUser = firebaseUser.data();
-          await admin.app().firestore().collection('discord-oauth').doc(userResult.id).update({
+          await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).update({
             accessToken: tokenResponseData.access_token,
             expiresAt,
             refreshToken: tokenResponseData.refresh_token,
@@ -77,13 +77,18 @@ export class AppDiscordController {
               displayName: userResult.global_name,
               photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
             });
-          await admin.app().firestore().collection('discord-oauth').doc(userResult.id).set({
-            id: userResult.id,
-            uid: newUser.uid,
-            accessToken: tokenResponseData.access_token,
-            expiresAt,
-            refreshToken: tokenResponseData.refresh_token,
-          });
+          await admin
+            .app()
+            .firestore()
+            .collection('discord-oauth')
+            .doc(`${userResult.id}`)
+            .set({
+              id: `${userResult.id}`,
+              uid: newUser.uid,
+              accessToken: tokenResponseData.access_token,
+              expiresAt,
+              refreshToken: tokenResponseData.refresh_token,
+            });
           await admin
             .app()
             .firestore()

@@ -222,6 +222,7 @@ export const RankPartyPlayer = memo(
             src={value}
             ref={audioRef}
             hideControls={hideControls}
+            autoplay={autoplay}
             buttonFontSize={fontSize}
             onCanPlay={handleReady}
             onWaiting={handleWaiting}

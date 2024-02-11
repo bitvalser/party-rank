@@ -61,13 +61,20 @@ const PartyRankResultsPageComponent = memo(
   ({ items, partyRank, usersRank, initialControllable, playDuration }: PartyRankResultsPageComponentProps) => {
     const currentPlayerRef = useRef<RankPartyPlayerRef[]>(Array.from({ length: 2 }));
     const [currentIndex, setCurrentIndex] = useState(0);
-    console.log(initialControllable);
     const [controllable, setControllable] = useState(initialControllable);
     const navigate = useNavigate();
 
-    const userRankByItemId: Record<string, { author: AppUser; value: number; favorite: boolean }[]> = useMemo(() => {
+    const userRankByItemId: Record<
+      string,
+      { users: { author: AppUser; value: number; favorite: boolean }[]; total: number }
+    > = useMemo(() => {
       try {
         const result: Record<string, { author: AppUser; value: number; favorite: boolean }[]> = {};
+        const userRankByItem: Record<
+          string,
+          { users: { author: AppUser; value: number; favorite: boolean }[]; total: number }
+        > = {};
+        const total: Record<string, number> = {};
         items.forEach((item) => {
           usersRank.forEach((rank) => {
             const ranks = getUserRanksFromResult(rank);
@@ -75,9 +82,14 @@ const PartyRankResultsPageComponent = memo(
               ...(result[item.id] || []),
               { author: rank.author, value: ranks[item.id]?.value || null, favorite: rank.favoriteId === item.id },
             ];
+            total[item.id] = (total[item.id] ?? 0) + (ranks[item.id]?.value ?? 0);
           });
+          userRankByItem[item.id] = {
+            users: result[item.id],
+            total: total[item.id],
+          };
         });
-        return result;
+        return userRankByItem;
       } catch (error) {
         console.error(error);
         return {};
@@ -144,7 +156,7 @@ const PartyRankResultsPageComponent = memo(
       navigate(`/party-rank/${partyRank.id}`);
     };
 
-    const ranks = (userRankByItemId[items[currentIndex].id] || []).filter((item) => Boolean(item.author));
+    const ranks = (userRankByItemId[items[currentIndex].id]?.users || []).filter((item) => Boolean(item.author));
 
     return (
       <Box
@@ -230,7 +242,7 @@ const PartyRankResultsPageComponent = memo(
                       color="error"
                     />
                   )}
-                  {item.grade && <GradeMark size={40} fontSize="20px" value={item.grade} />}
+                  {item.grade && <GradeMark size={40} showDecimal={2} fontSize="14px" value={item.grade} />}
                 </Grid>
               </Grid>
               {Boolean(currentIndex === i || currentIndex + 1 === i) && (
@@ -242,6 +254,33 @@ const PartyRankResultsPageComponent = memo(
                   hideControls={!controllable}
                 />
               )}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 80,
+                  width: 90,
+                  height: 50,
+                  right: 30,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  borderRadius: '16px',
+                }}
+              >
+                <Typography
+                  sx={{
+                    position: 'absolute',
+                    top: -10,
+                  }}
+                  fontWeight="bold"
+                >
+                  Total
+                </Typography>
+                <Typography fontSize="26px" fontWeight="100">
+                  {userRankByItemId[item.id].total}
+                </Typography>
+              </Box>
               {currentIndex === i && !controllable && (
                 <TimerProgress
                   sx={{
@@ -290,11 +329,12 @@ const PartyRankResultsPageComponent = memo(
             display: 'flex',
             right: 0,
             top: 0,
+            overflow: 'auto',
             position: 'absolute',
             flexDirection: 'row',
           }}
         >
-          <Grid container flexDirection="row" wrap="wrap" justifyContent="space-around">
+          <Grid container flexDirection="row" wrap="wrap" justifyContent="space-around" alignContent="start">
             {ranks.map((userRank) => (
               <Grid
                 key={userRank.author.uid}
@@ -348,7 +388,7 @@ const PartyRankResultsPageComponent = memo(
                     backgroundColor: (theme) => theme.palette.grey[900],
                   }}
                 >
-                  <GradeMark size={32} value={userRank.value} />
+                  <GradeMark size={32} value={userRank.value} showDecimal={1} />
                 </Box>
               </Grid>
             ))}

@@ -9,6 +9,7 @@ interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {
   width?: string | number;
   height?: string | number;
   buttonFontSize?: string;
+  autoplay?: boolean;
   hideControls?: boolean;
 }
 
@@ -20,7 +21,7 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
   const [paused, setPaused] = useState(true);
   const audioContextRef = useRef<AudioContext>();
   const canPlay = useMemo(() => new AudioContext().state === 'running', []);
-  const { width, height, buttonFontSize = '4em', hideControls, ...rest } = props;
+  const { width, height, buttonFontSize = '4em', hideControls, autoplay = true, ...rest } = props;
 
   useImperativeHandle(ref, () => audioRef.current, []);
 
@@ -145,7 +146,15 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
         overflow: 'hidden',
       }}
     >
-      <audio {...rest} ref={audioRef} autoPlay={canPlay} loop onPlay={handlePlay} onPause={handlePause} hidden />
+      <audio
+        {...rest}
+        ref={audioRef}
+        autoPlay={canPlay && autoplay}
+        loop
+        onPlay={handlePlay}
+        onPause={handlePause}
+        hidden
+      />
       {/* <canvas width="100%" height="100%" ref={canvasRef} /> */}
       {!hideControls && (
         <Box

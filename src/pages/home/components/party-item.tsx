@@ -67,16 +67,18 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
             variant="filled"
           />
         )}
-        <Grid container direction="row" justifyContent="flex-end" spacing={1}>
+        <Grid item xs>
+          {createdDate && (
+            <Typography fontSize={14} noWrap>
+              Создан {DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED)}
+            </Typography>
+          )}
+        </Grid>
+        <Grid xs container direction="row" justifyContent="flex-end" spacing={1}>
           {status !== PartyRankStatus.Finished && (
             <Button size="small" onClick={handleView}>
               Учавстовать
             </Button>
-          )}
-          {createdDate && (
-            <Typography fontSize={14}>
-              Создан в {DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED)}
-            </Typography>
           )}
           {status === PartyRankStatus.Finished && (
             <>
