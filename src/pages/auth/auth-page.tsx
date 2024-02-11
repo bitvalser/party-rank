@@ -2,8 +2,7 @@ import { Button, Container, Grid, Paper, Typography } from '@mui/material';
 
 import * as Styled from './auth-page.styles';
 
-export const DISCORD_OAUTH_URL =
-  'https://discord.com/api/oauth2/authorize?client_id=1205222499114160129&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A4200%2Fdiscord%2Fauth&scope=identify';
+export const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=1205222499114160129&response_type=code&redirect_uri=${encodeURIComponent(process.env.DISCORD_REDIRECT_URL)}&scope=identify`;
 
 export const AuthPage = () => {
   return (

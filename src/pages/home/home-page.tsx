@@ -45,7 +45,6 @@ export const HomePage = () => {
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'auto',
       }}
       maxWidth="xl"
     >

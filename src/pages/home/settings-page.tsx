@@ -1,5 +1,76 @@
-import { Typography } from '@mui/material';
+import { useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
+
+import { Card, CardContent, Checkbox, FormControlLabel, Grid, Typography } from '@mui/material';
+
+import { SliderNum } from '../../core/components/slider-num';
+import { useInjectable } from '../../core/hooks/useInjectable';
+import useSubscription from '../../core/hooks/useSubscription';
+import { AppTypes } from '../../core/services/types';
 
 export const SettingsPage = () => {
-  return <Typography>SettingsPage</Typography>;
+  const { controllablePlayer$, playDuration$ } = useInjectable(AppTypes.SettingsService);
+  const playDuration = useSubscription(playDuration$, 0);
+  const controllablePlayer = useSubscription(controllablePlayer$, false);
+  const [durationValue, setDurationValue] = useState(null);
+
+  const updateDuration = useDebouncedCallback((value: number) => {
+    playDuration$.next(value);
+  }, 1000);
+
+  const handleDurationChange = (event: any, value: number) => {
+    setDurationValue(value);
+    updateDuration(value);
+  };
+
+  const handleChangeControllable = (event: any, value: boolean) => {
+    controllablePlayer$.next(value);
+  };
+
+  return (
+    <>
+      <Card
+        sx={{
+          mt: 2,
+        }}
+      >
+        <CardContent>
+          <Grid container direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="h5" component="div">
+              Страница Результатов
+            </Typography>
+          </Grid>
+          <Grid
+            sx={{
+              marginTop: 1,
+              padding: 1,
+              paddingBottom: 0,
+            }}
+            container
+            direction="column"
+            spacing={1}
+          >
+            <Grid item>
+              <SliderNum
+                label="Длительность воиспроизведения медиа"
+                max={90}
+                min={5}
+                step={5}
+                unit="сек"
+                value={durationValue ?? playDuration}
+                onChange={handleDurationChange}
+                disabled={controllablePlayer}
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                control={<Checkbox checked={controllablePlayer} onChange={handleChangeControllable} />}
+                label="Управляемое воспроизведение"
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </>
+  );
 };

@@ -20,7 +20,7 @@ export const Root = () => {
           <GlobalStyles
             styles={{
               body: {
-                overflow: 'hidden',
+                overflow: 'auto',
                 margin: 0,
               },
               '#root': {

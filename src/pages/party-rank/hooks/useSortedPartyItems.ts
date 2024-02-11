@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { RankItem } from '../../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../../core/interfaces/user-rank.interface';
+import { getUserRanksFromResult } from '../../../core/utils/get-user-ranks';
 
 export const useSortedPartyItems = (
   partyItems: RankItem[],
@@ -17,9 +18,9 @@ export const useSortedPartyItems = (
         grades: {},
       };
       usersRank.forEach((rank) => {
-        const { favoriteId, uid, author, ...restRank } = rank;
-        if (favoriteId) {
-          rankBy.favorites[favoriteId] = (rankBy.favorites[favoriteId] ?? 0) + 1;
+        const restRank = getUserRanksFromResult(rank);
+        if (rank.favoriteId) {
+          rankBy.favorites[rank.favoriteId] = (rankBy.favorites[rank.favoriteId] ?? 0) + 1;
         }
         Object.entries(restRank).forEach(([rankId, { value }]) => {
           rankBy.grades[rankId] = [...(rankBy.grades[rankId] || []), value];

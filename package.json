@@ -40,6 +40,7 @@
     "react-router-dom": "^6.22.0",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1",
+    "use-debounce": "^10.0.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -51,6 +52,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^6.10.0",
+    "dotenv": "^16.4.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-ts-react-important-stuff": "^3.0.0",

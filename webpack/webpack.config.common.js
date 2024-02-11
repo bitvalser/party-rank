@@ -1,5 +1,8 @@
 const { resolve } = require("path");
 const webpack = require("webpack");
+const dotenv = require("dotenv");
+
+dotenv.config()
 
 module.exports = () => {
   return {
@@ -40,7 +43,9 @@ module.exports = () => {
         },
       ],
     },
-    plugins: [new webpack.EnvironmentPlugin({})],
+    plugins: [new webpack.DefinePlugin({
+      'process.env.DISCORD_REDIRECT_URL': JSON.stringify(process.env.DISCORD_REDIRECT_URL)
+    })],
     performance: {
       hints: false,
     },

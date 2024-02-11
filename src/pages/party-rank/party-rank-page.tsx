@@ -27,6 +27,8 @@ import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { AddNewItem, AddNewItemProps } from './components/add-new-item';
 import { RankItem } from './components/rank-item';
+import { UserRankStatus } from './components/user-rank-status';
+import { UserVotingStatus } from './components/user-voting-status';
 
 export const PartyRankPage = () => {
   const {
@@ -189,6 +191,10 @@ export const PartyRankPage = () => {
           </CardActions>
         </Card>
       </Grid>
+      {isCreator && status === PartyRankStatus.Rating && <UserVotingStatus id={id} required={partyItems.length} />}
+      {isCreator && status === PartyRankStatus.Ongoing && (
+        <UserRankStatus partyItems={partyItems} required={requiredQuantity} />
+      )}
       {currentUserItems.length > 0 && status === PartyRankStatus.Ongoing && (
         <Card
           sx={{

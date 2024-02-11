@@ -3,7 +3,7 @@ import { ControllerRenderProps } from 'react-hook-form';
 
 import { Box, FormLabel, Grid, Input, Slider, Typography } from '@mui/material';
 
-export interface SliderNumProps extends ControllerRenderProps {
+export interface SliderNumProps extends Partial<ControllerRenderProps> {
   label: string;
   step: number;
   min: number;
@@ -17,7 +17,14 @@ export const SliderNum: FC<SliderNumProps> = ({ label, max, min, step, unit = ''
   return (
     <Box>
       <FormLabel id={`${labelId}-slider`}>{label}</FormLabel>
-      <Grid container spacing={2} alignItems="center">
+      <Grid
+        sx={{
+          position: 'relative',
+        }}
+        container
+        spacing={2}
+        alignItems="center"
+      >
         <Grid item xs>
           <Slider aria-labelledby={`${labelId}-slider`} max={max} min={min} step={step} {...field} />
         </Grid>
