@@ -30,6 +30,10 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
 
   const onSubmit: SubmitHandler<RankItemFromValues> = (data) => {
     setLoading(true);
+    const payload: Partial<RankItem> = { ...data };
+    delete payload.author;
+    delete payload.authorId;
+    delete payload.id;
     updateRankItem(partyId, rankValues.id, data)
       .pipe(finalize(() => setLoading(false)))
       .subscribe((result) => {

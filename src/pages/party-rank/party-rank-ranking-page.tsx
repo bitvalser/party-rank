@@ -26,7 +26,7 @@ interface PartRankRankingPageComponentProps {
 }
 
 const controlButtonSx: SxProps<Theme> = {
-  height: 'calc(100vh - 56px)',
+  height: 'calc(100vh - 160px)',
   width: '150px',
   display: 'flex',
   position: 'absolute',

@@ -40,12 +40,16 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
   } = form;
 
   const onSubmit: SubmitHandler<PartyRankFormValues> = (data) => {
-    const payload = {
+    const payload: Partial<PartyRank> = {
       ...data,
       content: formRef.current.getContent() || '',
       deadlineDate: data.deadlineDate.toISO(),
       finishDate: data.finishDate.toISO(),
     };
+    delete payload.id;
+    delete payload.creatorId;
+    delete payload.creator;
+    delete payload.createdDate;
     setLoading(true);
     updatePartyRank(rankParty.id, payload)
       .pipe(finalize(() => setLoading(false)))
