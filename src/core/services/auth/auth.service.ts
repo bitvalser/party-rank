@@ -45,7 +45,16 @@ export class AuthService implements IAuthService {
     }
     return of(void 0).pipe(
       switchMap(() => getDoc(doc(this.firestore, FirestoreCollection.Users, uid))),
-      map((snapshot) => snapshot.data() as AppUser),
+      map((snapshot) => {
+        if (!snapshot.exists()) {
+          return {
+            uid,
+            displayName: 'Deleted User',
+            photoURL: null,
+          };
+        }
+        return snapshot.data() as AppUser;
+      }),
       tap((user) => {
         this.usersCache[user.uid] = {
           invalidate: Date.now() + 60 * 1000,
