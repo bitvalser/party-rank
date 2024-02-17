@@ -165,6 +165,7 @@ const PartRankRankingPageComponent = memo(({ items, partyRank, userRank }: PartR
               type={item.type}
               value={item.value}
               autoplay={currentIndex === i}
+              showTimeControls
             />
           )}
           <Box
@@ -173,7 +174,7 @@ const PartRankRankingPageComponent = memo(({ items, partyRank, userRank }: PartR
               position: 'absolute',
               left: '50%',
               transform: 'translateX(-50%)',
-              bottom: '20px',
+              bottom: '60px',
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
@@ -205,7 +206,13 @@ const PartRankRankingPageComponent = memo(({ items, partyRank, userRank }: PartR
                 direction="column"
               >
                 <Typography>Ваша оценка</Typography>
-                <Rating value={currentRank[item.id]?.value} onChange={doRank(item.id)} max={10} size="large" />
+                <Rating
+                  value={currentRank[item.id]?.value}
+                  onChange={doRank(item.id)}
+                  precision={0.5}
+                  max={10}
+                  size="large"
+                />
               </Grid>
             </Card>
             <Box
@@ -216,7 +223,7 @@ const PartRankRankingPageComponent = memo(({ items, partyRank, userRank }: PartR
                 ml: 2,
               }}
             >
-              <GradeMark size={38} fontSize="22px" value={currentRank[item.id]?.value ?? 0} />
+              <GradeMark size={38} fontSize="18px" value={currentRank[item.id]?.value ?? 0} showDecimal={1} />
             </Box>
           </Box>
         </Box>
@@ -281,7 +288,7 @@ export const PartyRankRankingPage = () => {
   }
 
   if (partyRank.status !== PartyRankStatus.Rating) {
-    return <Navigate to={`/party-rank/${id}`} />;
+    return <Navigate to={`/party-rank/${id}`} replace />;
   }
 
   return <PartRankRankingPageComponent items={partyItems} partyRank={partyRank} userRank={userRank} />;

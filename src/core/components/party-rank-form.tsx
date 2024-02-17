@@ -1,14 +1,30 @@
 import { DateTime } from 'luxon';
-import { Controller, useFormContext, useWatch } from 'react-hook-form';
+import {
+  MenuButtonBlockquote,
+  MenuButtonBold,
+  MenuButtonBulletedList,
+  MenuButtonCode,
+  MenuButtonItalic,
+  MenuButtonOrderedList,
+  MenuControlsContainer,
+  MenuDivider,
+  MenuSelectHeading,
+  RichTextEditor,
+  type RichTextEditorRef,
+} from 'mui-tiptap';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 
-import { Grid, TextField } from '@mui/material';
+import { FormControl, FormLabel, Grid, TextField } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
+import StarterKit from '@tiptap/starter-kit';
 
-import { SliderNum } from '../../../core/components/slider-num';
-import { PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
+import { PartyRankStatus } from '../interfaces/party-rank.interface';
+import { SliderNum } from './slider-num';
 
 export interface PartyRankFormValues {
   name: string;
+  content: string;
   requiredQuantity: number;
   deadlineDate: DateTime;
   finishDate: DateTime;
@@ -16,17 +32,30 @@ export interface PartyRankFormValues {
 }
 
 interface PartyRankFormProps {
-  minDate: DateTime;
+  minDate?: DateTime;
 }
 
-export const PartyRankForm = ({ minDate }: PartyRankFormProps) => {
+export interface PartyRankFormRef {
+  getContent: () => string;
+}
+
+export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(({ minDate }, ref) => {
   const {
     control,
     watch,
     formState: { errors },
   } = useFormContext<PartyRankFormValues>();
+  const rteRef = useRef<RichTextEditorRef>(null);
 
   const status = watch('status');
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContent: () => rteRef.current.editor.getHTML(),
+    }),
+    [],
+  );
 
   return (
     <Grid container rowSpacing={2} flexDirection="column">
@@ -46,6 +75,44 @@ export const PartyRankForm = ({ minDate }: PartyRankFormProps) => {
               helperText={errors.name?.message as string}
               {...field}
             />
+          )}
+        />
+      </Grid>
+      <Grid item>
+        <Controller
+          name="content"
+          control={control}
+          rules={{
+            required: false,
+          }}
+          render={({ field }) => (
+            <FormControl
+              sx={{
+                maxHeight: 250,
+                overflow: 'auto',
+              }}
+              fullWidth
+            >
+              <FormLabel>Описание</FormLabel>
+              <RichTextEditor
+                ref={rteRef}
+                extensions={[StarterKit]}
+                content={field.value}
+                editable={!field.disabled}
+                renderControls={() => (
+                  <MenuControlsContainer>
+                    <MenuSelectHeading />
+                    <MenuDivider />
+                    <MenuButtonBold />
+                    <MenuButtonItalic />
+                    <MenuButtonCode />
+                    <MenuButtonBlockquote />
+                    <MenuButtonOrderedList />
+                    <MenuButtonBulletedList />
+                  </MenuControlsContainer>
+                )}
+              />
+            </FormControl>
           )}
         />
       </Grid>
@@ -99,4 +166,4 @@ export const PartyRankForm = ({ minDate }: PartyRankFormProps) => {
       </Grid>
     </Grid>
   );
-};
+});

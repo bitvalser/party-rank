@@ -47,6 +47,8 @@ export class PartyRanks implements IPartyRanks {
     this.getUserRank = this.getUserRank.bind(this);
     this.updateUserRank = this.updateUserRank.bind(this);
     this.getUserRanks = this.getUserRanks.bind(this);
+    this.updateRankItem = this.updateRankItem.bind(this);
+    this.deletePartyRank = this.deletePartyRank.bind(this);
   }
 
   public createPartyRank(payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id'>): Observable<PartyRank> {
@@ -92,6 +94,10 @@ export class PartyRanks implements IPartyRanks {
     );
   }
 
+  public deletePartyRank(id: string): Observable<void> {
+    return of(void 0).pipe(switchMap(() => deleteDoc(doc(this.firestore, FirestoreCollection.Parties, id))));
+  }
+
   public getParties(): Observable<PartyRank[]> {
     return of(void 0).pipe(
       switchMap(() => getDocs(collection(this.firestore, FirestoreCollection.Parties))),
@@ -114,6 +120,9 @@ export class PartyRanks implements IPartyRanks {
     return of(void 0).pipe(
       switchMap(() => getDoc(doc(this.firestore, FirestoreCollection.Parties, id))),
       switchMap((snapshot) => {
+        if (!snapshot.exists()) {
+          throw new Error('Party rank not exists!');
+        }
         const data = snapshot.data() as Omit<PartyRank, 'creator'>;
         return this.authService.getUser(data.creatorId).pipe(map((creator): PartyRank => ({ ...data, creator })));
       }),
@@ -175,6 +184,26 @@ export class PartyRanks implements IPartyRanks {
       switchMap(() =>
         deleteDoc(doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items, id)),
       ),
+    );
+  }
+
+  public updateRankItem(
+    partyId: string,
+    itemId: string,
+    payload: Partial<Omit<RankItem, 'id' | 'authorId' | 'author'>>,
+  ): Observable<RankItem> {
+    return of(void 0).pipe(
+      switchMap(() =>
+        updateDoc(
+          doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items, itemId),
+          payload,
+        ),
+      ),
+      withLatestFrom(this.partyItems$),
+      map(([, partyItems]): RankItem => ({ ...partyItems[itemId], ...payload })),
+      tap((item) => {
+        this.partyItems$.next({ ...this.partyItems$.getValue(), [item.id]: item });
+      }),
     );
   }
 

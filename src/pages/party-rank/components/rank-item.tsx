@@ -2,6 +2,7 @@ import { memo, useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import TagIcon from '@mui/icons-material/Tag';
@@ -27,6 +28,7 @@ interface RankItemProps {
   favoriteCount?: number;
   onDelete?: (id: string) => void;
   onClear?: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
 export const RankItem = memo(
@@ -38,6 +40,7 @@ export const RankItem = memo(
     isFavorite = false,
     onDelete = () => null,
     onClear = () => null,
+    onEdit = () => null,
     showAuthor: showAuthorProp = true,
     rank = null,
     favoriteCount = 0,
@@ -57,6 +60,10 @@ export const RankItem = memo(
 
     const handleClear = () => {
       onClear(id);
+    };
+
+    const handleEdit = () => {
+      onEdit(id);
     };
 
     const handleView = () => {
@@ -152,6 +159,13 @@ export const RankItem = memo(
               </IconButton>
             </Tooltip>
             {partyStatus === PartyRankStatus.Ongoing && canDelete && (
+              <Tooltip placement="top" title="Редактировать предложение">
+                <IconButton onClick={handleEdit} aria-label="edit">
+                  <EditIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {partyStatus === PartyRankStatus.Ongoing && canDelete && (
               <Tooltip placement="top" title="Удалить предложение">
                 <IconButton onClick={handleDelete} aria-label="delete">
                   <DeleteIcon color="error" fontSize="inherit" />
@@ -160,7 +174,7 @@ export const RankItem = memo(
             )}
             {partyStatus === PartyRankStatus.Rating && canDelete && Boolean(grade) && (
               <Tooltip placement="top" title="Удалить оценку">
-                <IconButton onClick={handleClear} aria-label="delete">
+                <IconButton onClick={handleClear} aria-label="clear">
                   <CloseIcon fontSize="inherit" />
                 </IconButton>
               </Tooltip>
@@ -213,7 +227,7 @@ export const RankItem = memo(
                 </IconButton>
               </Grid>
             </Grid>
-            <RankPartyPlayer type={type} value={value} />
+            <RankPartyPlayer type={type} value={value} showTimeControls />
           </Box>
         </Modal>
       </>

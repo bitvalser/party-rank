@@ -25,10 +25,7 @@ export const PartiesListPage = () => {
       ),
     ).pipe(
       map((items) =>
-        items.sort(
-          (partyA, partyB) =>
-            new Date(partyB.createdDate).getMilliseconds() - new Date(partyA.createdDate).getMilliseconds(),
-        ),
+        items.sort((partyA, partyB) => new Date(partyB.createdDate).getTime() - new Date(partyA.createdDate).getTime()),
       ),
     ),
     [],

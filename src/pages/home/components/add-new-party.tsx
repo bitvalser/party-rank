@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { finalize } from 'rxjs/operators';
 
@@ -7,13 +7,14 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Fab, Grid, IconButton, Modal, Typography, useTheme } from '@mui/material';
 
+import { PartyRankForm, PartyRankFormRef, PartyRankFormValues } from '../../../core/components/party-rank-form';
 import { useInjectable } from '../../../core/hooks/useInjectable';
 import { PartyRank, PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
 import { AppTypes } from '../../../core/services/types';
-import { PartyRankForm, PartyRankFormValues } from './party-rank-form';
 
 const DEFAULT_VALUES: PartyRankFormValues = {
   name: '',
+  content: '',
   requiredQuantity: 3,
   deadlineDate: DateTime.now().plus({ days: 1 }),
   finishDate: DateTime.now().plus({ days: 2 }),
@@ -31,6 +32,7 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
   const { createPartyRank } = useInjectable(AppTypes.PartyRanks);
+  const formRef = useRef<PartyRankFormRef>();
   const form = useForm<PartyRankFormValues>({
     defaultValues: DEFAULT_VALUES,
     reValidateMode: 'onBlur',
@@ -51,6 +53,8 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
   const onSubmit: SubmitHandler<PartyRankFormValues> = (data) => {
     const payload = {
       ...data,
+      content: formRef.current.getContent() || '',
+      showTable: false,
       deadlineDate: data.deadlineDate.toISO(),
       finishDate: data.finishDate.toISO(),
     };
@@ -75,8 +79,8 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
             transform: 'translate(-50%, -50%)',
             padding: 2,
             outline: 'none',
-            width: 596,
-            minHeight: 400,
+            width: 760,
+            minHeight: 600,
             borderRadius: '4px',
             paddingBottom: 0,
             display: 'flex',
@@ -116,7 +120,7 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
                 container
                 flexDirection="column"
               >
-                <PartyRankForm minDate={MIN_DATE} />
+                <PartyRankForm ref={formRef} minDate={MIN_DATE} />
                 <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
                   <Grid item>
                     <Button
@@ -139,7 +143,7 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
       </Modal>
       <Fab
         sx={{
-          position: 'absolute',
+          position: 'fixed',
           bottom: 16,
           right: 16,
         }}

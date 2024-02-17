@@ -10,6 +10,7 @@ export interface IPartyRanks {
   partyItems$: BehaviorSubject<Record<string, RankItem>>;
   createPartyRank(payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id' | 'createdDate'>): Observable<PartyRank>;
   updatePartyRank(id: string, payload: Partial<Omit<PartyRank, 'creator' | 'creatorId' | 'id'>>): Observable<PartyRank>;
+  deletePartyRank(id: string): Observable<void>;
   getParties(): Observable<PartyRank[]>;
   getPartyRank(id: string): Observable<PartyRank>;
   addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author' | 'authorId'>): Observable<RankItem>;
@@ -17,6 +18,11 @@ export interface IPartyRanks {
   deleteRankItem(partyId: string, id: string): Observable<void>;
   getUserRank(partyId: string): Observable<UserRank>;
   updateUserRank(partyId: string, payload: Partial<UserRank>): Observable<void>;
+  updateRankItem(
+    partyId: string,
+    itemId: string,
+    payload: Partial<Omit<RankItem, 'id' | 'authorId' | 'author'>>,
+  ): Observable<RankItem>;
   getUserRanks(
     partyId: string,
     options?: { includeUser?: boolean },

@@ -66,13 +66,13 @@ const PartyRankResultsPageComponent = memo(
 
     const userRankByItemId: Record<
       string,
-      { users: { author: AppUser; value: number; favorite: boolean }[]; total: number }
+      { users: { author: AppUser; value: number; favorite: boolean; myRank: boolean }[]; total: number }
     > = useMemo(() => {
       try {
-        const result: Record<string, { author: AppUser; value: number; favorite: boolean }[]> = {};
+        const result: Record<string, { author: AppUser; value: number; favorite: boolean; myRank: boolean }[]> = {};
         const userRankByItem: Record<
           string,
-          { users: { author: AppUser; value: number; favorite: boolean }[]; total: number }
+          { users: { author: AppUser; value: number; favorite: boolean; myRank: boolean }[]; total: number }
         > = {};
         const total: Record<string, number> = {};
         items.forEach((item) => {
@@ -80,7 +80,12 @@ const PartyRankResultsPageComponent = memo(
             const ranks = getUserRanksFromResult(rank);
             result[item.id] = [
               ...(result[item.id] || []),
-              { author: rank.author, value: ranks[item.id]?.value || null, favorite: rank.favoriteId === item.id },
+              {
+                author: rank.author,
+                value: ranks[item.id]?.value || null,
+                favorite: rank.favoriteId === item.id,
+                myRank: rank.author?.uid === item.authorId,
+              },
             ];
             total[item.id] = (total[item.id] ?? 0) + (ranks[item.id]?.value ?? 0);
           });
@@ -388,7 +393,7 @@ const PartyRankResultsPageComponent = memo(
                     backgroundColor: (theme) => theme.palette.grey[900],
                   }}
                 >
-                  <GradeMark size={32} value={userRank.value} showDecimal={1} />
+                  <GradeMark size={32} value={userRank.value} showDecimal={1} isAuthorRank={userRank.myRank} />
                 </Box>
               </Grid>
             ))}
@@ -438,7 +443,7 @@ export const PartyRankResultsPage = () => {
   }
 
   if (partyRank.status !== PartyRankStatus.Finished) {
-    return <Navigate to={`/party-rank/${id}`} />;
+    return <Navigate to={`/party-rank/${id}`} replace />;
   }
 
   return (

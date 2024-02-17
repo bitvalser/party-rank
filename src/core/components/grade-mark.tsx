@@ -6,6 +6,7 @@ interface GradeMarkProps {
   backgroundColor?: string;
   fontSize?: string | number;
   showDecimal?: number;
+  isAuthorRank?: boolean;
 }
 
 const COLORS = [
@@ -19,11 +20,17 @@ const COLORS = [
   '#CCFF00',
   '#99FF00',
   '#66FF00',
-  // '#00fff9',
 ];
 
-export const GradeMark = ({ value, size, fontSize = '16px', backgroundColor, showDecimal = 1 }: GradeMarkProps) => {
-  const color = value > 0 ? COLORS[Math.round(value - 1)] || '#000' : '#fff';
+export const GradeMark = ({
+  value,
+  size,
+  fontSize = '16px',
+  backgroundColor,
+  isAuthorRank = false,
+  showDecimal = 1,
+}: GradeMarkProps) => {
+  const color = isAuthorRank ? '#00fff9' : value > 0 ? COLORS[Math.round(value - 1)] || '#000' : '#fff';
 
   return (
     <Box

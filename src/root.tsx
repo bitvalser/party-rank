@@ -11,6 +11,8 @@ const darkTheme = createTheme({
   },
 });
 
+export const MODAL_CONTAINER_ID = '_modal_container';
+
 export const Root = () => {
   return (
     <InversifyContext.Provider value={appContainer}>
@@ -37,6 +39,7 @@ export const Root = () => {
               },
             }}
           />
+          <div id={MODAL_CONTAINER_ID} />
           <AppRouter />
         </ThemeProvider>
       </LocalizationProvider>

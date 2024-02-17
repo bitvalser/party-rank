@@ -1,10 +1,12 @@
 import { deleteField } from 'firebase/firestore';
 import { DateTime } from 'luxon';
-import { useMemo, useRef, useState } from 'react';
+import { RichTextReadOnly } from 'mui-tiptap';
+import { MouseEventHandler, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, Subject, concat, merge, of } from 'rxjs';
-import { finalize, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, finalize, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import {
   Avatar,
@@ -17,15 +19,23 @@ import {
   Fab,
   Grid,
   LinearProgress,
+  Menu,
+  MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import StarterKit from '@tiptap/starter-kit';
 
+import { OopsPage } from '../../core/components/oops-page';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
+import { RankItem as IRankItem } from '../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../core/services/types';
 import { AddNewItem, AddNewItemProps } from './components/add-new-item';
+import { EditRankItem } from './components/edit-rank-item';
+import { EditRankParty } from './components/edit-rank-party';
 import { RankItem } from './components/rank-item';
 import { UserRankStatus } from './components/user-rank-status';
 import { UserVotingStatus } from './components/user-voting-status';
@@ -38,17 +48,32 @@ export const PartyRankPage = () => {
     getUserRank,
     updatePartyRank,
     updateUserRank,
+    deletePartyRank,
     partyItems$,
     parties$,
   } = useInjectable(AppTypes.PartyRanks);
   const { user$ } = useInjectable(AppTypes.AuthService);
   const { id } = useParams();
   const navigate = useNavigate();
-  const partyRank = useSubscription(concat(getPartyRank(id), parties$.pipe(map((parties) => parties[id]))));
+  const [error, setError] = useState(null);
+  const partyRank = useSubscription(
+    concat(
+      getPartyRank(id).pipe(
+        catchError((error, caught) => {
+          setError(error);
+          return caught;
+        }),
+      ),
+      parties$.pipe(map((parties) => parties[id])),
+    ),
+  );
   const currentUser = useSubscription(user$);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLButtonElement>(null);
   const [listLoading, setListLoading] = useState(true);
+  const [showEdit, setShowEdit] = useState(false);
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const updateRanksRef = useRef(new Subject<void>());
+  const [editRank, setEditRank] = useState<IRankItem>(null);
   const userRank = useSubscription(
     merge(of(void 0), updateRanksRef.current).pipe(switchMap(() => getUserRank(id))),
     {},
@@ -77,12 +102,27 @@ export const PartyRankPage = () => {
     [partyItems, currentUser],
   );
 
+  if (error) {
+    return <OopsPage message={error?.message} />;
+  }
+
   if (!partyRank) {
     return <LinearProgress />;
   }
 
-  const { creator, deadlineDate, finishDate, name, status, finishedDate, createdDate, creatorId, requiredQuantity } =
-    partyRank;
+  const {
+    creator,
+    deadlineDate,
+    finishDate,
+    name,
+    status,
+    finishedDate,
+    createdDate,
+    creatorId,
+    requiredQuantity,
+    showTable,
+    content,
+  } = partyRank;
   const isCreator = currentUser?.uid === creatorId;
   const currentUserItems = partyItemsByUser[currentUser?.uid] || [];
 
@@ -90,7 +130,7 @@ export const PartyRankPage = () => {
     partyItemsKeysRef.current.next([item.id, ...partyItemsKeysRef.current.getValue()]);
   };
 
-  const handleDelete = (rankId: string) => {
+  const handleDeleteRank = (rankId: string) => {
     partyItemsKeysRef.current.next(partyItemsKeysRef.current.getValue().filter((itemId) => itemId !== rankId));
     deleteRankItem(id, rankId).subscribe();
   };
@@ -125,6 +165,43 @@ export const PartyRankPage = () => {
     });
   };
 
+  const handleUnlockTable = () => {
+    updatePartyRank(id, { showTable: true }).subscribe(() => {
+      updateRanksRef.current.next();
+    });
+  };
+
+  const handleEditRank = (item: IRankItem) => () => {
+    setEditRank(item);
+  };
+
+  const handleCloseEditRank = () => {
+    setEditRank(null);
+  };
+
+  const handleOpenMenu: MouseEventHandler<HTMLButtonElement> = (event) => {
+    setMenuAnchor(event.target as HTMLButtonElement);
+  };
+
+  const handleCloseMenu = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleDelete = () => {
+    deletePartyRank(id).subscribe(() => {
+      navigate('/', { replace: true });
+    });
+  };
+
+  const handleEdit = () => {
+    setShowEdit(true);
+    setMenuAnchor(null);
+  };
+
+  const handleCloseEdit = () => {
+    setShowEdit(false);
+  };
+
   return (
     <>
       <Grid container direction="column" rowSpacing={2}>
@@ -133,12 +210,23 @@ export const PartyRankPage = () => {
             <CardHeader
               avatar={<Avatar alt={creator.displayName} src={creator.photoURL} />}
               title={creator.displayName}
+              action={
+                <div>
+                  <IconButton onClick={handleOpenMenu} aria-label="settings">
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleCloseMenu}>
+                    <MenuItem onClick={handleEdit}>Редатировать</MenuItem>
+                    <MenuItem onClick={handleDelete}>Удалить</MenuItem>
+                  </Menu>
+                </div>
+              }
               subheader={createdDate ? DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED) : ''}
             />
           )}
           <CardContent>
             <Grid container direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="h5" component="div">
+              <Typography variant="h4" component="div">
                 {name}
               </Typography>
               <Grid item>
@@ -147,6 +235,11 @@ export const PartyRankPage = () => {
                 {status === PartyRankStatus.Finished && <Chip color="success" size="small" label="Завершён" />}
               </Grid>
             </Grid>
+            {content && (
+              <Grid item>
+                <RichTextReadOnly content={content} extensions={[StarterKit]} />
+              </Grid>
+            )}
             <Grid
               sx={{
                 marginTop: 1,
@@ -180,9 +273,14 @@ export const PartyRankPage = () => {
                 Завершить
               </Button>
             )}
-            {status === PartyRankStatus.Finished && (
+            {status === PartyRankStatus.Finished && (showTable || isCreator) && (
               <Button onClick={handleTableView} size="small">
                 Таблица Лидеров
+              </Button>
+            )}
+            {status === PartyRankStatus.Finished && !showTable && isCreator && (
+              <Button onClick={handleUnlockTable} size="small">
+                Открыть таблицу Лидеров
               </Button>
             )}
             <Button onClick={handleCopyInvite} size="small">
@@ -249,8 +347,9 @@ export const PartyRankPage = () => {
             data={item}
             partyStatus={status}
             isCreator={isCreator}
-            onDelete={handleDelete}
+            onDelete={handleDeleteRank}
             onClear={handleClearMark}
+            onEdit={handleEditRank(item)}
             isFavorite={userRank.favoriteId === item.id}
             grade={userRank[item.id]?.value}
           />
@@ -295,6 +394,16 @@ export const PartyRankPage = () => {
       {status === PartyRankStatus.Ongoing && (
         <AddNewItem disabled={currentUserItems.length >= requiredQuantity} partyId={id} onAddNew={handleNewRank} />
       )}
+      {editRank && (
+        <EditRankItem
+          key={editRank.id}
+          partyId={id}
+          rankValues={editRank}
+          onClose={handleCloseEditRank}
+          onEdit={handleCloseEditRank}
+        />
+      )}
+      {showEdit && <EditRankParty rankParty={partyRank} onClose={handleCloseEdit} onEdit={handleCloseEdit} />}
     </>
   );
 };

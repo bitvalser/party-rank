@@ -11,7 +11,7 @@ interface PartyItemProps {
 }
 
 export const PartyItem = memo(({ data }: PartyItemProps) => {
-  const { createdDate, creator, deadlineDate, finishDate, id, name, status, finishedDate } = data;
+  const { createdDate, creator, deadlineDate, finishDate, id, name, status, finishedDate, showTable } = data;
   const navigate = useNavigate();
 
   const handleView = () => {
@@ -82,7 +82,7 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
           )}
           {status === PartyRankStatus.Finished && (
             <>
-              <Button onClick={handleTableView} size="small">
+              <Button disabled={!showTable} onClick={handleTableView} size="small">
                 Итоговая таблица
               </Button>
               <Button onClick={handleView} size="small">

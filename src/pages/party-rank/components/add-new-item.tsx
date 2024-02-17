@@ -1,34 +1,17 @@
 import { useState } from 'react';
-import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { finalize } from 'rxjs/operators';
 
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import {
-  Box,
-  Button,
-  Fab,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  FormLabel,
-  Grid,
-  IconButton,
-  Modal,
-  Radio,
-  RadioGroup,
-  TextField,
-  Typography,
-  useTheme,
-} from '@mui/material';
+import { Box, Button, Fab, FormHelperText, Grid, IconButton, Modal, Typography, useTheme } from '@mui/material';
 
-import { RankPartyPlayer } from '../../../core/components/rank-party-player';
 import { useInjectable } from '../../../core/hooks/useInjectable';
 import { RankItem, RankItemType } from '../../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../../core/services/types';
-import { validURL } from '../../../core/utils/valid-url';
+import { RankItemForm } from './rank-item-form';
 
-interface RankItemFromValues {
+export interface RankItemFromValues {
   name: string;
   type: RankItemType;
   value: string;
@@ -55,12 +38,7 @@ export const AddNewItem = ({ partyId, disabled = false, onAddNew = () => null }:
     defaultValues: DEFAULT_VALUES,
     reValidateMode: 'onBlur',
   });
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = form;
+  const { handleSubmit } = form;
 
   const handleOpen = () => {
     setShowModal(true);
@@ -81,9 +59,6 @@ export const AddNewItem = ({ partyId, disabled = false, onAddNew = () => null }:
         form.reset();
       });
   };
-
-  const type = watch('type');
-  const value = watch('value');
 
   return (
     <>
@@ -137,86 +112,7 @@ export const AddNewItem = ({ partyId, disabled = false, onAddNew = () => null }:
                 container
                 flexDirection="column"
               >
-                <Grid container rowSpacing={2} flexDirection="column">
-                  <Grid item>
-                    <Controller
-                      name="name"
-                      control={control}
-                      rules={{
-                        minLength: 3,
-                        required: 'Название обязательное поле!',
-                      }}
-                      render={({ field }) => (
-                        <TextField
-                          fullWidth
-                          label="Название"
-                          error={Boolean(errors.name)}
-                          helperText={errors.name?.message as string}
-                          {...field}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Controller
-                      name="type"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControl>
-                          <FormLabel id="type-group-label">Тип медиа</FormLabel>
-                          <RadioGroup
-                            aria-labelledby="type-group-label"
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'row',
-                              flexWrap: 'wrap',
-                            }}
-                            {...field}
-                          >
-                            <FormControlLabel value={RankItemType.Video} control={<Radio />} label="Видео" />
-                            <FormControlLabel value={RankItemType.Audio} control={<Radio />} label="Аудио" />
-                            <FormControlLabel value={RankItemType.Image} control={<Radio />} label="Изображение" />
-                            <FormControlLabel value={RankItemType.YouTube} control={<Radio />} label="YouTube" />
-                          </RadioGroup>
-                        </FormControl>
-                      )}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Controller
-                      name="value"
-                      control={control}
-                      rules={{
-                        required: 'Ссылка обязательное поле!',
-                        validate: (value) => (validURL(value) ? null : 'Ссылка должна быть действительной!'),
-                      }}
-                      render={({ field }) => (
-                        <TextField
-                          fullWidth
-                          label="Ссылка на медиа файл"
-                          error={Boolean(errors.value)}
-                          helperText={errors.value?.message as string}
-                          {...field}
-                        />
-                      )}
-                    />
-                    {[RankItemType.Audio, RankItemType.Video].includes(type) && (
-                      <FormHelperText>
-                        Ссылка должна ввести напрямую на файл (будет иметь разрешение .mp4, .ogg и тд). Возможно сначала
-                        нужно будет залить файл на CDN.
-                      </FormHelperText>
-                    )}
-                  </Grid>
-                  <Grid
-                    sx={{
-                      height: 250,
-                    }}
-                    item
-                  >
-                    <FormLabel id="anime-provider-group-label">Превью</FormLabel>
-                    <RankPartyPlayer key={value} type={type} value={value} />
-                  </Grid>
-                </Grid>
+                <RankItemForm />
                 <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
                   <FormHelperText>
                     Прежде чем сохранить элемент убедитесь что превью работает нормально и показывает ваш медиа файл!

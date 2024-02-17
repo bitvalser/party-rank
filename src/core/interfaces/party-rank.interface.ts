@@ -17,4 +17,6 @@ export interface PartyRank {
   status: PartyRankStatus;
   createdDate: string;
   finishedDate?: string;
+  showTable: boolean;
+  content: string;
 }
