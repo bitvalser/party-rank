@@ -93,6 +93,7 @@ export const PartyRankPage = () => {
       merge(partyItemsKeysRef.current, partyItems$).pipe(
         withLatestFrom(partyItemsKeysRef.current, partyItems$),
         map(([, keys, items]) => keys.map((key) => items[key])),
+        map((items) => items.sort((itemA, itemB) => itemA.authorId.localeCompare(itemB.authorId))),
       ),
     ),
     [],
