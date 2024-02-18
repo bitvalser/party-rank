@@ -34,7 +34,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
     delete payload.author;
     delete payload.authorId;
     delete payload.id;
-    updateRankItem(partyId, rankValues.id, data)
+    updateRankItem(partyId, rankValues.id, payload)
       .pipe(finalize(() => setLoading(false)))
       .subscribe((result) => {
         setLoading(false);

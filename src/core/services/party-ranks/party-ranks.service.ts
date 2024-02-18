@@ -146,12 +146,7 @@ export class PartyRanks implements IPartyRanks {
     };
     return of(void 0).pipe(
       switchMap(() => setDoc(newRef, newItem)),
-      map(
-        (): RankItem => ({
-          ...newItem,
-          author: this.authService.user$.getValue(),
-        }),
-      ),
+      switchMap(() => this.authService.getUser(newItem.authorId).pipe(map((author) => ({ ...newItem, author })))),
       tap((item) => {
         this.partyItems$.next({
           ...this.partyItems$.getValue(),
@@ -199,6 +194,7 @@ export class PartyRanks implements IPartyRanks {
     itemId: string,
     payload: Partial<Omit<RankItem, 'id' | 'authorId' | 'author'>>,
   ): Observable<RankItem> {
+    console.log(payload);
     return of(void 0).pipe(
       switchMap(() =>
         updateDoc(

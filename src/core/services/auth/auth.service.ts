@@ -54,7 +54,6 @@ export class AuthService implements IAuthService {
   }
 
   public getUser(uid: string): Observable<AppUser> {
-    console.log(uid);
     return of(void 0).pipe(
       switchMap(() => {
         if (this.usersCache[uid] && this.usersCache[uid].invalidate > Date.now()) {
