@@ -72,7 +72,7 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
           padding: 2,
           outline: 'none',
           width: 760,
-          minHeight: 600,
+          minHeight: 700,
           borderRadius: '4px',
           paddingBottom: 0,
           display: 'flex',
@@ -112,7 +112,7 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
               container
               flexDirection="column"
             >
-              <PartyRankForm ref={formRef} />
+              <PartyRankForm ref={formRef} initLoadUsers />
               <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
                 <Grid item>
                   <Button

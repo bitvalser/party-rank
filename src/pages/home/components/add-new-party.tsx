@@ -15,6 +15,7 @@ import { AppTypes } from '../../../core/services/types';
 const DEFAULT_VALUES: PartyRankFormValues = {
   name: '',
   content: '',
+  moderators: [],
   requiredQuantity: 3,
   deadlineDate: DateTime.now().plus({ days: 1 }),
   finishDate: DateTime.now().plus({ days: 2 }),
@@ -80,7 +81,7 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
             padding: 2,
             outline: 'none',
             width: 760,
-            minHeight: 600,
+            minHeight: 700,
             borderRadius: '4px',
             paddingBottom: 0,
             display: 'flex',

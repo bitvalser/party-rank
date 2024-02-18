@@ -1,9 +1,9 @@
 import { FirebaseApp } from 'firebase/app';
 import { Auth, User, UserCredential, getAuth, signInWithCustomToken } from 'firebase/auth';
-import { Firestore, doc, getDoc, getFirestore } from 'firebase/firestore';
+import { Firestore, collection, doc, getDoc, getDocs, getFirestore } from 'firebase/firestore';
 import { inject, injectable } from 'inversify';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, from, of } from 'rxjs';
+import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 import { FirestoreCollection } from '../../constants/firestore-collection.constants';
 import { AppUser } from '../../interfaces/app-user.interface';
@@ -17,6 +17,7 @@ export class AuthService implements IAuthService {
   private usersCache: Record<string, { invalidate: number; data: AppUser }> = {};
   public user$: BehaviorSubject<User> = new BehaviorSubject<User>(null);
   public ready$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  private shareAllUsers$: Observable<AppUser[]>;
 
   public constructor(@inject(AppTypes.FirebaseApp) firebaseApp: FirebaseApp) {
     this.auth = getAuth(firebaseApp);
@@ -29,6 +30,8 @@ export class AuthService implements IAuthService {
     });
     this.signIn = this.signIn.bind(this);
     this.signOut = this.signOut.bind(this);
+    this.getUser = this.getUser.bind(this);
+    this.getAllUsers = this.getAllUsers.bind(this);
   }
 
   public signIn(token: string): Observable<UserCredential> {
@@ -39,27 +42,42 @@ export class AuthService implements IAuthService {
     return of(void 0).pipe(switchMap(() => this.auth.signOut()));
   }
 
-  public getUser(uid: string): Observable<AppUser> {
-    if (this.usersCache[uid] && this.usersCache[uid].invalidate < Date.now()) {
-      return of(this.usersCache[uid].data);
+  public getAllUsers(): Observable<AppUser[]> {
+    if (!this.shareAllUsers$) {
+      this.shareAllUsers$ = of(void 0).pipe(
+        switchMap(() => getDocs(collection(this.firestore, FirestoreCollection.Users))),
+        map((snapshot) => snapshot.docs.map((item) => item.data() as AppUser)),
+        shareReplay(1),
+      );
     }
+    return this.shareAllUsers$;
+  }
+
+  public getUser(uid: string): Observable<AppUser> {
+    console.log(uid);
     return of(void 0).pipe(
-      switchMap(() => getDoc(doc(this.firestore, FirestoreCollection.Users, uid))),
-      map((snapshot) => {
-        if (!snapshot.exists()) {
-          return {
-            uid,
-            displayName: 'Deleted User',
-            photoURL: null,
-          };
+      switchMap(() => {
+        if (this.usersCache[uid] && this.usersCache[uid].invalidate > Date.now()) {
+          return of(this.usersCache[uid].data);
         }
-        return snapshot.data() as AppUser;
-      }),
-      tap((user) => {
-        this.usersCache[user.uid] = {
-          invalidate: Date.now() + 60 * 1000,
-          data: user,
-        };
+        return from(getDoc(doc(this.firestore, FirestoreCollection.Users, uid))).pipe(
+          map((snapshot) => {
+            if (!snapshot.exists()) {
+              return {
+                uid,
+                displayName: 'Deleted User',
+                photoURL: null,
+              };
+            }
+            return snapshot.data() as AppUser;
+          }),
+          tap((user) => {
+            this.usersCache[user.uid] = {
+              invalidate: Date.now() + 60 * 60 * 1000,
+              data: user,
+            };
+          }),
+        );
       }),
     );
   }

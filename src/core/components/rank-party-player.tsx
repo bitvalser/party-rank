@@ -1,10 +1,14 @@
-import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { ReactEventHandler, forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Box, IconButton, LinearProgress } from '@mui/material';
 
+import { useInjectable } from '../hooks/useInjectable';
+import useSubscription from '../hooks/useSubscription';
 import { RankItemType } from '../interfaces/rank-item.interface';
+import { AppTypes } from '../services/types';
 import { AudioVisualizer } from './audio-visualizer';
 
 export interface RankPartyPlayer {
@@ -27,7 +31,9 @@ export const RankPartyPlayer = memo(
       componentRef,
     ) => {
       const [paused, setPaused] = useState(true);
+      const { defaultVolume$ } = useInjectable(AppTypes.SettingsService);
       const [waiting, setWaiting] = useState([RankItemType.Audio, RankItemType.Video].includes(type));
+      const defaultVolume = useSubscription(defaultVolume$, 1);
       const videoRef = useRef<HTMLVideoElement>(null);
       const audioRef = useRef<HTMLAudioElement>(null);
       const containerRef = useRef<HTMLDivElement>(null);
@@ -37,6 +43,15 @@ export const RankPartyPlayer = memo(
       useEffect(() => {
         setClientBoundingRect(containerRef.current.getBoundingClientRect());
       }, []);
+
+      useEffect(() => {
+        if (videoRef.current) {
+          videoRef.current.volume = defaultVolume;
+        }
+        if (audioRef.current) {
+          audioRef.current.volume = defaultVolume;
+        }
+      }, [defaultVolume]);
 
       useImperativeHandle(
         componentRef,
@@ -104,6 +119,20 @@ export const RankPartyPlayer = memo(
         setWaiting(true);
       };
 
+      const handleVideoInit: ReactEventHandler<HTMLVideoElement> = (event) => {
+        (event.target as HTMLVideoElement).volume = defaultVolume;
+      };
+
+      const handleAudioInit: ReactEventHandler<HTMLAudioElement> = (event) => {
+        (event.target as HTMLAudioElement).volume = defaultVolume;
+      };
+
+      const handleVolumeChange = useDebouncedCallback((value: number) => {
+        if (typeof value === 'number') {
+          defaultVolume$.next(value);
+        }
+      }, 500);
+
       const youtubeId = new URLSearchParams((value || '').split('?')?.[1] || '').get('v') || value;
       const fontSize = clientBoundingRect?.height ? `${clientBoundingRect.height / 70}em` : '4em';
 
@@ -149,6 +178,8 @@ export const RankPartyPlayer = memo(
                 onCanPlay={handleReady}
                 ref={videoRef}
                 width="100%"
+                onLoadStart={handleVideoInit}
+                onVolumeChange={(event) => handleVolumeChange((event.target as HTMLVideoElement)?.volume)}
                 height="100%"
                 onPlay={handlePlay}
                 onPause={handlePause}
@@ -242,6 +273,7 @@ export const RankPartyPlayer = memo(
               showTimeControls={showTimeControls}
               onCanPlay={handleReady}
               onWaiting={handleWaiting}
+              onLoadStart={handleAudioInit}
             />
           )}
           {type === RankItemType.Image && (

@@ -12,10 +12,11 @@ import { getUserRanksFromResult } from '../../../core/utils/get-user-ranks';
 
 interface UserVotingStatusProps {
   id: string;
+  partyItems: RankItem[];
   required: number;
 }
 
-export const UserVotingStatus = ({ id, required }: UserVotingStatusProps) => {
+export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusProps) => {
   const { getUserRanks } = useInjectable(AppTypes.PartyRanks);
   const [rankLoading, setRankLoading] = useState(true);
   const usersRank = useSubscription(
@@ -24,6 +25,18 @@ export const UserVotingStatus = ({ id, required }: UserVotingStatusProps) => {
   );
 
   const usersStatus = useMemo(() => {
+    const allUsers = (partyItems || [])
+      .map((item) => item.author)
+      .reduce(
+        (acc, val) => ({
+          ...acc,
+          [val.uid]: {
+            author: val,
+            count: 0,
+          },
+        }),
+        {},
+      );
     const byUser = usersRank
       ? usersRank.reduce<
           Record<
@@ -41,11 +54,11 @@ export const UserVotingStatus = ({ id, required }: UserVotingStatusProps) => {
               count: Object.keys(getUserRanksFromResult(val)).length,
             },
           }),
-          {},
+          allUsers,
         )
       : {};
     return Object.values(byUser);
-  }, [usersRank]);
+  }, [partyItems, usersRank]);
 
   return (
     <Card

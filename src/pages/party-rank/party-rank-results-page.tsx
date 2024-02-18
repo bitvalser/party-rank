@@ -37,7 +37,7 @@ interface PartyRankResultsPageComponentProps {
 }
 
 const controlButtonSx: SxProps<Theme> = {
-  height: 'calc(100vh - 56px)',
+  height: 'calc(100vh - 160px)',
   width: '150px',
   display: 'flex',
   position: 'absolute',
@@ -206,7 +206,7 @@ const PartyRankResultsPageComponent = memo(
                 alignItems="center"
                 wrap="nowrap"
               >
-                <Grid container direction="row" alignItems="center">
+                <Grid container direction="row" alignItems="center" wrap="nowrap">
                   <IconButton onClick={goBack}>
                     <ArrowBackIcon />
                   </IconButton>
@@ -257,6 +257,7 @@ const PartyRankResultsPageComponent = memo(
                   value={item.value}
                   autoplay={currentIndex === i}
                   hideControls={!controllable}
+                  showTimeControls={controllable}
                 />
               )}
               <Box
@@ -420,7 +421,7 @@ export const PartyRankResultsPage = () => {
   );
   const partyItems = useSubscription(
     concat(
-      getRankItems(id).pipe(
+      getRankItems(id, { fromCache: true }).pipe(
         finalize(() => setListLoading(false)),
         tap((items) => partyItemsKeysRef.current.next(items.map((item) => item.id))),
       ),

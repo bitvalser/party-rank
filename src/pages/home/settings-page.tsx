@@ -9,18 +9,29 @@ import useSubscription from '../../core/hooks/useSubscription';
 import { AppTypes } from '../../core/services/types';
 
 export const SettingsPage = () => {
-  const { controllablePlayer$, playDuration$ } = useInjectable(AppTypes.SettingsService);
+  const { controllablePlayer$, playDuration$, defaultVolume$ } = useInjectable(AppTypes.SettingsService);
   const playDuration = useSubscription(playDuration$, 0);
   const controllablePlayer = useSubscription(controllablePlayer$, false);
+  const defaultVolume = useSubscription(defaultVolume$, 1);
   const [durationValue, setDurationValue] = useState(null);
+  const [volumeValue, setVolumeValue] = useState(null);
 
   const updateDuration = useDebouncedCallback((value: number) => {
     playDuration$.next(value);
   }, 1000);
 
+  const updateVolume = useDebouncedCallback((value: number) => {
+    defaultVolume$.next(value);
+  }, 1000);
+
   const handleDurationChange = (event: any, value: number) => {
     setDurationValue(value);
     updateDuration(value);
+  };
+
+  const handleVolumeChange = (event: any, value: number) => {
+    setVolumeValue(value);
+    updateVolume(value / 100);
   };
 
   const handleChangeControllable = (event: any, value: boolean) => {
@@ -29,6 +40,41 @@ export const SettingsPage = () => {
 
   return (
     <>
+      <Card
+        sx={{
+          mt: 2,
+        }}
+      >
+        <CardContent>
+          <Grid container direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="h5" component="div">
+              Звук
+            </Typography>
+          </Grid>
+          <Grid
+            sx={{
+              marginTop: 1,
+              padding: 1,
+              paddingBottom: 0,
+            }}
+            container
+            direction="column"
+            spacing={1}
+          >
+            <Grid item>
+              <SliderNum
+                label="Громкость по умолчанию"
+                max={100}
+                min={0}
+                step={1}
+                unit="%"
+                value={volumeValue ?? +(defaultVolume * 100).toFixed(0)}
+                onChange={handleVolumeChange}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
       <Card
         sx={{
           mt: 2,

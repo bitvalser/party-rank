@@ -6,7 +6,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, Subject, concat, merge, of } from 'rxjs';
 import { catchError, finalize, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import {
   Avatar,
@@ -27,6 +29,7 @@ import {
 import IconButton from '@mui/material/IconButton';
 import StarterKit from '@tiptap/starter-kit';
 
+import { ConfirmModal } from '../../core/components/confirm-moda';
 import { OopsPage } from '../../core/components/oops-page';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
@@ -36,6 +39,8 @@ import { AppTypes } from '../../core/services/types';
 import { AddNewItem, AddNewItemProps } from './components/add-new-item';
 import { EditRankItem } from './components/edit-rank-item';
 import { EditRankParty } from './components/edit-rank-party';
+import { ModeratorsList } from './components/moderators-list';
+import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
 import { UserRankStatus } from './components/user-rank-status';
 import { UserVotingStatus } from './components/user-voting-status';
@@ -71,6 +76,7 @@ export const PartyRankPage = () => {
   const [menuAnchor, setMenuAnchor] = useState<HTMLButtonElement>(null);
   const [listLoading, setListLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const updateRanksRef = useRef(new Subject<void>());
   const [editRank, setEditRank] = useState<IRankItem>(null);
@@ -122,8 +128,9 @@ export const PartyRankPage = () => {
     requiredQuantity,
     showTable,
     content,
+    moderators = [],
   } = partyRank;
-  const isCreator = currentUser?.uid === creatorId;
+  const isCreator = currentUser?.uid === creatorId || moderators.includes(currentUser?.uid);
   const currentUserItems = partyItemsByUser[currentUser?.uid] || [];
 
   const handleNewRank: AddNewItemProps['onAddNew'] = (item) => {
@@ -193,6 +200,14 @@ export const PartyRankPage = () => {
     });
   };
 
+  const handleConfirmDelete = () => {
+    setConfirmDelete(true);
+  };
+
+  const handleCloseConfirmDelete = () => {
+    setConfirmDelete(false);
+  };
+
   const handleEdit = () => {
     setShowEdit(true);
     setMenuAnchor(null);
@@ -211,15 +226,17 @@ export const PartyRankPage = () => {
               avatar={<Avatar alt={creator.displayName} src={creator.photoURL} />}
               title={creator.displayName}
               action={
-                <div>
-                  <IconButton onClick={handleOpenMenu} aria-label="settings">
-                    <MoreVertIcon />
-                  </IconButton>
-                  <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleCloseMenu}>
-                    <MenuItem onClick={handleEdit}>Редатировать</MenuItem>
-                    <MenuItem onClick={handleDelete}>Удалить</MenuItem>
-                  </Menu>
-                </div>
+                isCreator ? (
+                  <div>
+                    <IconButton onClick={handleOpenMenu} aria-label="settings">
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleCloseMenu}>
+                      <MenuItem onClick={handleEdit}>Редатировать</MenuItem>
+                      <MenuItem onClick={handleConfirmDelete}>Удалить</MenuItem>
+                    </Menu>
+                  </div>
+                ) : null
               }
               subheader={createdDate ? DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED) : ''}
             />
@@ -289,7 +306,11 @@ export const PartyRankPage = () => {
           </CardActions>
         </Card>
       </Grid>
-      {isCreator && status === PartyRankStatus.Rating && <UserVotingStatus id={id} required={partyItems.length} />}
+      {isCreator && moderators?.length > 0 && <ModeratorsList moderators={moderators} />}
+      {status === PartyRankStatus.Finished && <ParticipantsList partyItems={partyItems} />}
+      {isCreator && status === PartyRankStatus.Rating && (
+        <UserVotingStatus id={id} required={partyItems.length} partyItems={partyItems} />
+      )}
       {isCreator && status === PartyRankStatus.Ongoing && (
         <UserRankStatus partyItems={partyItems} required={requiredQuantity} />
       )}
@@ -324,6 +345,23 @@ export const PartyRankPage = () => {
                 Для участия необходимо загрузить {requiredQuantity} предложений
               </Typography>
               <Chip color="warning" size="small" label="Ожидание" />
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
+      {status === PartyRankStatus.Rating && !userRank.favoriteId && (
+        <Card
+          sx={{
+            mt: 2,
+          }}
+        >
+          <CardContent>
+            <Grid container alignItems="center" flexDirection="row">
+              <NotificationsIcon color="warning" />
+              <Typography sx={{ ml: 1 }} variant="h6" component="div">
+                Вы ещё не выбрали любимый вариант, не забудьте проголосовать{' '}
+                <FavoriteIcon color="error" sx={{ mb: '-4px' }} fontSize="small" />!
+              </Typography>
             </Grid>
           </CardContent>
         </Card>
@@ -392,7 +430,12 @@ export const PartyRankPage = () => {
         </Fab>
       )}
       {status === PartyRankStatus.Ongoing && (
-        <AddNewItem disabled={currentUserItems.length >= requiredQuantity} partyId={id} onAddNew={handleNewRank} />
+        <AddNewItem
+          disabled={currentUserItems.length >= requiredQuantity && !isCreator}
+          partyId={id}
+          isCreator={isCreator}
+          onAddNew={handleNewRank}
+        />
       )}
       {editRank && (
         <EditRankItem
@@ -404,6 +447,13 @@ export const PartyRankPage = () => {
         />
       )}
       {showEdit && <EditRankParty rankParty={partyRank} onClose={handleCloseEdit} onEdit={handleCloseEdit} />}
+      {confirmDelete && (
+        <ConfirmModal
+          title="Вы точно хотите удалить пати ранк?"
+          onClose={handleCloseConfirmDelete}
+          onConfirm={handleDelete}
+        />
+      )}
     </>
   );
 };

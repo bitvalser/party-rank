@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { Avatar, Card, CardContent, Chip, Grid, LinearProgress, Typography } from '@mui/material';
 
+import { AppUser } from '../../../core/interfaces/app-user.interface';
 import { RankItem } from '../../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../../core/interfaces/user-rank.interface';
 
@@ -17,7 +18,7 @@ export const UserRankStatus = ({ partyItems, required }: UserRankStatusProps) =>
           Record<
             string,
             {
-              author: UserRank;
+              author: AppUser;
               count: number;
             }
           >
@@ -32,7 +33,9 @@ export const UserRankStatus = ({ partyItems, required }: UserRankStatusProps) =>
           {},
         )
       : {};
-    return Object.values(byUser);
+    return Object.values(byUser).sort(({ author: authorA }, { author: authorB }) =>
+      authorA.displayName.localeCompare(authorB.displayName),
+    );
   }, [partyItems]);
 
   return (
@@ -83,7 +86,7 @@ export const UserRankStatus = ({ partyItems, required }: UserRankStatusProps) =>
                 </Typography>
                 <LinearProgress
                   color={count === required ? 'success' : 'primary'}
-                  value={(count / required) * 100}
+                  value={Math.min((count / required) * 100, 100)}
                   variant="determinate"
                 />
               </Grid>

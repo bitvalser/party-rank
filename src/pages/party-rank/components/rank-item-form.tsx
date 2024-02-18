@@ -12,10 +12,16 @@ import {
 } from '@mui/material';
 
 import { RankPartyPlayer } from '../../../core/components/rank-party-player';
+import { UsersAutocomplete } from '../../../core/components/users-autocomplete';
 import { RankItemType } from '../../../core/interfaces/rank-item.interface';
 import { validURL } from '../../../core/utils/valid-url';
 
-export const RankItemForm = () => {
+interface RankItemFormProps {
+  autoplay?: boolean;
+  showAuthor?: boolean;
+}
+
+export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFormProps) => {
   const {
     control,
     formState: { errors },
@@ -34,6 +40,15 @@ export const RankItemForm = () => {
       flexDirection="column"
     >
       <Grid container rowSpacing={2} flexDirection="column">
+        {showAuthor && (
+          <Grid item>
+            <Controller
+              name="authorId"
+              control={control}
+              render={({ field }) => <UsersAutocomplete label="Автор" multiple={false} {...field} />}
+            />
+          </Grid>
+        )}
         <Grid item>
           <Controller
             name="name"
@@ -110,7 +125,7 @@ export const RankItemForm = () => {
           item
         >
           <FormLabel id="anime-provider-group-label">Превью</FormLabel>
-          <RankPartyPlayer key={value} type={type} value={value} showTimeControls autoplay />
+          <RankPartyPlayer key={value} type={type} value={value} showTimeControls autoplay={autoplay} />
         </Grid>
       </Grid>
     </Grid>

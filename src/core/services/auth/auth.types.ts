@@ -9,4 +9,5 @@ export interface IAuthService {
   signIn(token: string): Observable<UserCredential>;
   signOut(): Observable<void>;
   getUser(uid: string): Observable<AppUser>;
+  getAllUsers(): Observable<AppUser[]>;
 }

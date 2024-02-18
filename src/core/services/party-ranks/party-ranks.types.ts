@@ -1,6 +1,7 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 
 import { AppUser } from '../../interfaces/app-user.interface';
+import { FirebaseFetchOptions } from '../../interfaces/firebase-options.interface';
 import { PartyRank } from '../../interfaces/party-rank.interface';
 import { RankItem } from '../../interfaces/rank-item.interface';
 import { UserRank } from '../../interfaces/user-rank.interface';
@@ -14,7 +15,7 @@ export interface IPartyRanks {
   getParties(): Observable<PartyRank[]>;
   getPartyRank(id: string): Observable<PartyRank>;
   addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author' | 'authorId'>): Observable<RankItem>;
-  getRankItems(partyId: string): Observable<RankItem[]>;
+  getRankItems(partyId: string, options?: FirebaseFetchOptions): Observable<RankItem[]>;
   deleteRankItem(partyId: string, id: string): Observable<void>;
   getUserRank(partyId: string): Observable<UserRank>;
   updateUserRank(partyId: string, payload: Partial<UserRank>): Observable<void>;
@@ -25,6 +26,6 @@ export interface IPartyRanks {
   ): Observable<RankItem>;
   getUserRanks(
     partyId: string,
-    options?: { includeUser?: boolean },
+    options?: { includeUser?: boolean } & FirebaseFetchOptions,
   ): Observable<(UserRank & { uid: string; author?: AppUser })[]>;
 }

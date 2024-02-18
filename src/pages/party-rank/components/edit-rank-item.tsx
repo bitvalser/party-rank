@@ -103,7 +103,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
               container
               flexDirection="column"
             >
-              <RankItemForm />
+              <RankItemForm autoplay={false} />
               <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
                 <FormHelperText>
                   Прежде чем сохранить элемент убедитесь что превью работает нормально и показывает ваш медиа файл!

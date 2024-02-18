@@ -12,14 +12,16 @@ import {
 } from 'firebase/firestore';
 import { inject, injectable } from 'inversify';
 import { DateTime } from 'luxon';
-import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
 import { FirestoreCollection } from '../../constants/firestore-collection.constants';
 import { AppUser } from '../../interfaces/app-user.interface';
+import { FirebaseFetchOptions } from '../../interfaces/firebase-options.interface';
 import { PartyRank } from '../../interfaces/party-rank.interface';
 import { RankItem } from '../../interfaces/rank-item.interface';
 import { UserRank } from '../../interfaces/user-rank.interface';
+import { concatReduce } from '../../utils/concat-reduce';
 import { IAuthService } from '../auth/auth.types';
 import { AppTypes } from '../types';
 import { IPartyRanks } from './party-ranks.types';
@@ -102,8 +104,8 @@ export class PartyRanks implements IPartyRanks {
     return of(void 0).pipe(
       switchMap(() => getDocs(collection(this.firestore, FirestoreCollection.Parties))),
       switchMap((snapshot) =>
-        forkJoin(
-          snapshot.docs
+        concatReduce(
+          ...snapshot.docs
             .map((item) => item.data() as Omit<PartyRank, 'creator'>)
             .map((party) =>
               this.authService.getUser(party.creatorId).pipe(map((creator): PartyRank => ({ ...party, creator }))),
@@ -135,12 +137,12 @@ export class PartyRanks implements IPartyRanks {
     );
   }
 
-  public addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author' | 'authorId'>): Observable<RankItem> {
+  public addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author'>): Observable<RankItem> {
     const newRef = doc(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items));
     const newItem = {
       id: newRef.id,
-      authorId: this.authService.user$.getValue().uid,
       ...payload,
+      authorId: payload.authorId || this.authService.user$.getValue().uid,
     };
     return of(void 0).pipe(
       switchMap(() => setDoc(newRef, newItem)),
@@ -159,14 +161,19 @@ export class PartyRanks implements IPartyRanks {
     );
   }
 
-  public getRankItems(partyId: string): Observable<RankItem[]> {
+  public getRankItems(partyId: string, options: FirebaseFetchOptions = {}): Observable<RankItem[]> {
     return of(void 0).pipe(
-      switchMap(() =>
-        getDocs(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items)),
-      ),
+      switchMap(() => {
+        // if (options.fromCache) {
+        //   return getDocsFromCache(
+        //     collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items),
+        //   );
+        // }
+        return getDocs(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items));
+      }),
       switchMap((snapshot) =>
-        forkJoin(
-          snapshot.docs
+        concatReduce(
+          ...snapshot.docs
             .map((item) => item.data() as Omit<RankItem, 'author'>)
             .map((party) =>
               this.authService.getUser(party.authorId).pipe(map((author): RankItem => ({ ...party, author }))),
@@ -232,12 +239,17 @@ export class PartyRanks implements IPartyRanks {
 
   public getUserRanks(
     partyId: string,
-    options: { includeUser?: boolean } = {},
+    options: { includeUser?: boolean } & FirebaseFetchOptions = {},
   ): Observable<(UserRank & { uid: string; author?: AppUser })[]> {
     return of(void 0).pipe(
-      switchMap(() =>
-        getDocs(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks)),
-      ),
+      switchMap(() => {
+        // if (options.fromCache) {
+        //   return getDocsFromCache(
+        //     collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks),
+        //   );
+        // }
+        return getDocs(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks));
+      }),
       map((snapshot) =>
         snapshot.docs
           .map((item) => ({
@@ -248,8 +260,8 @@ export class PartyRanks implements IPartyRanks {
       ),
       switchMap((items) => {
         if (options.includeUser) {
-          return forkJoin(
-            items.map((item) => this.authService.getUser(item.uid).pipe(map((author) => ({ ...item, author })))),
+          return concatReduce(
+            ...items.map((item) => this.authService.getUser(item.uid).pipe(map((author) => ({ ...item, author })))),
           );
         }
         return of(items);

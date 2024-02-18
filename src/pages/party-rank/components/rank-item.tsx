@@ -91,7 +91,7 @@ export const RankItem = memo(
           alignItems="center"
           wrap="nowrap"
         >
-          <Grid container direction="row" alignItems="center">
+          <Grid container direction="row" alignItems="center" wrap="nowrap">
             {Boolean(rank) && (
               <Chip
                 sx={{
@@ -115,7 +115,13 @@ export const RankItem = memo(
                 variant="filled"
               />
             )}
-            <Typography variant="h5" component="div">
+            <Typography
+              sx={{
+                pr: 2,
+              }}
+              variant="h5"
+              component="div"
+            >
               {name}
             </Typography>
           </Grid>

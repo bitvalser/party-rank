@@ -12,24 +12,32 @@ import { AppTypes } from '../../../core/services/types';
 import { RankItemForm } from './rank-item-form';
 
 export interface RankItemFromValues {
+  authorId: string;
   name: string;
   type: RankItemType;
   value: string;
 }
 
 const DEFAULT_VALUES: RankItemFromValues = {
+  authorId: null,
   name: '',
   type: RankItemType.Video,
   value: '',
 };
 
 export interface AddNewItemProps {
+  isCreator?: boolean;
   partyId: string;
   disabled?: boolean;
   onAddNew?: (item: RankItem) => void;
 }
 
-export const AddNewItem = ({ partyId, disabled = false, onAddNew = () => null }: AddNewItemProps) => {
+export const AddNewItem = ({
+  partyId,
+  disabled = false,
+  onAddNew = () => null,
+  isCreator = false,
+}: AddNewItemProps) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const { addRankItem } = useInjectable(AppTypes.PartyRanks);
@@ -72,7 +80,7 @@ export const AddNewItem = ({ partyId, disabled = false, onAddNew = () => null }:
             padding: 2,
             outline: 'none',
             width: 596,
-            minHeight: 700,
+            minHeight: 750,
             borderRadius: '4px',
             paddingBottom: 0,
             display: 'flex',
@@ -112,7 +120,7 @@ export const AddNewItem = ({ partyId, disabled = false, onAddNew = () => null }:
                 container
                 flexDirection="column"
               >
-                <RankItemForm />
+                <RankItemForm showAuthor={isCreator} />
                 <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
                   <FormHelperText>
                     Прежде чем сохранить элемент убедитесь что превью работает нормально и показывает ваш медиа файл!
@@ -138,7 +146,7 @@ export const AddNewItem = ({ partyId, disabled = false, onAddNew = () => null }:
       </Modal>
       <Fab
         sx={{
-          position: 'absolute',
+          position: 'fixed',
           bottom: 16,
           right: 16,
         }}

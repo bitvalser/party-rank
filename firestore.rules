@@ -22,7 +22,7 @@ service cloud.firestore {
     match /parties/{partyId} {
       allow read: if true;
       allow create: if request.auth.uid != null;
-      allow update: if request.auth.uid == resource.data.creatorId && (!resource.data.diff(request.resource.data).affectedKeys().hasAny(['createdDate', 'id', 'creatorId']));
+      allow update: if (request.auth.uid == resource.data.creatorId || request.auth.uid in resource.data.moderators) && (!resource.data.diff(request.resource.data).affectedKeys().hasAny(['createdDate', 'id', 'creatorId']));
       allow delete: if request.auth.uid != null;
     }
   }

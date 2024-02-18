@@ -12,6 +12,7 @@ import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { AppTypes } from '../../core/services/types';
+import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
 import { useSortedPartyItems } from './hooks/useSortedPartyItems';
 
@@ -27,7 +28,7 @@ export const PartyRankTablePage = () => {
   const navigate = useNavigate();
   const partyItems = useSubscription(
     concat(
-      getRankItems(id).pipe(
+      getRankItems(id, { fromCache: true }).pipe(
         finalize(() => setListLoading(false)),
         tap((items) => partyItemsKeysRef.current.next(items.map((item) => item.id))),
       ),
@@ -39,13 +40,6 @@ export const PartyRankTablePage = () => {
     [],
   );
 
-  const participants = useMemo(
-    () =>
-      (partyItems || [])
-        .map((item) => item.author)
-        .reduce((acc, val) => [...acc, acc.some((item) => item.uid === val.uid) ? null : val].filter(Boolean), []),
-    [partyItems],
-  );
   const sortedItems = useSortedPartyItems(partyItems, usersRank);
 
   if (!partyRank || listLoading) {
@@ -108,44 +102,7 @@ export const PartyRankTablePage = () => {
           </CardContent>
         </Card>
       </Grid>
-      <Card
-        sx={{
-          mt: 2,
-        }}
-      >
-        <CardContent>
-          <Grid container direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="h5" component="div">
-              Участники ({participants.length})
-            </Typography>
-          </Grid>
-          <Grid
-            sx={{
-              marginTop: 1,
-              padding: 1,
-              paddingBottom: 0,
-            }}
-            container
-            direction="row"
-            spacing={1}
-            wrap="wrap"
-          >
-            {participants.map((user) => (
-              <Grid item key={user.uid}>
-                <Chip
-                  sx={{
-                    mr: 1,
-                  }}
-                  size="medium"
-                  avatar={<Avatar alt={user.displayName} src={user.photoURL} />}
-                  label={user.displayName}
-                  variant="filled"
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
+      <ParticipantsList partyItems={partyItems} />
       <Card
         sx={{
           mt: 2,
