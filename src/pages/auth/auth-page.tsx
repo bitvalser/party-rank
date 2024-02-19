@@ -30,7 +30,6 @@ export const AuthPage = () => {
                   fontWeight: 700,
                   letterSpacing: '.3rem',
                   color: 'inherit',
-                  cursor: 'pointer',
                   textDecoration: 'none',
                 }}
               >

@@ -41,6 +41,8 @@ export class AppDiscordController {
           },
         }).then((response) => response.json());
 
+        const displayName = userResult.global_name || userResult.username;
+
         const firebaseUser = await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).get();
         if (firebaseUser.exists) {
           const oauthUser = firebaseUser.data();
@@ -53,7 +55,7 @@ export class AppDiscordController {
             .app()
             .auth()
             .updateUser(oauthUser.uid, {
-              displayName: userResult.global_name,
+              displayName,
               photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
             });
           await admin
@@ -62,7 +64,7 @@ export class AppDiscordController {
             .collection('users')
             .doc(oauthUser.uid)
             .update({
-              displayName: userResult.global_name,
+              displayName,
               photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
             });
           const customToken = await admin.app().auth().createCustomToken(oauthUser.uid);
@@ -70,37 +72,46 @@ export class AppDiscordController {
             `${process.env.APP_URL || 'http://localhost:3001'}/discord-oauth?token=${customToken}&state=${state}`,
           );
         } else {
-          const newUser = await admin
-            .app()
-            .auth()
-            .createUser({
-              displayName: userResult.global_name,
-              photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
-            });
-          await admin
-            .app()
-            .firestore()
-            .collection('discord-oauth')
-            .doc(`${userResult.id}`)
-            .set({
-              id: `${userResult.id}`,
-              uid: newUser.uid,
-              accessToken: tokenResponseData.access_token,
-              expiresAt,
-              refreshToken: tokenResponseData.refresh_token,
-            });
-          await admin
-            .app()
-            .firestore()
-            .collection('users')
-            .doc(newUser.uid)
-            .set({
-              uid: newUser.uid,
-              displayName: userResult.global_name,
-              photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
-            });
-          const customToken = await admin.app().auth().createCustomToken(newUser.uid);
-          return res.redirect(`${process.env.APP_URL}/discord-oauth?token=${customToken}&state=${state}`);
+          let newUser = null;
+          try {
+            newUser = await admin
+              .app()
+              .auth()
+              .createUser({
+                displayName,
+                photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
+              });
+            await admin
+              .app()
+              .firestore()
+              .collection('discord-oauth')
+              .doc(`${userResult.id}`)
+              .set({
+                id: `${userResult.id}`,
+                uid: newUser.uid,
+                accessToken: tokenResponseData.access_token,
+                expiresAt,
+                refreshToken: tokenResponseData.refresh_token,
+              });
+            await admin
+              .app()
+              .firestore()
+              .collection('users')
+              .doc(newUser.uid)
+              .set({
+                uid: newUser.uid,
+                displayName,
+                photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
+              });
+            const customToken = await admin.app().auth().createCustomToken(newUser.uid);
+            return res.redirect(`${process.env.APP_URL}/discord-oauth?token=${customToken}&state=${state}`);
+          } catch (error) {
+            if (newUser) {
+              admin.app().auth().deleteUser(newUser.uid);
+            }
+            console.error(error);
+            return sendError(error, error.message, 403);
+          }
         }
       } catch (error) {
         console.error(error);

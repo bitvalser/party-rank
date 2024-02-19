@@ -1,12 +1,12 @@
 import { DateTime } from 'luxon';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, concat, merge } from 'rxjs';
 import { finalize, map, tap, withLatestFrom } from 'rxjs/operators';
 
 import LockIcon from '@mui/icons-material/Lock';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { Avatar, Card, CardContent, Chip, Fab, Grid, LinearProgress, Tooltip, Typography } from '@mui/material';
+import { Card, CardContent, Chip, Fab, Grid, LinearProgress, Tooltip, Typography } from '@mui/material';
 
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';

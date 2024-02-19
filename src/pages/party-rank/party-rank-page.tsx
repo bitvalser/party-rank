@@ -7,6 +7,7 @@ import { BehaviorSubject, Subject, concat, merge, of } from 'rxjs';
 import { catchError, finalize, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import LockIcon from '@mui/icons-material/Lock';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -298,6 +299,12 @@ export const PartyRankPage = () => {
             )}
             {status === PartyRankStatus.Finished && !showTable && isCreator && (
               <Button onClick={handleUnlockTable} size="small">
+                <LockIcon
+                  fontSize="small"
+                  sx={{
+                    mr: 1,
+                  }}
+                />
                 Открыть таблицу Лидеров
               </Button>
             )}
@@ -339,7 +346,6 @@ export const PartyRankPage = () => {
             mt: 2,
           }}
         >
-          {listLoading && <LinearProgress />}
           <CardContent>
             <Grid container direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="h6" component="div">
@@ -375,7 +381,7 @@ export const PartyRankPage = () => {
         {listLoading && <LinearProgress />}
         <CardContent>
           <Typography variant="h5" component="div">
-            Лист кандидатов
+            Лист кандидатов ({partyItems.length})
           </Typography>
         </CardContent>
       </Card>
