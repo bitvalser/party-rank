@@ -20,12 +20,14 @@ import { PartyRank, PartyRankStatus } from '../../core/interfaces/party-rank.int
 import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
+import { JumpToList } from './components/jump-to-list';
 
 interface PartRankRankingPageComponentProps {
   partyRank: PartyRank;
   items: RankItem[];
   userRank: UserRank;
   currentUser: AppUser;
+  votingPlayerAutoplay: boolean;
 }
 
 const controlButtonSx: SxProps<Theme> = {
@@ -50,7 +52,7 @@ const controlButtonSx: SxProps<Theme> = {
 };
 
 const PartRankRankingPageComponent = memo(
-  ({ items, partyRank, userRank, currentUser }: PartRankRankingPageComponentProps) => {
+  ({ items, partyRank, userRank, currentUser, votingPlayerAutoplay }: PartRankRankingPageComponentProps) => {
     const currentPlayerRef = useRef<RankPartyPlayerRef[]>(Array.from({ length: 2 }));
     const { updateUserRank } = useInjectable(AppTypes.PartyRanks);
     const [currentIndex, setCurrentIndex] = useState(() => {
@@ -62,15 +64,18 @@ const PartRankRankingPageComponent = memo(
     const navigate = useNavigate();
 
     useEffect(() => {
-      setTimeout(() => {
-        if (currentPlayerRef.current[0]) {
+      const timeout = setTimeout(() => {
+        if (currentPlayerRef.current[0] && votingPlayerAutoplay) {
           currentPlayerRef.current[0].play();
         }
         if (currentPlayerRef.current[1]) {
           currentPlayerRef.current[1].pause();
         }
       }, 400);
-    }, [currentIndex]);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }, [currentIndex, votingPlayerAutoplay]);
 
     const handleNext = useThrottledCallback(
       () => {
@@ -101,7 +106,7 @@ const PartRankRankingPageComponent = memo(
 
     const doRank = useThrottledCallback(
       (rankId: string, rank: number) => {
-        if (rank) {
+        if (rank && rank >= 1) {
           setCurrentRank((prev) => ({ ...prev, [rankId]: { value: rank } }));
           updateUserRank(partyRank.id, { [rankId]: { value: rank } }).subscribe();
         }
@@ -160,13 +165,15 @@ const PartRankRankingPageComponent = memo(
               alignItems="center"
               wrap="nowrap"
             >
-              <Grid container direction="row" alignItems="center" wrap="nowrap">
-                <IconButton onClick={goBack}>
-                  <ArrowBackIcon />
-                </IconButton>
-                <Typography sx={{ ml: 1 }} component="h4">
-                  {item.name}
-                </Typography>
+              <Grid item xs>
+                <Grid container direction="row" alignItems="center" wrap="nowrap">
+                  <IconButton onClick={goBack}>
+                    <ArrowBackIcon />
+                  </IconButton>
+                  <Typography sx={{ ml: 1 }} component="h4">
+                    {item.name}
+                  </Typography>
+                </Grid>
               </Grid>
               <Grid
                 sx={{
@@ -174,9 +181,12 @@ const PartRankRankingPageComponent = memo(
                 }}
                 item
               >
-                <Typography noWrap>
-                  ({currentIndex + 1} / {items.length})
-                </Typography>
+                <Grid container direction="row" alignItems="center" wrap="nowrap">
+                  <JumpToList partyItems={items} onJump={setCurrentIndex} />
+                  <Typography sx={{ ml: 2 }} noWrap>
+                    ({currentIndex + 1} / {items.length})
+                  </Typography>
+                </Grid>
               </Grid>
             </Grid>
             {Boolean(currentIndex === i || currentIndex + 1 === i) && (
@@ -184,7 +194,7 @@ const PartRankRankingPageComponent = memo(
                 ref={(ref) => (currentPlayerRef.current[i - currentIndex] = ref as any)}
                 type={item.type}
                 value={item.value}
-                autoplay={currentIndex === i}
+                autoplay={votingPlayerAutoplay && currentIndex === i}
                 showTimeControls
               />
             )}
@@ -286,7 +296,9 @@ export const PartyRankRankingPage = () => {
   const [rankLoading, setRankLoading] = useState(true);
   const { getRankItems, getPartyRank, getUserRank, partyItems$ } = useInjectable(AppTypes.PartyRanks);
   const { user$ } = useInjectable(AppTypes.AuthService);
+  const { votingPlayerAutoplay$ } = useInjectable(AppTypes.SettingsService);
   const currentUser = useSubscription(user$);
+  const votingPlayerAutoplay = useSubscription(votingPlayerAutoplay$);
   const partyRank = useSubscription(getPartyRank(id));
   const partyItems = useSubscription(
     concat(
@@ -321,6 +333,7 @@ export const PartyRankRankingPage = () => {
       partyRank={partyRank}
       userRank={userRank}
       currentUser={currentUser}
+      votingPlayerAutoplay={votingPlayerAutoplay}
     />
   );
 };

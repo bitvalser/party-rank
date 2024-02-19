@@ -17,6 +17,10 @@ export interface RankPartyPlayer {
   autoplay?: boolean;
   hideControls?: boolean;
   showTimeControls?: boolean;
+  onPause?: () => void;
+  onManualPause?: () => void;
+  onPlay?: () => void;
+  onManualPlay?: () => void;
 }
 
 export interface RankPartyPlayerRef {
@@ -27,7 +31,17 @@ export interface RankPartyPlayerRef {
 export const RankPartyPlayer = memo(
   forwardRef(
     (
-      { type, value, autoplay = true, hideControls = false, showTimeControls = false }: RankPartyPlayer,
+      {
+        type,
+        value,
+        autoplay = true,
+        hideControls = false,
+        showTimeControls = false,
+        onPause = () => {},
+        onManualPause = () => {},
+        onManualPlay = () => {},
+        onPlay = () => {},
+      }: RankPartyPlayer,
       componentRef,
     ) => {
       const [paused, setPaused] = useState(true);
@@ -92,23 +106,27 @@ export const RankPartyPlayer = memo(
 
       const handlePause = () => {
         setPaused(true);
+        onPause();
       };
 
       const handlePlay = () => {
         setWaiting(false);
         setPaused(false);
+        onPlay();
       };
 
       const handleButtonPlay = () => {
         if (videoRef.current.readyState > 1) {
           videoRef.current.play();
         }
+        onManualPlay();
       };
 
       const handleButtonPause = () => {
         if (videoRef.current.readyState > 1) {
           videoRef.current.pause();
         }
+        onManualPause();
       };
 
       const handleReady = () => {
@@ -274,6 +292,8 @@ export const RankPartyPlayer = memo(
               onCanPlay={handleReady}
               onWaiting={handleWaiting}
               onLoadStart={handleAudioInit}
+              onPlay={onPlay}
+              onPause={onPause}
             />
           )}
           {type === RankItemType.Image && (

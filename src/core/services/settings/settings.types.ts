@@ -4,4 +4,5 @@ export interface ISettingsService {
   playDuration$: CachedSubject<number>;
   controllablePlayer$: CachedSubject<boolean>;
   defaultVolume$: CachedSubject<number>;
+  votingPlayerAutoplay$: CachedSubject<boolean>;
 }

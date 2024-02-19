@@ -9,9 +9,12 @@ import useSubscription from '../../core/hooks/useSubscription';
 import { AppTypes } from '../../core/services/types';
 
 export const SettingsPage = () => {
-  const { controllablePlayer$, playDuration$, defaultVolume$ } = useInjectable(AppTypes.SettingsService);
+  const { controllablePlayer$, playDuration$, defaultVolume$, votingPlayerAutoplay$ } = useInjectable(
+    AppTypes.SettingsService,
+  );
   const playDuration = useSubscription(playDuration$, 0);
   const controllablePlayer = useSubscription(controllablePlayer$, false);
+  const votingPlayerAutoplay = useSubscription(votingPlayerAutoplay$, false);
   const defaultVolume = useSubscription(defaultVolume$, 1);
   const [durationValue, setDurationValue] = useState(null);
   const [volumeValue, setVolumeValue] = useState(null);
@@ -36,6 +39,10 @@ export const SettingsPage = () => {
 
   const handleChangeControllable = (event: any, value: boolean) => {
     controllablePlayer$.next(value);
+  };
+
+  const handleChangeVotingAutoplay = (event: any, value: boolean) => {
+    votingPlayerAutoplay$.next(value);
   };
 
   return (
@@ -112,6 +119,36 @@ export const SettingsPage = () => {
               <FormControlLabel
                 control={<Checkbox checked={controllablePlayer} onChange={handleChangeControllable} />}
                 label="Управляемое воспроизведение"
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+      <Card
+        sx={{
+          mt: 2,
+        }}
+      >
+        <CardContent>
+          <Grid container direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="h5" component="div">
+              Страница Оценивания
+            </Typography>
+          </Grid>
+          <Grid
+            sx={{
+              marginTop: 1,
+              padding: 1,
+              paddingBottom: 0,
+            }}
+            container
+            direction="column"
+            spacing={1}
+          >
+            <Grid item>
+              <FormControlLabel
+                control={<Checkbox checked={votingPlayerAutoplay} onChange={handleChangeVotingAutoplay} />}
+                label="Автовоиспроизведение во время оценивания"
               />
             </Grid>
           </Grid>

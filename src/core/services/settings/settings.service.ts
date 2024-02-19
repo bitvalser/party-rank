@@ -12,4 +12,9 @@ export class SettingsService implements ISettingsService {
     'settings:controllablePlayer',
     false,
   );
+  public votingPlayerAutoplay$: CachedSubject<boolean> = new CachedSubject(
+    localStorage,
+    'settings:votingPlayerAutoplay',
+    true,
+  );
 }

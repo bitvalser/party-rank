@@ -62,6 +62,8 @@ const PartyRankResultsPageComponent = memo(
     const currentPlayerRef = useRef<RankPartyPlayerRef[]>(Array.from({ length: 2 }));
     const [currentIndex, setCurrentIndex] = useState(0);
     const [controllable, setControllable] = useState(initialControllable);
+    const playTimeoutRef = useRef<NodeJS.Timeout>();
+    const [paused, setPaused] = useState(false);
     const navigate = useNavigate();
 
     const userRankByItemId: Record<
@@ -120,17 +122,17 @@ const PartyRankResultsPageComponent = memo(
 
     useEffect(() => {
       if (controllable) return;
-      const interval = setInterval(() => {
+      playTimeoutRef.current = setInterval(() => {
         setCurrentIndex((prev) => {
           if (prev === items.length - 1) {
-            clearInterval(interval);
+            clearInterval(playTimeoutRef.current);
             return prev;
           }
           return prev + 1;
         });
       }, playDuration);
       return () => {
-        clearInterval(interval);
+        clearInterval(playTimeoutRef.current);
       };
     }, [controllable, items.length, playDuration]);
 
@@ -157,11 +159,37 @@ const PartyRankResultsPageComponent = memo(
       { trailing: false },
     );
 
+    const handlePause = () => {
+      setPaused(true);
+      if (playTimeoutRef.current) {
+        clearInterval(playTimeoutRef.current);
+      }
+    };
+
+    const handlePlay = () => {
+      setPaused(false);
+      playTimeoutRef.current = setInterval(() => {
+        setCurrentIndex((prev) => {
+          if (prev === items.length - 1) {
+            clearInterval(playTimeoutRef.current);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, playDuration);
+    };
+
     const goBack = () => {
       navigate(`/party-rank/${partyRank.id}`);
     };
 
-    const ranks = (userRankByItemId[items[currentIndex].id]?.users || []).filter((item) => Boolean(item.author));
+    const ranks = useMemo(
+      () =>
+        (userRankByItemId[items[currentIndex].id]?.users || [])
+          .filter((item) => Boolean(item.author))
+          .sort(({ author: authorA }, { author: authorB }) => authorA.displayName.localeCompare(authorB.displayName)),
+      [currentIndex, items, userRankByItemId],
+    );
 
     return (
       <Box
@@ -256,8 +284,9 @@ const PartyRankResultsPageComponent = memo(
                   type={item.type}
                   value={item.value}
                   autoplay={currentIndex === i}
-                  hideControls={!controllable}
                   showTimeControls={controllable}
+                  onManualPause={handlePause}
+                  onManualPlay={handlePlay}
                 />
               )}
               <Box
@@ -287,7 +316,7 @@ const PartyRankResultsPageComponent = memo(
                   {userRankByItemId[item.id].total}
                 </Typography>
               </Box>
-              {currentIndex === i && !controllable && (
+              {currentIndex === i && !controllable && !paused && (
                 <TimerProgress
                   sx={{
                     bottom: '6px',
@@ -335,7 +364,8 @@ const PartyRankResultsPageComponent = memo(
             display: 'flex',
             right: 0,
             top: 0,
-            overflow: 'auto',
+            overflowY: 'auto',
+            overflowX: 'hidden',
             position: 'absolute',
             flexDirection: 'row',
           }}
@@ -360,6 +390,7 @@ const PartyRankResultsPageComponent = memo(
                       `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
                   }}
                   fontWeight="bold"
+                  whiteSpace="nowrap"
                 >
                   {userRank.author.displayName}
                 </Typography>

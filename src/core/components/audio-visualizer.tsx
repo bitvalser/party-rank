@@ -12,6 +12,8 @@ interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {
   autoplay?: boolean;
   hideControls?: boolean;
   showTimeControls?: boolean;
+  onManualPause?: () => void;
+  onManualPlay?: () => void;
 }
 
 export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps>((props, ref) => {
@@ -22,7 +24,18 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
   const [paused, setPaused] = useState(true);
   const audioContextRef = useRef<AudioContext>();
   const canPlay = useMemo(() => new AudioContext().state === 'running', []);
-  const { width, height, buttonFontSize = '4em', hideControls, autoplay = true, showTimeControls, ...rest } = props;
+  const {
+    width,
+    height,
+    buttonFontSize = '4em',
+    hideControls,
+    autoplay = true,
+    showTimeControls,
+    onPlay = () => {},
+    onManualPlay = () => {},
+    onManualPause = () => {},
+    ...rest
+  } = props;
 
   useImperativeHandle(ref, () => audioRef.current, []);
 
@@ -41,12 +54,14 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
     if (audioRef.current.readyState > 1) {
       audioRef.current.play();
     }
+    onManualPlay();
   };
 
   const handleButtonPause = () => {
     if (audioRef.current.readyState > 1) {
       audioRef.current.pause();
     }
+    onManualPause();
   };
 
   const startVisualizer = () => {
@@ -127,9 +142,10 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
     }
   };
 
-  const handlePlay = () => {
+  const handlePlay = (event: any) => {
     audioRef.current.volume = 1;
     setPaused(false);
+    onPlay(event);
     // startVisualizer();
   };
 

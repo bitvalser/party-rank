@@ -178,7 +178,7 @@ export const RankItem = memo(
                 </IconButton>
               </Tooltip>
             )}
-            {partyStatus === PartyRankStatus.Rating && canDelete && Boolean(grade) && (
+            {partyStatus === PartyRankStatus.Rating && Boolean(grade) && (
               <Tooltip placement="top" title="Удалить оценку">
                 <IconButton onClick={handleClear} aria-label="clear">
                   <CloseIcon fontSize="inherit" />

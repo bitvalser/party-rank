@@ -14,6 +14,7 @@ import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
+import { UserScoreAvg } from './components/user-score-avg';
 import { useSortedPartyItems } from './hooks/useSortedPartyItems';
 
 export const PartyRankTablePage = () => {
@@ -45,8 +46,8 @@ export const PartyRankTablePage = () => {
   if (!partyRank || listLoading) {
     return <LinearProgress />;
   }
-  const { name, finishedDate, showTable, creatorId } = partyRank;
-  const isCreator = currentUser?.uid === creatorId;
+  const { name, finishedDate, showTable, creatorId, moderators = [] } = partyRank;
+  const isCreator = currentUser?.uid === creatorId || moderators.includes(currentUser?.uid);
 
   if (!showTable && !isCreator) {
     return <Navigate to={`/party-rank/${id}`} replace />;
@@ -103,6 +104,7 @@ export const PartyRankTablePage = () => {
         </Card>
       </Grid>
       <ParticipantsList partyItems={partyItems} />
+      <UserScoreAvg id={id} partyItems={partyItems} />
       <Card
         sx={{
           mt: 2,

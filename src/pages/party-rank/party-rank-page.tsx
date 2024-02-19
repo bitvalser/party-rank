@@ -4,7 +4,7 @@ import { RichTextReadOnly } from 'mui-tiptap';
 import { MouseEventHandler, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, Subject, concat, merge, of } from 'rxjs';
-import { catchError, finalize, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, finalize, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LockIcon from '@mui/icons-material/Lock';
@@ -36,6 +36,7 @@ import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { RankItem as IRankItem } from '../../core/interfaces/rank-item.interface';
+import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { AddNewItem, AddNewItemProps } from './components/add-new-item';
 import { EditRankItem } from './components/edit-rank-item';
@@ -43,7 +44,9 @@ import { EditRankParty } from './components/edit-rank-party';
 import { ModeratorsList } from './components/moderators-list';
 import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
+import { UserRankResult } from './components/user-rank-result';
 import { UserRankStatus } from './components/user-rank-status';
+import { UserScoreAvg } from './components/user-score-avg';
 import { UserVotingStatus } from './components/user-voting-status';
 
 export const PartyRankPage = () => {
@@ -81,8 +84,21 @@ export const PartyRankPage = () => {
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const updateRanksRef = useRef(new Subject<void>());
   const [editRank, setEditRank] = useState<IRankItem>(null);
-  const userRank = useSubscription(
-    merge(of(void 0), updateRanksRef.current).pipe(switchMap(() => getUserRank(id))),
+  const userRank = useSubscription<UserRank>(
+    merge(
+      parties$.pipe(
+        filter((parties) => Boolean(parties[id])),
+        take(1),
+      ),
+      updateRanksRef.current,
+    ).pipe(
+      withLatestFrom(parties$),
+      filter(([, parties]) => Boolean(parties[id])),
+      switchMap(([, parties]) => {
+        if (parties[id].status === PartyRankStatus.Ongoing) return of({});
+        return getUserRank(id);
+      }),
+    ),
     {},
   );
   const partyItems = useSubscription(
@@ -373,6 +389,20 @@ export const PartyRankPage = () => {
           </CardContent>
         </Card>
       )}
+      {status === PartyRankStatus.Rating && (
+        <Card
+          sx={{
+            mt: 2,
+          }}
+        >
+          <CardContent>
+            <Typography sx={{ mb: 2 }} variant="h6" component="div">
+              Ваш результат
+            </Typography>
+            <UserRankResult partyItems={partyItems} user={currentUser} userRank={userRank} />
+          </CardContent>
+        </Card>
+      )}
       <Card
         sx={{
           mt: 2,
@@ -438,7 +468,7 @@ export const PartyRankPage = () => {
       )}
       {status === PartyRankStatus.Ongoing && (
         <AddNewItem
-          disabled={currentUserItems.length >= requiredQuantity && !isCreator}
+          disabled={(currentUserItems.length >= requiredQuantity && !isCreator) || listLoading}
           partyId={id}
           isCreator={isCreator}
           onAddNew={handleNewRank}

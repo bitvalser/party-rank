@@ -4,7 +4,6 @@ import { Avatar, Card, CardContent, Chip, Grid, LinearProgress, Typography } fro
 
 import { AppUser } from '../../../core/interfaces/app-user.interface';
 import { RankItem } from '../../../core/interfaces/rank-item.interface';
-import { UserRank } from '../../../core/interfaces/user-rank.interface';
 
 interface UserRankStatusProps {
   partyItems: RankItem[];
