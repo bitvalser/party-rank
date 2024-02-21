@@ -6,10 +6,11 @@ import { RankItem } from '../../../core/interfaces/rank-item.interface';
 
 interface JumpToListProps {
   partyItems: RankItem[];
+  renderTitle?: ({ title, index }: { title: string; index: number }) => string;
   onJump: (index: number) => void;
 }
 
-export const JumpToList = ({ partyItems, onJump }: JumpToListProps) => {
+export const JumpToList = ({ partyItems, renderTitle, onJump }: JumpToListProps) => {
   const [anchor, setAnchor] = useState(null);
 
   const handleClose = () => {
@@ -42,7 +43,7 @@ export const JumpToList = ({ partyItems, onJump }: JumpToListProps) => {
         {partyItems.map((option, index) => (
           <MenuItem key={option.id} onClick={handleSelect(index)}>
             <Typography>
-              {index + 1} - {option.name}
+              {renderTitle ? renderTitle({ title: option.name, index }) : `${index + 1} = ${option.name}`}
             </Typography>
           </MenuItem>
         ))}

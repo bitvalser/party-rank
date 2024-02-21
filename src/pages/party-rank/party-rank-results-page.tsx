@@ -23,6 +23,7 @@ import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { getUserRanksFromResult } from '../../core/utils/get-user-ranks';
+import { JumpToList } from './components/jump-to-list';
 import { useSortedPartyItems } from './hooks/useSortedPartyItems';
 
 interface PartyRankResultsPageComponentProps {
@@ -168,6 +169,7 @@ const PartyRankResultsPageComponent = memo(
 
     const handlePlay = () => {
       setPaused(false);
+      if (controllable) return;
       playTimeoutRef.current = setInterval(() => {
         setCurrentIndex((prev) => {
           if (prev === items.length - 1) {
@@ -265,6 +267,15 @@ const PartyRankResultsPageComponent = memo(
                   alignItems="center"
                   wrap="nowrap"
                 >
+                  {controllable && (
+                    <Grid sx={{ mr: 2 }} item>
+                      <JumpToList
+                        partyItems={items}
+                        renderTitle={({ title, index }) => `#${items.length - index} - ${title}`}
+                        onJump={setCurrentIndex}
+                      />
+                    </Grid>
+                  )}
                   {item.favoriteCount > 0 && (
                     <Chip
                       sx={{
