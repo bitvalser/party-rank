@@ -39,79 +39,86 @@ export class AppDiscordController {
             'Content-Type': 'application/json',
             authorization: `${tokenResponseData.token_type} ${tokenResponseData.access_token}`,
           },
-        }).then((response) => response.json());
-
-        const displayName = userResult.global_name || userResult.username;
-
-        const firebaseUser = await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).get();
-        if (firebaseUser.exists) {
-          const oauthUser = firebaseUser.data();
-          await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).update({
-            accessToken: tokenResponseData.access_token,
-            expiresAt,
-            refreshToken: tokenResponseData.refresh_token,
+        })
+          .then((response) => response.json())
+          .catch((error) => {
+            console.error(error);
           });
-          await admin
-            .app()
-            .auth()
-            .updateUser(oauthUser.uid, {
-              displayName,
-              photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
+        if (userResult) {
+          const displayName = userResult.global_name || userResult.username;
+
+          const firebaseUser = await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).get();
+          if (firebaseUser.exists) {
+            const oauthUser = firebaseUser.data();
+            await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).update({
+              accessToken: tokenResponseData.access_token,
+              expiresAt,
+              refreshToken: tokenResponseData.refresh_token,
             });
-          await admin
-            .app()
-            .firestore()
-            .collection('users')
-            .doc(oauthUser.uid)
-            .update({
-              displayName,
-              photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
-            });
-          const customToken = await admin.app().auth().createCustomToken(oauthUser.uid);
-          return res.redirect(
-            `${process.env.APP_URL || 'http://localhost:3001'}/discord-oauth?token=${customToken}&state=${state}`,
-          );
-        } else {
-          let newUser = null;
-          try {
-            newUser = await admin
-              .app()
-              .auth()
-              .createUser({
-                displayName,
-                photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
-              });
             await admin
               .app()
-              .firestore()
-              .collection('discord-oauth')
-              .doc(`${userResult.id}`)
-              .set({
-                id: `${userResult.id}`,
-                uid: newUser.uid,
-                accessToken: tokenResponseData.access_token,
-                expiresAt,
-                refreshToken: tokenResponseData.refresh_token,
+              .auth()
+              .updateUser(oauthUser.uid, {
+                displayName,
+                photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
               });
             await admin
               .app()
               .firestore()
               .collection('users')
-              .doc(newUser.uid)
-              .set({
-                uid: newUser.uid,
+              .doc(oauthUser.uid)
+              .update({
                 displayName,
                 photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
               });
-            const customToken = await admin.app().auth().createCustomToken(newUser.uid);
-            return res.redirect(`${process.env.APP_URL}/discord-oauth?token=${customToken}&state=${state}`);
-          } catch (error) {
-            if (newUser) {
-              admin.app().auth().deleteUser(newUser.uid);
+            const customToken = await admin.app().auth().createCustomToken(oauthUser.uid);
+            return res.redirect(
+              `${process.env.APP_URL || 'http://localhost:3001'}/discord-oauth?token=${customToken}&state=${state}`,
+            );
+          } else {
+            let newUser = null;
+            try {
+              newUser = await admin
+                .app()
+                .auth()
+                .createUser({
+                  displayName,
+                  photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
+                });
+              await admin
+                .app()
+                .firestore()
+                .collection('discord-oauth')
+                .doc(`${userResult.id}`)
+                .set({
+                  id: `${userResult.id}`,
+                  uid: newUser.uid,
+                  accessToken: tokenResponseData.access_token,
+                  expiresAt,
+                  refreshToken: tokenResponseData.refresh_token,
+                });
+              await admin
+                .app()
+                .firestore()
+                .collection('users')
+                .doc(newUser.uid)
+                .set({
+                  uid: newUser.uid,
+                  displayName,
+                  photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
+                });
+              const customToken = await admin.app().auth().createCustomToken(newUser.uid);
+              return res.redirect(`${process.env.APP_URL}/discord-oauth?token=${customToken}&state=${state}`);
+            } catch (error) {
+              if (newUser) {
+                admin.app().auth().deleteUser(newUser.uid);
+              }
+              console.error(error);
+              return sendError(res, error.message, 403);
             }
-            console.error(error);
-            return sendError(error, error.message, 403);
           }
+        } else {
+          return sendError(res, 'Discord user not found', 403);
         }
       } catch (error) {
         console.error(error);

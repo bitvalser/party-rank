@@ -191,6 +191,8 @@ const PartyRankResultsPageComponent = memo(
       [currentIndex, items, userRankByItemId],
     );
 
+    const sizeFactor = Math.max(Math.min(20 / ranks.length, 2), 1);
+
     return (
       <Box
         sx={{
@@ -374,7 +376,7 @@ const PartyRankResultsPageComponent = memo(
             {ranks.map((userRank) => (
               <Grid
                 key={userRank.author.uid}
-                sx={{ width: '120px', height: '120px', position: 'relative' }}
+                sx={{ width: 120 * sizeFactor, height: 120 * sizeFactor, position: 'relative' }}
                 item
                 container
                 direction="column"
@@ -386,9 +388,11 @@ const PartyRankResultsPageComponent = memo(
                   sx={{
                     mb: '-12px',
                     zIndex: 2,
+                    color: (theme) => (userRank.myRank ? '#00fff9' : theme.palette.text.primary),
                     textShadow: (theme) =>
                       `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
                   }}
+                  fontSize={18 * sizeFactor}
                   fontWeight="bold"
                   whiteSpace="nowrap"
                 >
@@ -396,8 +400,8 @@ const PartyRankResultsPageComponent = memo(
                 </Typography>
                 <Avatar
                   sx={{
-                    width: 70,
-                    height: 70,
+                    width: 70 * sizeFactor,
+                    height: 70 * sizeFactor,
                     borderRadius: 2,
                     border: (theme) =>
                       `2px solid ${!userRank.favorite ? theme.palette.grey[900] : theme.palette.error.main}`,
@@ -411,6 +415,8 @@ const PartyRankResultsPageComponent = memo(
                     sx={{
                       top: 28,
                       right: 12,
+                      width: `${sizeFactor}em`,
+                      height: `${sizeFactor}em`,
                       position: 'absolute',
                     }}
                     color="error"
@@ -425,7 +431,13 @@ const PartyRankResultsPageComponent = memo(
                     backgroundColor: (theme) => theme.palette.grey[900],
                   }}
                 >
-                  <GradeMark size={32} value={userRank.value} showDecimal={1} isAuthorRank={userRank.myRank} />
+                  <GradeMark
+                    size={32 * sizeFactor}
+                    fontSize={14 * sizeFactor}
+                    value={userRank.value}
+                    showDecimal={1}
+                    isAuthorRank={userRank.myRank}
+                  />
                 </Box>
               </Grid>
             ))}

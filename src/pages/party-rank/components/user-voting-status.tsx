@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { finalize } from 'rxjs/operators';
 
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Avatar, Card, CardContent, Chip, Grid, LinearProgress, Typography } from '@mui/material';
 
 import { useInjectable } from '../../../core/hooks/useInjectable';
@@ -23,6 +24,10 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
     getUserRanks(id, { includeUser: true }).pipe(finalize(() => setRankLoading(false))),
     [],
   );
+  const itemsById: Record<string, RankItem> = useMemo(
+    () => partyItems.reduce((acc, val) => ({ ...acc, [val.id]: val }), {}),
+    [partyItems],
+  );
 
   const usersStatus = useMemo(() => {
     const allUsers = (partyItems || [])
@@ -43,6 +48,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
             string,
             {
               author: UserRank;
+              favoriteId: string;
               count: number;
             }
           >
@@ -51,6 +57,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
             ...acc,
             [val.uid]: {
               author: val.author,
+              favoriteId: val.favoriteId,
               count: Object.keys(getUserRanksFromResult(val)).length,
             },
           }),
@@ -83,7 +90,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
           direction="column"
           spacing={1}
         >
-          {usersStatus.map(({ author, count }) => (
+          {usersStatus.map(({ author, count, favoriteId }) => (
             <Grid container item direction="row" alignItems="center">
               <Grid item xs={2}>
                 <Chip
@@ -100,13 +107,30 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
                 xs
                 item
               >
-                <Typography
+                <Grid
                   sx={{
-                    mb: '4px',
+                    mb: '6px',
+                    overflow: 'hidden',
                   }}
+                  container
+                  direction="row"
+                  alignItems="center"
+                  wrap="nowrap"
                 >
-                  Оценено {count} / {required}
-                </Typography>
+                  <Typography>
+                    Оценено {count} / {required}
+                  </Typography>
+                  {favoriteId && itemsById[favoriteId] && (
+                    <Chip
+                      sx={{ ml: 2 }}
+                      size="small"
+                      avatar={<FavoriteIcon />}
+                      label={itemsById[favoriteId]?.name}
+                      variant="filled"
+                      color="error"
+                    />
+                  )}
+                </Grid>
                 <LinearProgress
                   color={count === required ? 'success' : 'primary'}
                   value={(count / required) * 100}

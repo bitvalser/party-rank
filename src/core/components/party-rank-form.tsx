@@ -140,7 +140,7 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
                     sx={{
                       width: '100%',
                     }}
-                    format="dd/MM/yyyy hh:mm"
+                    format="dd/MM/yyyy HH:mm"
                     label="Дедлайн заявок"
                     ampm={false}
                     minDate={minDate}
@@ -159,7 +159,7 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
                     sx={{
                       width: '100%',
                     }}
-                    format="dd/MM/yyyy hh:mm"
+                    format="dd/MM/yyyy HH:mm"
                     label="Конец оценивания"
                     ampm={false}
                     minDate={minDate}
