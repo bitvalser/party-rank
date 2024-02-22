@@ -103,7 +103,7 @@ export const PartyRankTablePage = () => {
           </CardContent>
         </Card>
       </Grid>
-      <ParticipantsList partyItems={partyItems} />
+      {/* <ParticipantsList partyItems={partyItems} /> */}
       <UserScoreAvg id={id} partyItems={partyItems} />
       <Card
         sx={{

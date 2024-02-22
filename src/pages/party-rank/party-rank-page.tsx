@@ -28,6 +28,7 @@ import {
   Typography,
 } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
+import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 
 import { ConfirmModal } from '../../core/components/confirm-moda';
@@ -272,7 +273,7 @@ export const PartyRankPage = () => {
             </Grid>
             {content && (
               <Grid item>
-                <RichTextReadOnly content={content} extensions={[StarterKit]} />
+                <RichTextReadOnly content={content} extensions={[StarterKit, Link]} />
               </Grid>
             )}
             <Grid

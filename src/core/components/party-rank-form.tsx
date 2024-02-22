@@ -17,6 +17,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 
 import { FormControl, FormLabel, Grid, TextField } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
+import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 
 import { PartyRankStatus } from '../interfaces/party-rank.interface';
@@ -62,7 +63,14 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
     );
 
     return (
-      <Grid container rowSpacing={2} flexDirection="column">
+      <Grid
+        sx={{
+          overflow: 'hidden',
+        }}
+        container
+        rowSpacing={2}
+        flexDirection="column"
+      >
         <Grid item>
           <Controller
             name="name"
@@ -82,7 +90,12 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
             )}
           />
         </Grid>
-        <Grid item>
+        <Grid
+          sx={{
+            width: '100%',
+          }}
+          item
+        >
           <Controller
             name="content"
             control={control}
@@ -100,7 +113,7 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
                 <FormLabel>Описание</FormLabel>
                 <RichTextEditor
                   ref={rteRef}
-                  extensions={[StarterKit]}
+                  extensions={[StarterKit, Link]}
                   content={field.value}
                   editable={!field.disabled}
                   renderControls={() => (
