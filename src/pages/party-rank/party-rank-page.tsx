@@ -47,7 +47,6 @@ import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
 import { UserRankResult } from './components/user-rank-result';
 import { UserRankStatus } from './components/user-rank-status';
-import { UserScoreAvg } from './components/user-score-avg';
 import { UserVotingStatus } from './components/user-voting-status';
 
 export const PartyRankPage = () => {
@@ -238,98 +237,100 @@ export const PartyRankPage = () => {
 
   return (
     <>
-      <Grid container direction="column" rowSpacing={2}>
-        <Card>
-          {creator && (
-            <CardHeader
-              avatar={<Avatar alt={creator.displayName} src={creator.photoURL} />}
-              title={creator.displayName}
-              action={
-                isCreator ? (
-                  <div>
-                    <IconButton onClick={handleOpenMenu} aria-label="settings">
-                      <MoreVertIcon />
-                    </IconButton>
-                    <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleCloseMenu}>
-                      <MenuItem onClick={handleEdit}>Редатировать</MenuItem>
-                      <MenuItem onClick={handleConfirmDelete}>Удалить</MenuItem>
-                    </Menu>
-                  </div>
-                ) : null
-              }
-              subheader={createdDate ? DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED) : ''}
-            />
-          )}
-          <CardContent>
-            <Grid container direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="h4" component="div">
-                {name}
-              </Typography>
-              <Grid item>
-                {status === PartyRankStatus.Ongoing && <Chip color="primary" size="small" label="В процессе" />}
-                {status === PartyRankStatus.Rating && <Chip color="secondary" size="small" label="Голосование" />}
-                {status === PartyRankStatus.Finished && <Chip color="success" size="small" label="Завершён" />}
-              </Grid>
-            </Grid>
-            {content && (
-              <Grid item>
-                <RichTextReadOnly content={content} extensions={[StarterKit, Link]} />
-              </Grid>
+      <Grid sx={{ overflow: 'hidden' }} container direction="row" rowSpacing={2}>
+        <Grid xs item>
+          <Card>
+            {creator && (
+              <CardHeader
+                avatar={<Avatar alt={creator.displayName} src={creator.photoURL} />}
+                title={creator.displayName}
+                action={
+                  isCreator ? (
+                    <div>
+                      <IconButton onClick={handleOpenMenu} aria-label="settings">
+                        <MoreVertIcon />
+                      </IconButton>
+                      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleCloseMenu}>
+                        <MenuItem onClick={handleEdit}>Редатировать</MenuItem>
+                        <MenuItem onClick={handleConfirmDelete}>Удалить</MenuItem>
+                      </Menu>
+                    </div>
+                  ) : null
+                }
+                subheader={createdDate ? DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED) : ''}
+              />
             )}
-            <Grid
-              sx={{
-                marginTop: 1,
-                padding: 1,
-                paddingBottom: 0,
-              }}
-              container
-              direction="column"
-              spacing={1}
-            >
-              <Typography>Дедлайн: {DateTime.fromISO(deadlineDate).toLocaleString(DateTime.DATETIME_MED)}</Typography>
-              <Typography>
-                Конец голосования: {DateTime.fromISO(finishDate).toLocaleString(DateTime.DATETIME_MED)}
-              </Typography>
-              {status === PartyRankStatus.Finished && finishedDate && (
-                <Typography>
-                  Завершён: {DateTime.fromISO(finishedDate).toLocaleString(DateTime.DATETIME_MED)}
+            <CardContent sx={{ overflowX: 'auto' }}>
+              <Grid container direction="row" alignItems="center" justifyContent="space-between">
+                <Typography variant="h4" component="div">
+                  {name}
                 </Typography>
+                <Grid item>
+                  {status === PartyRankStatus.Ongoing && <Chip color="primary" size="small" label="В процессе" />}
+                  {status === PartyRankStatus.Rating && <Chip color="secondary" size="small" label="Голосование" />}
+                  {status === PartyRankStatus.Finished && <Chip color="success" size="small" label="Завершён" />}
+                </Grid>
+              </Grid>
+              {content && (
+                <Grid item>
+                  <RichTextReadOnly content={content} extensions={[StarterKit, Link]} />
+                </Grid>
               )}
-            </Grid>
-          </CardContent>
+              <Grid
+                sx={{
+                  marginTop: 1,
+                  padding: 1,
+                  paddingBottom: 0,
+                }}
+                container
+                direction="column"
+                spacing={1}
+              >
+                <Typography>Дедлайн: {DateTime.fromISO(deadlineDate).toLocaleString(DateTime.DATETIME_MED)}</Typography>
+                <Typography>
+                  Конец голосования: {DateTime.fromISO(finishDate).toLocaleString(DateTime.DATETIME_MED)}
+                </Typography>
+                {status === PartyRankStatus.Finished && finishedDate && (
+                  <Typography>
+                    Завершён: {DateTime.fromISO(finishedDate).toLocaleString(DateTime.DATETIME_MED)}
+                  </Typography>
+                )}
+              </Grid>
+            </CardContent>
 
-          <CardActions>
-            {status === PartyRankStatus.Ongoing && isCreator && (
-              <Button onClick={handleStartVoting} size="small">
-                Начать Голосование
+            <CardActions>
+              {status === PartyRankStatus.Ongoing && isCreator && (
+                <Button onClick={handleStartVoting} size="small">
+                  Начать Голосование
+                </Button>
+              )}
+              {status === PartyRankStatus.Rating && isCreator && (
+                <Button onClick={handleFinish} size="small">
+                  Завершить
+                </Button>
+              )}
+              {status === PartyRankStatus.Finished && (showTable || isCreator) && (
+                <Button onClick={handleTableView} size="small">
+                  Таблица Лидеров
+                </Button>
+              )}
+              {status === PartyRankStatus.Finished && !showTable && isCreator && (
+                <Button onClick={handleUnlockTable} size="small">
+                  <LockIcon
+                    fontSize="small"
+                    sx={{
+                      mr: 1,
+                    }}
+                  />
+                  Открыть таблицу Лидеров
+                </Button>
+              )}
+              <Button onClick={handleCopyInvite} size="small">
+                Скопировать инвайт-ссылку
               </Button>
-            )}
-            {status === PartyRankStatus.Rating && isCreator && (
-              <Button onClick={handleFinish} size="small">
-                Завершить
-              </Button>
-            )}
-            {status === PartyRankStatus.Finished && (showTable || isCreator) && (
-              <Button onClick={handleTableView} size="small">
-                Таблица Лидеров
-              </Button>
-            )}
-            {status === PartyRankStatus.Finished && !showTable && isCreator && (
-              <Button onClick={handleUnlockTable} size="small">
-                <LockIcon
-                  fontSize="small"
-                  sx={{
-                    mr: 1,
-                  }}
-                />
-                Открыть таблицу Лидеров
-              </Button>
-            )}
-            <Button onClick={handleCopyInvite} size="small">
-              Скопировать инвайт-ссылку
-            </Button>
-          </CardActions>
-        </Card>
+            </CardActions>
+          </Card>
+        </Grid>
       </Grid>
       {isCreator && moderators?.length > 0 && <ModeratorsList moderators={moderators} />}
       {status === PartyRankStatus.Finished && <ParticipantsList partyItems={partyItems} />}
@@ -472,6 +473,7 @@ export const PartyRankPage = () => {
           disabled={(currentUserItems.length >= requiredQuantity && !isCreator) || listLoading}
           partyId={id}
           isCreator={isCreator}
+          items={partyItems}
           onAddNew={handleNewRank}
         />
       )}

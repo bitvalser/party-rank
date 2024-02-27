@@ -135,7 +135,17 @@ export const HomePage = () => {
       </AppBar>
       <Box
         component="main"
-        sx={{ display: 'flex', flex: 1, p: 3, pb: 10, position: 'relative', flexDirection: 'column' }}
+        sx={(theme) => ({
+          display: 'flex',
+          flex: 1,
+          p: 3,
+          pb: 10,
+          position: 'relative',
+          flexDirection: 'column',
+          [theme.breakpoints.down('md')]: {
+            p: 0,
+          },
+        })}
       >
         <Routes>
           <Route path="/party-rank/:id/table" Component={PartyRankTablePage} />

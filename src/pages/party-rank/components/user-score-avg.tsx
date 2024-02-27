@@ -1,5 +1,5 @@
-import { Fragment, useState } from 'react';
-import { finalize } from 'rxjs/operators';
+import { Fragment, useCallback, useState } from 'react';
+import { finalize, map } from 'rxjs/operators';
 
 import { Card, CardContent, Divider, Grid, LinearProgress, Typography } from '@mui/material';
 
@@ -7,7 +7,8 @@ import { useInjectable } from '../../../core/hooks/useInjectable';
 import useSubscription from '../../../core/hooks/useSubscription';
 import { RankItem } from '../../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../../core/services/types';
-import { UserRankResult } from './user-rank-result';
+import { getUserRanksFromResult } from '../../../core/utils/get-user-ranks';
+import { UserRankResult, UserRankResultProps } from './user-rank-result';
 
 interface UserScoreAvgProps {
   id: string;
@@ -18,9 +19,25 @@ export const UserScoreAvg = ({ id, partyItems }: UserScoreAvgProps) => {
   const { getUserRanks } = useInjectable(AppTypes.PartyRanks);
   const [rankLoading, setRankLoading] = useState(true);
   const usersRank = useSubscription(
-    getUserRanks(id, { includeUser: true }).pipe(finalize(() => setRankLoading(false))),
+    getUserRanks(id, { includeUser: true }).pipe(
+      finalize(() => setRankLoading(false)),
+      map((items) =>
+        items
+          .map((item) => {
+            const values = Object.values(getUserRanksFromResult(item));
+            const average = values.reduce((acc, { value }) => acc + value, 0) / values.length || 0;
+            return {
+              ...item,
+              average,
+            };
+          })
+          .sort((itemA, itemB) => itemB.average - itemA.average),
+      ),
+    ),
     [],
   );
+
+  const mapRankToAverage: UserRankResultProps['getAverage'] = useCallback((item) => item.average, []);
 
   return (
     <Card
@@ -48,7 +65,12 @@ export const UserScoreAvg = ({ id, partyItems }: UserScoreAvgProps) => {
           {usersRank.map((userRank, i) => (
             <Fragment key={userRank.author.uid}>
               {i !== 0 && <Divider sx={{ mt: 1 }} />}
-              <UserRankResult user={userRank.author} userRank={userRank} partyItems={partyItems} />
+              <UserRankResult
+                user={userRank.author}
+                userRank={userRank}
+                partyItems={partyItems}
+                getAverage={mapRankToAverage}
+              />
             </Fragment>
           ))}
         </Grid>

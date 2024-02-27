@@ -120,9 +120,10 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
         </Grid>
         <Grid
           sx={{
-            height: 250,
+            minHeight: 250,
           }}
-          item
+          container
+          direction="column"
         >
           <FormLabel id="anime-provider-group-label">Превью</FormLabel>
           <RankPartyPlayer key={value} type={type} value={value} showTimeControls autoplay={autoplay} />

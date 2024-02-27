@@ -201,6 +201,7 @@ const PartyRankResultsPageComponent = memo(
           width: '100vw',
           height: '100vh',
           display: 'flex',
+          overflow: 'hidden',
           position: 'relative',
           flexDirection: 'row',
         }}
@@ -210,7 +211,7 @@ const PartyRankResultsPageComponent = memo(
           return (
             <Box
               key={item.id}
-              sx={{
+              sx={(theme) => ({
                 width: '80vw',
                 height: '100vh',
                 position: 'absolute',
@@ -221,7 +222,12 @@ const PartyRankResultsPageComponent = memo(
                     duration: theme.transitions.duration.standard,
                   }),
                 opacity: currentIndex === i ? 1 : 0,
-              }}
+                [theme.breakpoints.down('md')]: {
+                  width: '100vw',
+                  height: '50vh',
+                  top: '50vh',
+                },
+              })}
             >
               <Grid
                 sx={{
@@ -231,6 +237,8 @@ const PartyRankResultsPageComponent = memo(
                   zIndex: 10,
                   position: 'absolute',
                   width: '100%',
+                  maxHeight: '100px',
+                  overflow: 'hidden',
                   background: 'rgba(0, 0, 0, 0.6)',
                 }}
                 container
@@ -252,7 +260,15 @@ const PartyRankResultsPageComponent = memo(
                     variant="filled"
                     color="default"
                   />
-                  <Typography sx={{ ml: 1 }} component="h4">
+                  <Typography
+                    sx={(theme) => ({
+                      ml: 1,
+                      [theme.breakpoints.down('md')]: {
+                        fontSize: '14px',
+                      },
+                    })}
+                    component="h4"
+                  >
                     {item.name}
                   </Typography>
                 </Grid>
@@ -320,12 +336,21 @@ const PartyRankResultsPageComponent = memo(
                   sx={{
                     position: 'absolute',
                     top: -10,
+                    textShadow: (theme) =>
+                      `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
                   }}
                   fontWeight="bold"
                 >
                   Total
                 </Typography>
-                <Typography fontSize="26px" fontWeight="100">
+                <Typography
+                  sx={{
+                    textShadow: (theme) =>
+                      `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
+                  }}
+                  fontSize="26px"
+                  fontWeight="100"
+                >
                   {userRankByItemId[item.id].total}
                 </Typography>
               </Box>
@@ -344,22 +369,34 @@ const PartyRankResultsPageComponent = memo(
         {controllable && (
           <>
             <Box
-              sx={{
+              sx={(theme) => ({
                 ...controlButtonSx,
                 cursor: currentIndex !== 0 ? 'pointer' : 'initial',
                 pointerEvents: currentIndex !== 0 ? 'auto' : 'none',
                 left: 0,
-              }}
+                [theme.breakpoints.down('md')]: {
+                  right: 0,
+                  top: 'calc(50vh + 100px)',
+                  height: 'calc(50vh - 160px)',
+                  opacity: 0.5,
+                },
+              })}
               onClick={handlePrev}
             >
               <ArrowBackIosIcon fontSize="inherit" />
             </Box>
             <Box
-              sx={{
+              sx={(theme) => ({
                 ...controlButtonSx,
                 right: '20vw',
                 cursor: 'pointer',
-              }}
+                [theme.breakpoints.down('md')]: {
+                  right: 0,
+                  top: 'calc(50vh + 100px)',
+                  height: 'calc(50vh - 160px)',
+                  opacity: 0.5,
+                },
+              })}
               onClick={handleNext}
             >
               {currentIndex !== items.length - 1 ? (
@@ -371,7 +408,7 @@ const PartyRankResultsPageComponent = memo(
           </>
         )}
         <Box
-          sx={{
+          sx={(theme) => ({
             width: '20vw',
             height: '100vh',
             display: 'flex',
@@ -381,7 +418,11 @@ const PartyRankResultsPageComponent = memo(
             overflowX: 'hidden',
             position: 'absolute',
             flexDirection: 'row',
-          }}
+            [theme.breakpoints.down('md')]: {
+              width: '100vw',
+              height: '50vh',
+            },
+          })}
         >
           <Grid container flexDirection="row" wrap="wrap" justifyContent="space-around" alignContent="start">
             {ranks.map((userRank) => (

@@ -199,7 +199,7 @@ const PartRankRankingPageComponent = memo(
               />
             )}
             <Box
-              sx={{
+              sx={(theme) => ({
                 zIndex: 5,
                 position: 'absolute',
                 left: '50%',
@@ -208,7 +208,10 @@ const PartRankRankingPageComponent = memo(
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-              }}
+                [theme.breakpoints.down('md')]: {
+                  bottom: '20vh',
+                },
+              })}
             >
               <IconButton
                 sx={{

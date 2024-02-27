@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Avatar, Chip, Grid, Typography } from '@mui/material';
@@ -9,15 +9,21 @@ import { RankItem } from '../../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../../core/interfaces/user-rank.interface';
 import { getUserRanksFromResult } from '../../../core/utils/get-user-ranks';
 
-interface UserRankResultProps {
+export interface UserRankResultProps {
   user: AppUser;
   userRank: UserRank;
   partyItems: RankItem[];
+  getAverage?: (rank: UserRank) => number;
 }
 
-export const UserRankResult = memo(({ partyItems = [], user, userRank = {} }: UserRankResultProps) => {
-  const values = Object.values(getUserRanksFromResult(userRank));
-  const average = values.reduce((acc, { value }) => acc + value, 0) / values.length;
+export const UserRankResult = memo(({ partyItems = [], user, userRank = {}, getAverage }: UserRankResultProps) => {
+  const average = useMemo(() => {
+    if (getAverage) {
+      return getAverage(userRank);
+    }
+    const values = Object.values(getUserRanksFromResult(userRank));
+    return values.reduce((acc, { value }) => acc + value, 0) / values.length || 0;
+  }, [getAverage, userRank]);
   const favoriteItem = partyItems.find((item) => item.id === userRank.favoriteId);
 
   return (
@@ -33,7 +39,7 @@ export const UserRankResult = memo(({ partyItems = [], user, userRank = {} }: Us
         <Avatar alt={user.displayName} src={user.photoURL} />
       </Grid>
       <Grid item>
-        <Typography component="h5" fontSize={24}>
+        <Typography variant="h5" component="div">
           {user.displayName}
         </Typography>
       </Grid>

@@ -5,9 +5,29 @@ import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { AppRouter } from './app-router';
 import { InversifyContext, appContainer } from './inversify.config';
 
+const breakpoints = createTheme().breakpoints;
+
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
+  },
+  components: {
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          [breakpoints.down('md')]: {
+            padding: 0,
+          },
+        },
+      },
+    },
+  },
+  typography: {
+    h5: {
+      [breakpoints.down('md')]: {
+        fontSize: '18px',
+      },
+    },
   },
 });
 

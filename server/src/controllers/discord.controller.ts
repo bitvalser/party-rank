@@ -19,6 +19,7 @@ export class AppDiscordController {
 
     if (code) {
       try {
+        console.log(code);
         const tokenResponseData = await fetch(`${AppDiscordController.API_URL}/oauth2/token`, {
           method: 'POST',
           body: new URLSearchParams({
@@ -33,6 +34,9 @@ export class AppDiscordController {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
         }).then((response) => response.json());
+        if (tokenResponseData.error) {
+          return sendError(res, tokenResponseData.error_description || tokenResponseData.error, 401);
+        }
         const expiresAt = Date.now() + tokenResponseData.expires_in;
         const userResult = await fetch(`${AppDiscordController.API_URL}/users/@me`, {
           headers: {
@@ -44,7 +48,7 @@ export class AppDiscordController {
           .catch((error) => {
             console.error(error);
           });
-        if (userResult) {
+        if (userResult && userResult.code !== 0) {
           const displayName = userResult.global_name || userResult.username;
 
           const firebaseUser = await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).get();

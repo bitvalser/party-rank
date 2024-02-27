@@ -1,14 +1,28 @@
-import { useState } from 'react';
+import Fuse from 'fuse.js';
+import { useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { finalize } from 'rxjs/operators';
 
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, Fab, FormHelperText, Grid, IconButton, Modal, Typography, useTheme } from '@mui/material';
+import {
+  Box,
+  Button,
+  Fab,
+  FormHelperText,
+  FormLabel,
+  Grid,
+  IconButton,
+  Modal,
+  Typography,
+  useTheme,
+} from '@mui/material';
 
 import { useInjectable } from '../../../core/hooks/useInjectable';
-import { RankItem, RankItemType } from '../../../core/interfaces/rank-item.interface';
+import { PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
+import { RankItem as IRankItem, RankItemType } from '../../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../../core/services/types';
+import { RankItem } from './rank-item';
 import { RankItemForm } from './rank-item-form';
 
 export interface RankItemFromValues {
@@ -28,8 +42,9 @@ const DEFAULT_VALUES: RankItemFromValues = {
 export interface AddNewItemProps {
   isCreator?: boolean;
   partyId: string;
+  items: IRankItem[];
   disabled?: boolean;
-  onAddNew?: (item: RankItem) => void;
+  onAddNew?: (item: IRankItem) => void;
 }
 
 export const AddNewItem = ({
@@ -37,9 +52,21 @@ export const AddNewItem = ({
   disabled = false,
   onAddNew = () => null,
   isCreator = false,
+  items = [],
 }: AddNewItemProps) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [conflictItem, setConflictItem] = useState(null);
+  const fuseSearch = useMemo(
+    () =>
+      new Fuse(items, {
+        keys: ['name'],
+        isCaseSensitive: false,
+        minMatchCharLength: 8,
+        includeScore: true,
+      }),
+    [items],
+  );
   const { addRankItem } = useInjectable(AppTypes.PartyRanks);
   const theme = useTheme();
   const form = useForm<RankItemFromValues>({
@@ -57,15 +84,22 @@ export const AddNewItem = ({
   };
 
   const onSubmit: SubmitHandler<RankItemFromValues> = (data) => {
-    setLoading(true);
-    addRankItem(partyId, data)
-      .pipe(finalize(() => setLoading(false)))
-      .subscribe((result) => {
-        setLoading(false);
-        onAddNew(result);
-        setShowModal(false);
-        form.reset();
-      });
+    const newConflictItem = fuseSearch.search(data.name, {
+      limit: 1,
+    })[0];
+    if (newConflictItem && !conflictItem) {
+      setConflictItem(newConflictItem.item);
+    } else {
+      setLoading(true);
+      addRankItem(partyId, data)
+        .pipe(finalize(() => setLoading(false)))
+        .subscribe((result) => {
+          setLoading(false);
+          onAddNew(result);
+          setShowModal(false);
+          form.reset();
+        });
+    }
   };
 
   return (
@@ -77,10 +111,10 @@ export const AddNewItem = ({
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            padding: 2,
             outline: 'none',
             width: 596,
-            minHeight: 750,
+            minHeight: 650,
+            maxHeight: '80vh',
             borderRadius: '4px',
             paddingBottom: 0,
             display: 'flex',
@@ -91,7 +125,7 @@ export const AddNewItem = ({
         >
           <Grid
             sx={{
-              marginBottom: '6px',
+              padding: 2,
             }}
             container
             flexDirection="row"
@@ -108,7 +142,10 @@ export const AddNewItem = ({
             style={{
               display: 'flex',
               flexGrow: 1,
+              padding: '16px',
               margin: 0,
+              flexDirection: 'column',
+              overflow: 'auto',
             }}
             onSubmit={handleSubmit(onSubmit)}
           >
@@ -119,22 +156,29 @@ export const AddNewItem = ({
                 }}
                 container
                 flexDirection="column"
+                flexGrow={1}
               >
                 <RankItemForm showAuthor={isCreator} />
+                {conflictItem && (
+                  <Grid item xs>
+                    <FormLabel>Возможный конфликт!</FormLabel>
+                    <RankItem sx={{ mt: 0 }} data={conflictItem} partyStatus={PartyRankStatus.Ongoing} oneLine />
+                  </Grid>
+                )}
                 <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
-                  <FormHelperText>
-                    Прежде чем сохранить элемент убедитесь что превью работает нормально и показывает ваш медиа файл!
-                  </FormHelperText>
+                  {!conflictItem && (
+                    <FormHelperText>
+                      Прежде чем сохранить элемент убедитесь что превью работает нормально и показывает ваш медиа файл!
+                    </FormHelperText>
+                  )}
+                  {conflictItem && (
+                    <FormHelperText>
+                      Возможно ваш вариант уже был добавлен другим участником, пожалуйста перепроверьте прежде чем
+                      сохранить
+                    </FormHelperText>
+                  )}
                   <Grid item>
-                    <Button
-                      sx={{
-                        marginBottom: '10px',
-                      }}
-                      fullWidth
-                      type="submit"
-                      variant="contained"
-                      disabled={loading}
-                    >
+                    <Button fullWidth type="submit" variant="contained" disabled={loading}>
                       Добавить предложение
                     </Button>
                   </Grid>

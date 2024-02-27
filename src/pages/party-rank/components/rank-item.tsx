@@ -7,7 +7,7 @@ import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import TagIcon from '@mui/icons-material/Tag';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { Avatar, Box, Chip, Grid, IconButton, Modal, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Chip, Grid, IconButton, Modal, SxProps, Tooltip, Typography } from '@mui/material';
 
 import { GradeMark } from '../../../core/components/grade-mark';
 import { RankPartyPlayer } from '../../../core/components/rank-party-player';
@@ -18,12 +18,14 @@ import { RankItem as IRankItem } from '../../../core/interfaces/rank-item.interf
 import { AppTypes } from '../../../core/services/types';
 
 interface RankItemProps {
+  sx?: SxProps;
   data: IRankItem;
   partyStatus: PartyRankStatus;
   isCreator?: boolean;
   grade?: number;
   isFavorite?: boolean;
   showAuthor?: boolean;
+  oneLine?: boolean;
   rank?: number;
   favoriteCount?: number;
   onDelete?: (id: string) => void;
@@ -33,9 +35,11 @@ interface RankItemProps {
 
 export const RankItem = memo(
   ({
+    sx,
     data,
     partyStatus,
     isCreator = false,
+    oneLine = false,
     grade = null,
     isFavorite = false,
     onDelete = () => null,
@@ -85,13 +89,23 @@ export const RankItem = memo(
             mt: 2,
             backgroundColor: (theme) => theme.palette.grey[900],
             boxShadow: (theme) => theme.shadows[10],
+            ...sx,
           }}
           container
           direction="row"
           alignItems="center"
           wrap="nowrap"
         >
-          <Grid container direction="row" alignItems="center" wrap="nowrap">
+          <Grid
+            sx={{
+              overflow: 'hidden',
+            }}
+            xs
+            container
+            direction="row"
+            alignItems="center"
+            wrap="nowrap"
+          >
             {Boolean(rank) && (
               <Chip
                 sx={{
@@ -118,9 +132,12 @@ export const RankItem = memo(
             <Typography
               sx={{
                 pr: 2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
               variant="h5"
               component="div"
+              whiteSpace={oneLine ? 'nowrap' : 'initial'}
             >
               {name}
             </Typography>
@@ -189,7 +206,7 @@ export const RankItem = memo(
         </Grid>
         <Modal open={showPreview} onClose={handleClosePreview}>
           <Box
-            sx={{
+            sx={(theme) => ({
               position: 'absolute',
               top: '50%',
               left: '50%',
@@ -205,7 +222,11 @@ export const RankItem = memo(
               overflow: 'hidden',
               flexDirection: 'column',
               backgroundColor: (theme) => theme.palette.background.paper,
-            }}
+              [theme.breakpoints.down('md')]: {
+                minWidth: '100vw',
+                maxWidth: '100vw',
+              },
+            })}
           >
             <Grid
               sx={{

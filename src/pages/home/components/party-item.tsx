@@ -77,7 +77,7 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
         <Grid xs container direction="row" justifyContent="flex-end" spacing={1}>
           {status !== PartyRankStatus.Finished && (
             <Button size="small" onClick={handleView}>
-              Учавстовать
+              Участвовать
             </Button>
           )}
           {status === PartyRankStatus.Finished && (
