@@ -12,6 +12,11 @@ export class SettingsService implements ISettingsService {
     'settings:controllablePlayer',
     false,
   );
+  public useVideoStartTime$: CachedSubject<boolean> = new CachedSubject(
+    localStorage,
+    'settings:useVideoStartTime',
+    true,
+  );
   public votingPlayerAutoplay$: CachedSubject<boolean> = new CachedSubject(
     localStorage,
     'settings:votingPlayerAutoplay',

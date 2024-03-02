@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
-import { finalize } from 'rxjs/operators';
+import { useMemo, useRef, useState } from 'react';
+import { Subject, from, merge, of } from 'rxjs';
+import { finalize, switchMap } from 'rxjs/operators';
 
+import CloseIcon from '@mui/icons-material/Close';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { Avatar, Card, CardContent, Chip, Grid, LinearProgress, Typography } from '@mui/material';
+import { Avatar, Card, CardContent, Chip, Grid, IconButton, LinearProgress, Tooltip, Typography } from '@mui/material';
 
 import { useInjectable } from '../../../core/hooks/useInjectable';
 import useSubscription from '../../../core/hooks/useSubscription';
@@ -18,10 +20,13 @@ interface UserVotingStatusProps {
 }
 
 export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusProps) => {
-  const { getUserRanks } = useInjectable(AppTypes.PartyRanks);
+  const { getUserRanks, deleteUserRank } = useInjectable(AppTypes.PartyRanks);
   const [rankLoading, setRankLoading] = useState(true);
+  const updateRanksRef = useRef(new Subject<void>());
   const usersRank = useSubscription(
-    getUserRanks(id, { includeUser: true }).pipe(finalize(() => setRankLoading(false))),
+    merge(of(void 0), updateRanksRef.current).pipe(
+      switchMap(() => from(getUserRanks(id, { includeUser: true })).pipe(finalize(() => setRankLoading(false)))),
+    ),
     [],
   );
   const itemsById: Record<string, RankItem> = useMemo(
@@ -47,6 +52,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
           Record<
             string,
             {
+              authorId: string;
               author: UserRank;
               favoriteId: string;
               count: number;
@@ -56,6 +62,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
           (acc, val) => ({
             ...acc,
             [val.uid]: {
+              authorId: val.uid,
               author: val.author,
               favoriteId: val.favoriteId,
               count: Object.keys(getUserRanksFromResult(val)).length,
@@ -66,6 +73,12 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
       : {};
     return Object.values(byUser);
   }, [partyItems, usersRank]);
+
+  const handleClear = (authorId: string) => () => {
+    deleteUserRank(id, authorId).subscribe(() => {
+      updateRanksRef.current.next();
+    });
+  };
 
   return (
     <Card
@@ -90,7 +103,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
           direction="column"
           spacing={1}
         >
-          {usersStatus.map(({ author, count, favoriteId }) => (
+          {usersStatus.map(({ authorId, author, count, favoriteId }) => (
             <Grid container item direction="row" alignItems="center">
               <Grid item xs={2}>
                 <Chip
@@ -136,6 +149,13 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
                   value={(count / required) * 100}
                   variant="determinate"
                 />
+              </Grid>
+              <Grid sx={{ ml: 1 }} item alignItems="flex-end" justifyContent="flex-end">
+                <Tooltip placement="top" title="Удалить оценки">
+                  <IconButton onClick={handleClear(authorId)} aria-label="clear">
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
               </Grid>
             </Grid>
           ))}

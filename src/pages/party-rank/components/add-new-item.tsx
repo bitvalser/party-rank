@@ -30,6 +30,7 @@ export interface RankItemFromValues {
   name: string;
   type: RankItemType;
   value: string;
+  startTime: number;
 }
 
 const DEFAULT_VALUES: RankItemFromValues = {
@@ -37,6 +38,7 @@ const DEFAULT_VALUES: RankItemFromValues = {
   name: '',
   type: RankItemType.Video,
   value: '',
+  startTime: 0,
 };
 
 export interface AddNewItemProps {

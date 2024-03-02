@@ -1,20 +1,21 @@
 import { ReactEventHandler, forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { Box, IconButton, LinearProgress } from '@mui/material';
+import { Box, LinearProgress } from '@mui/material';
 
 import { useInjectable } from '../hooks/useInjectable';
 import useSubscription from '../hooks/useSubscription';
 import { RankItemType } from '../interfaces/rank-item.interface';
 import { AppTypes } from '../services/types';
 import { AudioVisualizer } from './audio-visualizer';
+import { VideoPlayer, VideoPlayerRef } from './video-player';
+import { YoutubePlayer, YoutubePlayerRef } from './youtube-player';
 
 export interface RankPartyPlayer {
   type: RankItemType;
   value: string;
   autoplay?: boolean;
+  startTime?: number;
   hideControls?: boolean;
   showTimeControls?: boolean;
   onPause?: () => void;
@@ -26,6 +27,7 @@ export interface RankPartyPlayer {
 export interface RankPartyPlayerRef {
   pause: () => void;
   play: () => void;
+  getCurrentTimestamp: () => Promise<number>;
 }
 
 export const RankPartyPlayer = memo(
@@ -37,6 +39,7 @@ export const RankPartyPlayer = memo(
         autoplay = true,
         hideControls = false,
         showTimeControls = false,
+        startTime = 0,
         onPause = () => {},
         onManualPause = () => {},
         onManualPlay = () => {},
@@ -44,14 +47,13 @@ export const RankPartyPlayer = memo(
       }: RankPartyPlayer,
       componentRef,
     ) => {
-      const [paused, setPaused] = useState(true);
       const { defaultVolume$ } = useInjectable(AppTypes.SettingsService);
       const [waiting, setWaiting] = useState([RankItemType.Audio, RankItemType.Video].includes(type));
       const defaultVolume = useSubscription(defaultVolume$, 1);
-      const videoRef = useRef<HTMLVideoElement>(null);
+      const videoRef = useRef<VideoPlayerRef>(null);
       const audioRef = useRef<HTMLAudioElement>(null);
       const containerRef = useRef<HTMLDivElement>(null);
-      const youtubeRef = useRef<HTMLIFrameElement>(null);
+      const youtubeRef = useRef<YoutubePlayerRef>(null);
       const [clientBoundingRect, setClientBoundingRect] = useState<DOMRect>();
 
       useEffect(() => {
@@ -60,7 +62,7 @@ export const RankPartyPlayer = memo(
 
       useEffect(() => {
         if (videoRef.current) {
-          videoRef.current.volume = defaultVolume;
+          videoRef.current.setVolume(defaultVolume);
         }
         if (audioRef.current) {
           audioRef.current.volume = defaultVolume;
@@ -80,7 +82,7 @@ export const RankPartyPlayer = memo(
                   await videoRef.current.play();
                   break;
                 case RankItemType.YouTube:
-                  youtubeRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                  youtubeRef.current.play();
                   break;
               }
             } catch (error) {
@@ -96,37 +98,36 @@ export const RankPartyPlayer = memo(
                 videoRef.current.pause();
                 break;
               case RankItemType.YouTube:
-                youtubeRef.current.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                youtubeRef.current.pause();
                 break;
             }
+          },
+          getCurrentTimestamp: async () => {
+            try {
+              switch (type) {
+                case RankItemType.Audio:
+                  return audioRef.current.currentTime;
+                case RankItemType.Video:
+                  return videoRef.current.getCurrentTime();
+                case RankItemType.YouTube:
+                  return await youtubeRef.current.getCurrentTime();
+              }
+            } catch (error) {
+              console.error(error);
+            }
+            return null;
           },
         }),
         [type],
       );
 
       const handlePause = () => {
-        setPaused(true);
         onPause();
       };
 
       const handlePlay = () => {
         setWaiting(false);
-        setPaused(false);
         onPlay();
-      };
-
-      const handleButtonPlay = () => {
-        if (videoRef.current.readyState > 1) {
-          videoRef.current.play();
-        }
-        onManualPlay();
-      };
-
-      const handleButtonPause = () => {
-        if (videoRef.current.readyState > 1) {
-          videoRef.current.pause();
-        }
-        onManualPause();
       };
 
       const handleReady = () => {
@@ -151,7 +152,6 @@ export const RankPartyPlayer = memo(
         }
       }, 500);
 
-      const youtubeId = new URLSearchParams((value || '').split('?')?.[1] || '').get('v') || value;
       const fontSize = clientBoundingRect?.height ? `${clientBoundingRect.height / 70}em` : '4em';
 
       return (
@@ -176,113 +176,49 @@ export const RankPartyPlayer = memo(
               }}
             />
           )}
+
           {type === RankItemType.YouTube && (
-            // eslint-disable-next-line jsx-a11y/iframe-has-title
-            <iframe
+            <YoutubePlayer
+              link={value}
+              startTime={startTime}
               ref={youtubeRef}
-              style={{
-                width: clientBoundingRect?.width || '100%',
-                height: clientBoundingRect?.height || '100%',
-              }}
-              // @ts-expect-error
-              frameborder="0"
-              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoplay ? 1 : 0}&loop=1&showinfo=0&controls=${showTimeControls ? 1 : 0}&enablejsapi=1`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            ></iframe>
+              width={clientBoundingRect?.width || '100%'}
+              height={clientBoundingRect?.height || '100%'}
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onManualPause={onManualPause}
+              onManualPlay={onManualPlay}
+              loop
+              autoplay={autoplay}
+              showTimeControls={showTimeControls}
+            />
           )}
           {type === RankItemType.Video && (
-            <>
-              <video
-                onCanPlay={handleReady}
-                ref={videoRef}
-                width="100%"
-                onLoadStart={handleVideoInit}
-                onVolumeChange={(event) => handleVolumeChange((event.target as HTMLVideoElement)?.volume)}
-                height="100%"
-                onPlay={handlePlay}
-                onPause={handlePause}
-                onWaiting={handleWaiting}
-                loop
-                autoPlay={autoplay}
-                controls={showTimeControls}
-              >
-                <source src={value} />
-              </video>
-              {!hideControls && !showTimeControls && (
-                <Box
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: paused ? 1 : -1,
-                    backgroundColor: paused ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
-                  }}
-                />
-              )}
-              {!paused && !hideControls && (
-                <IconButton
-                  onClick={handleButtonPause}
-                  disableRipple
-                  sx={{
-                    borderRadius: '50%',
-                    position: 'absolute',
-                    left: '50%',
-                    top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    padding: 3,
-                    fontSize,
-                    zIndex: 2,
-                    background: 'rgba(0, 0, 0, 0.6)',
-                    transition: (theme) =>
-                      theme.transitions.create('opacity', {
-                        duration: theme.transitions.duration.shortest,
-                      }),
-                    opacity: 0,
-                    '&:hover': {
-                      opacity: 1,
-                    },
-                  }}
-                >
-                  <PauseIcon fontSize="inherit" />
-                </IconButton>
-              )}
-              {paused && !hideControls && (
-                <IconButton
-                  onClick={handleButtonPlay}
-                  disableRipple
-                  sx={{
-                    borderRadius: '50%',
-                    left: '50%',
-                    top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    padding: 3,
-                    zIndex: 2,
-                    position: 'absolute',
-                    fontSize,
-                    background: 'rgba(0, 0, 0, 0.6)',
-                    transition: (theme) =>
-                      theme.transitions.create('opacity', {
-                        duration: theme.transitions.duration.shortest,
-                      }),
-                    '&:hover': {
-                      opacity: 0.9,
-                    },
-                  }}
-                >
-                  <PlayArrowIcon fontSize="inherit" />
-                </IconButton>
-              )}
-            </>
+            <VideoPlayer
+              src={value}
+              startTime={startTime}
+              fontSize={fontSize}
+              onCanPlay={handleReady}
+              ref={videoRef}
+              width="100%"
+              onLoadStart={handleVideoInit}
+              onVolumeChange={(event) => handleVolumeChange((event.target as HTMLVideoElement)?.volume)}
+              height="100%"
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onManualPause={onManualPause}
+              onManualPlay={onManualPlay}
+              onWaiting={handleWaiting}
+              loop
+              autoplay={autoplay}
+              showTimeControls={showTimeControls}
+            />
           )}
           {type === RankItemType.Audio && (
             <AudioVisualizer
               width={clientBoundingRect?.width || '100%'}
               height={clientBoundingRect?.height || '100%'}
+              startTime={startTime}
               src={value}
               ref={audioRef}
               hideControls={hideControls}

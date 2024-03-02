@@ -35,6 +35,7 @@ interface PartyRankResultsPageComponentProps {
   usersRank: (UserRank & { author?: AppUser })[];
   initialControllable: boolean;
   playDuration: number;
+  useVideoStartTime: boolean;
 }
 
 const controlButtonSx: SxProps<Theme> = {
@@ -59,7 +60,14 @@ const controlButtonSx: SxProps<Theme> = {
 };
 
 const PartyRankResultsPageComponent = memo(
-  ({ items, partyRank, usersRank, initialControllable, playDuration }: PartyRankResultsPageComponentProps) => {
+  ({
+    items,
+    partyRank,
+    usersRank,
+    initialControllable,
+    playDuration,
+    useVideoStartTime,
+  }: PartyRankResultsPageComponentProps) => {
     const currentPlayerRef = useRef<RankPartyPlayerRef[]>(Array.from({ length: 2 }));
     const [currentIndex, setCurrentIndex] = useState(0);
     const [controllable, setControllable] = useState(initialControllable);
@@ -311,6 +319,7 @@ const PartyRankResultsPageComponent = memo(
                 <RankPartyPlayer
                   ref={(ref) => (currentPlayerRef.current[i - currentIndex] = ref as any)}
                   type={item.type}
+                  startTime={!controllable || useVideoStartTime ? item.startTime ?? 0 : 0}
                   value={item.value}
                   autoplay={currentIndex === i}
                   showTimeControls={controllable}
@@ -506,9 +515,10 @@ export const PartyRankResultsPage = () => {
   const [listLoading, setListLoading] = useState(true);
   const [rankLoading, setRankLoading] = useState(true);
   const { getRankItems, getPartyRank, getUserRanks, partyItems$ } = useInjectable(AppTypes.PartyRanks);
-  const { controllablePlayer$, playDuration$ } = useInjectable(AppTypes.SettingsService);
+  const { controllablePlayer$, playDuration$, useVideoStartTime$ } = useInjectable(AppTypes.SettingsService);
   const playDuration = useSubscription(playDuration$.pipe(map((time) => time * 1000)), 15);
   const controllablePlayer = useSubscription(controllablePlayer$, false);
+  const useVideoStartTime = useSubscription(useVideoStartTime$, true);
   const partyRank = useSubscription(getPartyRank(id));
   const usersRank = useSubscription(
     getUserRanks(id, { includeUser: true }).pipe(finalize(() => setRankLoading(false))),
@@ -549,6 +559,7 @@ export const PartyRankResultsPage = () => {
       usersRank={usersRank}
       playDuration={playDuration}
       initialControllable={controllablePlayer}
+      useVideoStartTime={useVideoStartTime}
     />
   );
 };

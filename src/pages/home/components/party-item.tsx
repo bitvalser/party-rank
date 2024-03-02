@@ -59,37 +59,54 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
         </Grid>
       </CardContent>
       <CardActions>
-        {creator && (
-          <Chip
-            size="medium"
-            avatar={<Avatar alt={creator.displayName} src={creator.photoURL} />}
-            label={creator.displayName}
-            variant="filled"
-          />
-        )}
-        <Grid item xs>
-          {createdDate && (
-            <Typography fontSize={14} noWrap>
-              Создан {DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED)}
-            </Typography>
+        <Grid
+          sx={{
+            height: 32,
+          }}
+          container
+          direction="row"
+          alignItems="center"
+        >
+          {creator && (
+            <Chip
+              size="medium"
+              avatar={<Avatar alt={creator.displayName} src={creator.photoURL} />}
+              label={creator.displayName}
+              variant="filled"
+            />
           )}
-        </Grid>
-        <Grid xs container direction="row" justifyContent="flex-end" spacing={1}>
-          {status !== PartyRankStatus.Finished && (
-            <Button size="small" onClick={handleView}>
-              Участвовать
-            </Button>
-          )}
-          {status === PartyRankStatus.Finished && (
-            <>
-              <Button disabled={!showTable} onClick={handleTableView} size="small">
-                Итоговая таблица
-              </Button>
-              <Button onClick={handleView} size="small">
-                Перейти
-              </Button>
-            </>
-          )}
+          <Grid
+            sx={{
+              ml: 1,
+            }}
+            item
+            xs
+          >
+            {createdDate && (
+              <Typography fontSize={14} noWrap>
+                Создан {DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED)}
+              </Typography>
+            )}
+          </Grid>
+          <Grid item xs>
+            <Grid container direction="row" justifyContent="flex-end" columnSpacing={1}>
+              {status !== PartyRankStatus.Finished && (
+                <Button size="small" onClick={handleView}>
+                  Участвовать
+                </Button>
+              )}
+              {status === PartyRankStatus.Finished && (
+                <>
+                  <Button disabled={!showTable} onClick={handleTableView} size="small">
+                    Итоговая таблица
+                  </Button>
+                  <Button onClick={handleView} size="small">
+                    Перейти
+                  </Button>
+                </>
+              )}
+            </Grid>
+          </Grid>
         </Grid>
       </CardActions>
     </Card>

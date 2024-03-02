@@ -19,6 +19,7 @@ export interface IPartyRanks {
   deleteRankItem(partyId: string, id: string): Observable<void>;
   getUserRank(partyId: string): Observable<UserRank>;
   updateUserRank(partyId: string, payload: Partial<UserRank>): Observable<void>;
+  deleteUserRank(partyId: string, uid: string): Observable<void>;
   updateRankItem(
     partyId: string,
     itemId: string,

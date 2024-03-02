@@ -1,4 +1,12 @@
-import { AudioHTMLAttributes, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import {
+  AudioHTMLAttributes,
+  ReactEventHandler,
+  forwardRef,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import musicBgImage from '@assets/images/music-bg.jpg';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -8,6 +16,7 @@ import { Box, IconButton } from '@mui/material';
 interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {
   width?: string | number;
   height?: string | number;
+  startTime?: number;
   buttonFontSize?: string;
   autoplay?: boolean;
   hideControls?: boolean;
@@ -29,6 +38,7 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
     height,
     buttonFontSize = '4em',
     hideControls,
+    startTime = 0,
     autoplay = true,
     showTimeControls,
     onPlay = () => {},
@@ -142,6 +152,10 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
     }
   };
 
+  const handleAudioInit: ReactEventHandler<HTMLAudioElement> = (event) => {
+    (event.target as HTMLAudioElement).currentTime = startTime;
+  };
+
   const handlePlay = (event: any) => {
     audioRef.current.volume = 1;
     setPaused(false);
@@ -175,6 +189,7 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
         ref={audioRef}
         autoPlay={canPlay && autoplay}
         loop
+        onLoadStart={handleAudioInit}
         onPlay={handlePlay}
         onPause={handlePause}
         controls={showTimeControls}

@@ -51,6 +51,7 @@ export class PartyRanks implements IPartyRanks {
     this.getUserRanks = this.getUserRanks.bind(this);
     this.updateRankItem = this.updateRankItem.bind(this);
     this.deletePartyRank = this.deletePartyRank.bind(this);
+    this.deleteUserRank = this.deleteUserRank.bind(this);
   }
 
   public createPartyRank(payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id'>): Observable<PartyRank> {
@@ -194,7 +195,6 @@ export class PartyRanks implements IPartyRanks {
     itemId: string,
     payload: Partial<Omit<RankItem, 'id' | 'authorId' | 'author'>>,
   ): Observable<RankItem> {
-    console.log(payload);
     return of(void 0).pipe(
       switchMap(() =>
         updateDoc(
@@ -229,6 +229,14 @@ export class PartyRanks implements IPartyRanks {
           payload,
           { merge: true },
         ),
+      ),
+    );
+  }
+
+  public deleteUserRank(partyId: string, uid: string): Observable<void> {
+    return of(void 0).pipe(
+      switchMap(() =>
+        deleteDoc(doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks, uid)),
       ),
     );
   }

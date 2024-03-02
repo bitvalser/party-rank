@@ -14,4 +14,5 @@ export interface RankItem {
   type: RankItemType;
   name: string;
   value: string;
+  startTime: number;
 }

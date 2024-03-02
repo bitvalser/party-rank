@@ -9,12 +9,12 @@ import useSubscription from '../../core/hooks/useSubscription';
 import { AppTypes } from '../../core/services/types';
 
 export const SettingsPage = () => {
-  const { controllablePlayer$, playDuration$, defaultVolume$, votingPlayerAutoplay$ } = useInjectable(
-    AppTypes.SettingsService,
-  );
+  const { controllablePlayer$, playDuration$, defaultVolume$, votingPlayerAutoplay$, useVideoStartTime$ } =
+    useInjectable(AppTypes.SettingsService);
   const playDuration = useSubscription(playDuration$, 0);
   const controllablePlayer = useSubscription(controllablePlayer$, false);
   const votingPlayerAutoplay = useSubscription(votingPlayerAutoplay$, false);
+  const useVideoStartTime = useSubscription(useVideoStartTime$, true);
   const defaultVolume = useSubscription(defaultVolume$, 1);
   const [durationValue, setDurationValue] = useState(null);
   const [volumeValue, setVolumeValue] = useState(null);
@@ -43,6 +43,10 @@ export const SettingsPage = () => {
 
   const handleChangeVotingAutoplay = (event: any, value: boolean) => {
     votingPlayerAutoplay$.next(value);
+  };
+
+  const handleChangeUseVideoStartTime = (event: any, value: boolean) => {
+    useVideoStartTime$.next(value);
   };
 
   return (
@@ -113,6 +117,13 @@ export const SettingsPage = () => {
                 value={durationValue ?? playDuration}
                 onChange={handleDurationChange}
                 disabled={controllablePlayer}
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                disabled={!controllablePlayer}
+                control={<Checkbox checked={useVideoStartTime} onChange={handleChangeUseVideoStartTime} />}
+                label="Использовать сохранённое время начала воспроизведения"
               />
             </Grid>
             <Grid item>

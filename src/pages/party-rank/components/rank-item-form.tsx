@@ -1,6 +1,9 @@
+import { Duration } from 'luxon';
+import { useRef } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 
 import {
+  Button,
   FormControl,
   FormControlLabel,
   FormHelperText,
@@ -9,9 +12,10 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  Typography,
 } from '@mui/material';
 
-import { RankPartyPlayer } from '../../../core/components/rank-party-player';
+import { RankPartyPlayer, RankPartyPlayerRef } from '../../../core/components/rank-party-player';
 import { UsersAutocomplete } from '../../../core/components/users-autocomplete';
 import { RankItemType } from '../../../core/interfaces/rank-item.interface';
 import { validURL } from '../../../core/utils/valid-url';
@@ -26,10 +30,20 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
     control,
     formState: { errors },
     watch,
+    setValue,
   } = useFormContext();
+  const playerRef = useRef<RankPartyPlayerRef>();
 
   const type = watch('type');
   const value = watch('value');
+  const startTime = watch('startTime');
+
+  const handleStartTime = async () => {
+    const time = await playerRef.current.getCurrentTimestamp();
+    if (time) {
+      setValue('startTime', time);
+    }
+  };
 
   return (
     <Grid
@@ -126,7 +140,15 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
           direction="column"
         >
           <FormLabel id="anime-provider-group-label">Превью</FormLabel>
-          <RankPartyPlayer key={value} type={type} value={value} showTimeControls autoplay={autoplay} />
+          <RankPartyPlayer ref={playerRef} key={value} type={type} value={value} showTimeControls autoplay={autoplay} />
+        </Grid>
+        <Grid item>
+          <Grid container direction="row" justifyContent="space-between" alignItems="center">
+            <Button type="button" variant="text" onClick={handleStartTime}>
+              Зафиксировать время начала
+            </Button>
+            <Typography>{Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:ms')}</Typography>
+          </Grid>
         </Grid>
       </Grid>
     </Grid>

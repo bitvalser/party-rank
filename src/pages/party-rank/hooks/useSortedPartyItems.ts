@@ -7,7 +7,7 @@ import { getUserRanksFromResult } from '../../../core/utils/get-user-ranks';
 export const useSortedPartyItems = (
   partyItems: RankItem[],
   usersRank: UserRank[],
-): (RankItem & { favoriteCount: number; grade: number })[] => {
+): (RankItem & { favoriteCount: number; grade: number; totalScore: number })[] => {
   return useMemo(() => {
     if (partyItems?.length > 0 && usersRank?.length > 0) {
       const rankBy: {
@@ -30,15 +30,14 @@ export const useSortedPartyItems = (
         .map((item) => ({
           ...item,
           favoriteCount: rankBy.favorites[item.id] ?? 0,
+          totalScore:
+            (rankBy.grades[item.id] || []).reduce((acc, val) => acc + val) + (rankBy.favorites[item.id] ?? 0) * 0.5,
           grade: rankBy.grades[item.id]
             ? rankBy.grades[item.id].reduce((acc, val) => acc + val) / rankBy.grades[item.id].length
             : null,
         }))
         .sort((rankA, rankB) => {
-          const rank = rankB.grade - rankA.grade;
-          if (rank === 0) {
-            return rankB.favoriteCount - rankA.favoriteCount;
-          }
+          const rank = rankB.totalScore - rankA.totalScore;
           return rank;
         });
     }

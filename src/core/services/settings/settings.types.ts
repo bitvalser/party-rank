@@ -5,4 +5,5 @@ export interface ISettingsService {
   controllablePlayer$: CachedSubject<boolean>;
   defaultVolume$: CachedSubject<number>;
   votingPlayerAutoplay$: CachedSubject<boolean>;
+  useVideoStartTime$: CachedSubject<boolean>;
 }
