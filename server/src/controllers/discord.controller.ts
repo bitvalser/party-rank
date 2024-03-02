@@ -19,7 +19,6 @@ export class AppDiscordController {
 
     if (code) {
       try {
-        console.log(code);
         const tokenResponseData = await fetch(`${AppDiscordController.API_URL}/oauth2/token`, {
           method: 'POST',
           body: new URLSearchParams({
