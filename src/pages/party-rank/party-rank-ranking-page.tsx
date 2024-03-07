@@ -158,7 +158,7 @@ const PartRankRankingPageComponent = memo(
                 zIndex: 10,
                 position: 'absolute',
                 width: '100%',
-                background: 'rgba(0, 0, 0, 0.2)',
+                background: 'rgba(0, 0, 0, 0.8)',
               }}
               container
               direction="row"
@@ -170,7 +170,14 @@ const PartRankRankingPageComponent = memo(
                   <IconButton onClick={goBack}>
                     <ArrowBackIcon />
                   </IconButton>
-                  <Typography sx={{ ml: 1 }} component="h4">
+                  <Typography
+                    sx={{
+                      ml: 1,
+                      textShadow: (theme) =>
+                        `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
+                    }}
+                    component="h4"
+                  >
                     {item.name}
                   </Typography>
                 </Grid>

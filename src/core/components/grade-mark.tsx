@@ -23,13 +23,14 @@ const COLORS = [
 ];
 
 export const GradeMark = ({
-  value,
+  value: propsValue,
   size,
   fontSize = '16px',
   backgroundColor,
   isAuthorRank = false,
   showDecimal = 1,
 }: GradeMarkProps) => {
+  const value = propsValue ?? 0;
   const color = isAuthorRank ? '#00fff9' : value > 0 ? COLORS[Math.round(value - 1)] || '#000' : '#fff';
 
   return (

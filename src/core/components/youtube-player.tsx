@@ -1,7 +1,9 @@
-import { ReactEventHandler, forwardRef, memo, useEffect, useImperativeHandle, useRef } from 'react';
+import { ReactEventHandler, forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 // @ts-ignore
 import YouTubePlayer from 'youtube-player';
+
+import { Box, LinearProgress } from '@mui/material';
 
 import { useInjectable } from '../hooks/useInjectable';
 import useSubscription from '../hooks/useSubscription';
@@ -49,6 +51,7 @@ export const YoutubePlayer = memo(
     ) => {
       const { defaultVolume$ } = useInjectable(AppTypes.SettingsService);
       const defaultVolume = useSubscription(defaultVolume$, 1);
+      const [ready, setReady] = useState(false);
       const containerRef = useRef<HTMLDivElement>(null);
       const playerRef = useRef<any>(null);
 
@@ -58,12 +61,11 @@ export const YoutubePlayer = memo(
         if (!youtubeId) return;
 
         playerRef.current = YouTubePlayer(containerRef.current, {
-          width,
-          height,
           videoId: youtubeId,
           playerVars: {
             autoplay: autoplay ? 1 : 0,
             loop: loop ? 1 : 0,
+            playlist: youtubeId,
             showinfo: 0,
             start: startTime ? startTime : 0,
             controls: showTimeControls ? 1 : 0,
@@ -82,10 +84,17 @@ export const YoutubePlayer = memo(
           }
         });
 
+        const readyListener = playerRef.current.on('ready', () => {
+          setReady(true);
+        });
+
         return () => {
           if (playerRef.current) {
             playerRef.current.off(stateListener);
-            defaultVolume$.next(playerRef.current.getVolume() / 100);
+            playerRef.current.off(readyListener);
+            playerRef.current.getVolume().then((value: number) => {
+              defaultVolume$.next(value / 100);
+            });
             playerRef.current.destroy();
             playerRef.current = null;
           }
@@ -95,9 +104,9 @@ export const YoutubePlayer = memo(
 
       useEffect(() => {
         if (playerRef.current) {
-          playerRef.current.setVolume(defaultVolume * 100);
+          playerRef.current.setVolume((defaultVolume ?? 1) * 100);
         }
-      }, [defaultVolume]);
+      }, [defaultVolume, ready]);
 
       useImperativeHandle(
         componentRef,
@@ -127,14 +136,29 @@ export const YoutubePlayer = memo(
         [],
       );
 
+      useEffect(() => {
+        if (containerRef.current) {
+          console.log(playerRef.current);
+          if (playerRef.current) {
+            playerRef.current.getIframe().then((element: HTMLIFrameElement) => {
+              element.style.width = typeof width === 'number' ? `${width}px` : width;
+              element.style.height = typeof height === 'number' ? `${height}px` : height;
+            });
+          }
+        }
+      }, [width, height]);
+
       return (
-        <div
-          ref={containerRef}
-          style={{
+        <Box
+          sx={{
             width,
             height,
+            opacity: ready ? 1 : 0,
           }}
-        />
+        >
+          {!ready && <LinearProgress />}
+          <Box ref={containerRef} />
+        </Box>
       );
     },
   ),

@@ -247,7 +247,7 @@ const PartyRankResultsPageComponent = memo(
                   width: '100%',
                   maxHeight: '100px',
                   overflow: 'hidden',
-                  background: 'rgba(0, 0, 0, 0.6)',
+                  background: 'rgba(0, 0, 0, 0.8)',
                 }}
                 container
                 direction="row"
@@ -274,6 +274,8 @@ const PartyRankResultsPageComponent = memo(
                       [theme.breakpoints.down('md')]: {
                         fontSize: '14px',
                       },
+                      textShadow: (theme) =>
+                        `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
                     })}
                     component="h4"
                   >
@@ -434,9 +436,9 @@ const PartyRankResultsPageComponent = memo(
           })}
         >
           <Grid container flexDirection="row" wrap="wrap" justifyContent="space-around" alignContent="start">
-            {ranks.map((userRank) => (
+            {ranks.map(({ author, favorite, myRank, value }) => (
               <Grid
-                key={userRank.author.uid}
+                key={author.uid}
                 sx={{ width: 120 * sizeFactor, height: 120 * sizeFactor, position: 'relative' }}
                 item
                 container
@@ -449,29 +451,28 @@ const PartyRankResultsPageComponent = memo(
                   sx={{
                     mb: '-12px',
                     zIndex: 2,
-                    color: (theme) => (userRank.myRank ? '#00fff9' : theme.palette.text.primary),
+                    color: (theme) => (myRank ? '#00fff9' : theme.palette.text.primary),
                     textShadow: (theme) =>
                       `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
                   }}
-                  fontSize={18 * sizeFactor}
+                  fontSize={author.displayName.length <= 10 ? 18 * sizeFactor : '1em'}
                   fontWeight="bold"
                   whiteSpace="nowrap"
                 >
-                  {userRank.author.displayName}
+                  {author.displayName}
                 </Typography>
                 <Avatar
                   sx={{
                     width: 70 * sizeFactor,
                     height: 70 * sizeFactor,
                     borderRadius: 2,
-                    border: (theme) =>
-                      `2px solid ${!userRank.favorite ? theme.palette.grey[900] : theme.palette.error.main}`,
+                    border: (theme) => `2px solid ${!favorite ? theme.palette.grey[900] : theme.palette.error.main}`,
                   }}
-                  alt={userRank.author.displayName}
-                  src={userRank.author.photoURL}
+                  alt={author.displayName}
+                  src={author.photoURL}
                   variant="square"
                 />
-                {userRank.favorite && (
+                {favorite && (
                   <FavoriteIcon
                     sx={{
                       top: 28,
@@ -495,9 +496,9 @@ const PartyRankResultsPageComponent = memo(
                   <GradeMark
                     size={32 * sizeFactor}
                     fontSize={14 * sizeFactor}
-                    value={userRank.value}
+                    value={value}
                     showDecimal={1}
-                    isAuthorRank={userRank.myRank}
+                    isAuthorRank={myRank}
                   />
                 </Box>
               </Grid>
