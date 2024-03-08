@@ -67,7 +67,7 @@ export const YoutubePlayer = memo(
             loop: loop ? 1 : 0,
             playlist: youtubeId,
             showinfo: 0,
-            start: startTime ? startTime : 0,
+            start: startTime ? Math.round(startTime) : 0,
             controls: showTimeControls ? 1 : 0,
             enablejsapi: 1,
           },
@@ -138,7 +138,6 @@ export const YoutubePlayer = memo(
 
       useEffect(() => {
         if (containerRef.current) {
-          console.log(playerRef.current);
           if (playerRef.current) {
             playerRef.current.getIframe().then((element: HTMLIFrameElement) => {
               element.style.width = typeof width === 'number' ? `${width}px` : width;
