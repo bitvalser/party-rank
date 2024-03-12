@@ -100,6 +100,7 @@ export const AddNewItem = ({
           onAddNew(result);
           setShowModal(false);
           form.reset();
+          setConflictItem(null);
         });
     }
   };

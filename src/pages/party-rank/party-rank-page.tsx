@@ -39,6 +39,7 @@ import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { RankItem as IRankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
+import { getUserRanksFromResult } from '../../core/utils/get-user-ranks';
 import { AddNewItem, AddNewItemProps } from './components/add-new-item';
 import { EditRankItem } from './components/edit-rank-item';
 import { EditRankParty } from './components/edit-rank-party';
@@ -125,6 +126,8 @@ export const PartyRankPage = () => {
         : {},
     [partyItems, currentUser],
   );
+
+  const userRankCount = useMemo(() => Object.values(getUserRanksFromResult(userRank)).length, [userRank]);
 
   if (error) {
     return <OopsPage message={error?.message} />;
@@ -402,6 +405,46 @@ export const PartyRankPage = () => {
               Ваш результат
             </Typography>
             <UserRankResult partyItems={partyItems} user={currentUser} userRank={userRank} />
+            <Grid
+              sx={{
+                marginTop: 1,
+                padding: 1,
+                paddingBottom: 0,
+              }}
+              container
+              direction="column"
+              spacing={1}
+            >
+              <Grid container item direction="row" alignItems="center">
+                <Grid
+                  sx={{
+                    mb: 2,
+                  }}
+                  xs
+                  item
+                >
+                  <Grid
+                    sx={{
+                      mb: '6px',
+                      overflow: 'hidden',
+                    }}
+                    container
+                    direction="row"
+                    alignItems="center"
+                    wrap="nowrap"
+                  >
+                    <Typography>
+                      Оценено {userRankCount} / {partyItems.length}
+                    </Typography>
+                  </Grid>
+                  <LinearProgress
+                    color={userRankCount === partyItems.length ? 'success' : 'primary'}
+                    value={(userRankCount / partyItems.length) * 100}
+                    variant={listLoading ? 'indeterminate' : 'determinate'}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
           </CardContent>
         </Card>
       )}
