@@ -45,6 +45,10 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
     }
   };
 
+  const handlePlayTime = () => {
+    playerRef.current.playWithTimestamp(startTime ?? 0);
+  };
+
   return (
     <Grid
       sx={{
@@ -147,7 +151,9 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             <Button type="button" variant="text" onClick={handleStartTime}>
               Зафиксировать время начала
             </Button>
-            <Typography>{Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:ms')}</Typography>
+            <Button type="button" variant="text" color="info" onClick={handlePlayTime}>
+              <Typography color="white">{Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:SSS')}</Typography>
+            </Button>
           </Grid>
         </Grid>
       </Grid>

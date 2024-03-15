@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { MouseEventHandler, memo, useRef, useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -7,7 +7,7 @@ import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import TagIcon from '@mui/icons-material/Tag';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { Avatar, Box, Chip, Grid, IconButton, Modal, SxProps, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Chip, Grid, IconButton, Modal, Popover, SxProps, Tooltip, Typography } from '@mui/material';
 
 import { GradeMark } from '../../../core/components/grade-mark';
 import { RankPartyPlayer } from '../../../core/components/rank-party-player';
@@ -16,6 +16,7 @@ import useSubscription from '../../../core/hooks/useSubscription';
 import { PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
 import { RankItem as IRankItem } from '../../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../../core/services/types';
+import { UsersList } from './users-list';
 
 interface RankItemProps {
   sx?: SxProps;
@@ -28,6 +29,7 @@ interface RankItemProps {
   oneLine?: boolean;
   rank?: number;
   favoriteCount?: number;
+  userLikesIds?: string[];
   onDelete?: (id: string) => void;
   onClear?: (id: string) => void;
   onEdit?: (id: string) => void;
@@ -48,10 +50,13 @@ export const RankItem = memo(
     showAuthor: showAuthorProp = true,
     rank = null,
     favoriteCount = 0,
+    userLikesIds = [],
   }: RankItemProps) => {
     const { user$ } = useInjectable(AppTypes.AuthService);
     const currentUser = useSubscription(user$);
     const [showPreview, setShowPreview] = useState(false);
+    const [showLikesEl, setShowLikesEl] = useState(null);
+    const likesContainerRef = useRef();
 
     const { author, authorId, name, type, value, id } = data;
     const showAuthor =
@@ -76,6 +81,14 @@ export const RankItem = memo(
 
     const handleClosePreview = () => {
       setShowPreview(false);
+    };
+
+    const handleCloseLikes: MouseEventHandler<HTMLDivElement> = (event) => {
+      setShowLikesEl(null);
+    };
+
+    const handleShowLikes: MouseEventHandler<HTMLDivElement> = (event) => {
+      setShowLikesEl(likesContainerRef.current);
     };
 
     return (
@@ -163,16 +176,41 @@ export const RankItem = memo(
                 />
               )}
               {favoriteCount > 0 && (
-                <Chip
-                  sx={{
-                    mr: 2,
-                  }}
-                  size="small"
-                  avatar={<FavoriteIcon />}
-                  label={`${favoriteCount}`}
-                  variant="filled"
-                  color="error"
-                />
+                <>
+                  <Popover
+                    open={Boolean(showLikesEl)}
+                    anchorEl={showLikesEl}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    onClose={handleCloseLikes}
+                  >
+                    <UsersList userIds={userLikesIds} />
+                  </Popover>
+                  <Box
+                    ref={likesContainerRef}
+                    sx={{
+                      mr: 2,
+                      zIndex: 1,
+                      cursor: 'pointer',
+                    }}
+                    onClick={handleShowLikes}
+                  >
+                    <Chip
+                      sx={{ position: 'relative', zIndex: 0 }}
+                      size="small"
+                      avatar={<FavoriteIcon />}
+                      label={`${favoriteCount}`}
+                      variant="filled"
+                      color="error"
+                    />
+                  </Box>
+                </>
               )}
               {grade && <GradeMark size={32} value={grade} />}
             </Grid>

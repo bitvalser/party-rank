@@ -28,6 +28,7 @@ export interface RankPartyPlayerRef {
   pause: () => void;
   play: () => void;
   getCurrentTimestamp: () => Promise<number>;
+  playWithTimestamp: (time: number) => void;
 }
 
 export const RankPartyPlayer = memo(
@@ -116,6 +117,19 @@ export const RankPartyPlayer = memo(
               console.error(error);
             }
             return null;
+          },
+          playWithTimestamp: (time: number) => {
+            switch (type) {
+              case RankItemType.Audio:
+                audioRef.current.currentTime = time;
+                break;
+              case RankItemType.Video:
+                videoRef.current.playWithTimestamp(time);
+                break;
+              case RankItemType.YouTube:
+                youtubeRef.current.playWithTimestamp(time);
+                break;
+            }
           },
         }),
         [type],

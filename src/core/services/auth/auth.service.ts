@@ -5,6 +5,7 @@ import { inject, injectable } from 'inversify';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
 import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
+import { CachedSubject } from '../../classes/cached-subject.class';
 import { FirestoreCollection } from '../../constants/firestore-collection.constants';
 import { AppUser } from '../../interfaces/app-user.interface';
 import { AppTypes } from '../types';
@@ -14,7 +15,9 @@ import { IAuthService } from './auth.types';
 export class AuthService implements IAuthService {
   private auth: Auth;
   private firestore: Firestore;
-  private usersCache: Record<string, { invalidate: number; data: AppUser }> = {};
+  private usersCache$: CachedSubject<Record<string, { invalidate: number; data: AppUser }>> = new CachedSubject<
+    Record<string, { invalidate: number; data: AppUser }>
+  >(localStorage, 'cache:users', {});
   public user$: BehaviorSubject<User> = new BehaviorSubject<User>(null);
   public ready$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private shareAllUsers$: Observable<AppUser[]>;
@@ -54,10 +57,11 @@ export class AuthService implements IAuthService {
   }
 
   public getUser(uid: string): Observable<AppUser> {
+    const usersCache = this.usersCache$.getValue();
     return of(void 0).pipe(
       switchMap(() => {
-        if (this.usersCache[uid] && this.usersCache[uid].invalidate > Date.now()) {
-          return of(this.usersCache[uid].data);
+        if (usersCache[uid] && usersCache[uid].invalidate > Date.now()) {
+          return of(usersCache[uid].data);
         }
         return from(getDoc(doc(this.firestore, FirestoreCollection.Users, uid))).pipe(
           map((snapshot) => {
@@ -71,10 +75,11 @@ export class AuthService implements IAuthService {
             return snapshot.data() as AppUser;
           }),
           tap((user) => {
-            this.usersCache[user.uid] = {
+            usersCache[user.uid] = {
               invalidate: Date.now() + 60 * 60 * 1000,
               data: user,
             };
+            this.usersCache$.next(usersCache);
           }),
         );
       }),

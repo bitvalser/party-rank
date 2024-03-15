@@ -36,6 +36,7 @@ export interface VideoPlayerRef {
   play: () => void;
   setVolume: (value: number) => void;
   getCurrentTime: () => number;
+  playWithTimestamp: (time: number) => void;
 }
 
 export const VideoPlayer = memo(
@@ -84,6 +85,9 @@ export const VideoPlayer = memo(
           },
           getCurrentTime: () => {
             return videoRef.current.currentTime;
+          },
+          playWithTimestamp: (time: number) => {
+            videoRef.current.currentTime = time;
           },
         }),
         [],

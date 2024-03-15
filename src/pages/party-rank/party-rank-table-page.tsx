@@ -124,6 +124,7 @@ export const PartyRankTablePage = () => {
             data={item}
             partyStatus={PartyRankStatus.Finished}
             favoriteCount={item.favoriteCount}
+            userLikesIds={item.userLikesIds}
             showAuthor={false}
             grade={item.grade}
           />

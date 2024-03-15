@@ -29,6 +29,7 @@ export interface YoutubePlayerRef {
   play: () => void;
   setVolume: (value: number) => void;
   getCurrentTime: () => Promise<number>;
+  playWithTimestamp: (time: number) => void;
 }
 
 export const YoutubePlayer = memo(
@@ -131,6 +132,11 @@ export const YoutubePlayer = memo(
               return playerRef.current.getCurrentTime();
             }
             return null;
+          },
+          playWithTimestamp: (time: number) => {
+            if (playerRef.current) {
+              playerRef.current.seekTo(Math.round(time));
+            }
           },
         }),
         [],

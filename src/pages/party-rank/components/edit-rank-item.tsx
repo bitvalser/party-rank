@@ -55,6 +55,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
           outline: 'none',
           width: 596,
           minHeight: 700,
+          maxHeight: '80vh',
           borderRadius: '4px',
           paddingBottom: 0,
           display: 'flex',
@@ -91,7 +92,10 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
           style={{
             display: 'flex',
             flexGrow: 1,
+            padding: '16px',
             margin: 0,
+            flexDirection: 'column',
+            overflow: 'auto',
           }}
           onSubmit={handleSubmit(onSubmit)}
         >

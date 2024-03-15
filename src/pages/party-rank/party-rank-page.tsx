@@ -39,6 +39,7 @@ import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { RankItem as IRankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
+import { exportCsv } from '../../core/utils/export-csv';
 import { getUserRanksFromResult } from '../../core/utils/get-user-ranks';
 import { AddNewItem, AddNewItemProps } from './components/add-new-item';
 import { EditRankItem } from './components/edit-rank-item';
@@ -49,6 +50,7 @@ import { RankItem } from './components/rank-item';
 import { UserRankResult } from './components/user-rank-result';
 import { UserRankStatus } from './components/user-rank-status';
 import { UserVotingStatus } from './components/user-voting-status';
+import { EXPORT_COLUMN_DEFINITION } from './constants';
 
 export const PartyRankPage = () => {
   const {
@@ -238,6 +240,30 @@ export const PartyRankPage = () => {
     setShowEdit(false);
   };
 
+  const handleCsvExport = () => {
+    exportCsv(
+      EXPORT_COLUMN_DEFINITION,
+      partyItems.map((item) => {
+        const parts = item.name.match(/\(([^)]+)\)/g);
+        let data: Record<string, string> = {};
+        if ((parts[0] || '').toUpperCase().includes('OP')) {
+          data.op = (parts[1] || '').replace('(', '').replace(')', '').replaceAll(';', ',').replaceAll('"', "'");
+        }
+        if ((parts[0] || '').toUpperCase().includes('INS')) {
+          data.ins = (parts[1] || '').replace('(', '').replace(')', '').replaceAll(';', ',').replaceAll('"', "'");
+        }
+        if ((parts[0] || '').toUpperCase().includes('ED')) {
+          data.ed = (parts[1] || '').replace('(', '').replace(')', '').replaceAll(';', ',').replaceAll('"', "'");
+        }
+        return {
+          name: item.name.replace(parts[0], '').replace(parts[1], '').trim().replaceAll(';', ',').replaceAll('"', "'"),
+          ...data,
+        };
+      }),
+      `${name}.csv`,
+    );
+  };
+
   return (
     <>
       <Grid sx={{ overflow: 'hidden' }} container direction="row" rowSpacing={2}>
@@ -331,6 +357,11 @@ export const PartyRankPage = () => {
               <Button onClick={handleCopyInvite} size="small">
                 Скопировать инвайт-ссылку
               </Button>
+              {status === PartyRankStatus.Finished && !listLoading && (
+                <Button onClick={handleCsvExport} size="small">
+                  Экспортировать в CSV
+                </Button>
+              )}
             </CardActions>
           </Card>
         </Grid>
