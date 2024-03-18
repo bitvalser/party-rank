@@ -23,7 +23,9 @@ export class AppUploadController {
       return sendError(res, 'Unauthorized.', 400);
     }
     const fileEntities = await admin.app().firestore().collection('cdn').doc(req.firebaseToken.uid).get();
+    console.log(fileEntities);
     const fileToDelete = fileEntities[fileId];
+    console.log(fileToDelete);
     if (!fileToDelete) {
       return sendError(res, 'File not found.', 400);
     }
