@@ -10,6 +10,7 @@ import { PartyRankPage } from '../party-rank/party-rank-page';
 import { PartyRankTablePage } from '../party-rank/party-rank-table-page';
 import { PartiesListPage } from './parties-list-page';
 import { SettingsPage } from './settings-page';
+import { UploadPage } from './upload-page';
 
 export const HomePage = () => {
   const [anchorElUser, setAnchorElUser] = useState<HTMLElement>(null);
@@ -37,6 +38,10 @@ export const HomePage = () => {
 
   const handleSettings = () => {
     navigate('/settings');
+  };
+
+  const handleCdn = () => {
+    navigate('/upload');
   };
 
   return (
@@ -90,6 +95,9 @@ export const HomePage = () => {
             )}
             <Button sx={{ color: '#fff' }} onClick={handleSettings}>
               Настройки
+            </Button>
+            <Button sx={{ color: '#fff' }} onClick={handleCdn}>
+              Загрузить Медиа
             </Button>
           </Grid>
           {user && (
@@ -151,6 +159,7 @@ export const HomePage = () => {
           <Route path="/party-rank/:id/table" Component={PartyRankTablePage} />
           <Route path="/party-rank/:id" Component={PartyRankPage} />
           <Route path="/settings" Component={SettingsPage} />
+          <Route path="/upload" Component={UploadPage} />
           <Route path="/" Component={PartiesListPage} />
           <Route path="/*" element={<Navigate to="/" replace />} />
         </Routes>

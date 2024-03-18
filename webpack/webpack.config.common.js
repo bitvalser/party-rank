@@ -44,7 +44,8 @@ module.exports = () => {
       ],
     },
     plugins: [new webpack.DefinePlugin({
-      'process.env.DISCORD_REDIRECT_URL': JSON.stringify(process.env.DISCORD_REDIRECT_URL)
+      'process.env.DISCORD_REDIRECT_URL': JSON.stringify(process.env.DISCORD_REDIRECT_URL),
+      'process.env.SERVER_BASE_URL': JSON.stringify(process.env.SERVER_BASE_URL)
     })],
     performance: {
       hints: false,

@@ -73,7 +73,7 @@ export const PartyRankPage = () => {
       getPartyRank(id).pipe(
         catchError((error, caught) => {
           setError(error);
-          return caught;
+          return of(null);
         }),
       ),
       parties$.pipe(map((parties) => parties[id])),
@@ -132,7 +132,7 @@ export const PartyRankPage = () => {
   const userRankCount = useMemo(() => Object.values(getUserRanksFromResult(userRank)).length, [userRank]);
 
   if (error) {
-    return <OopsPage message={error?.message} />;
+    return <OopsPage message={error?.message} code={error?.code} />;
   }
 
   if (!partyRank) {

@@ -2,9 +2,19 @@ import { Container, Grid, Paper, Typography } from '@mui/material';
 
 interface OopsPageProps {
   message?: string;
+  code?: string;
 }
 
-export const OopsPage = ({ message }: OopsPageProps) => {
+const getCodeMessage = (code: string) => {
+  switch (code) {
+    case 'resource-exhausted':
+      return 'Превышен лимит на количество чтений базы данных. Ошибка временная и сайт начнёт работать когда наступит новый квота период. Новый период начнётся в 10:00 утра (по МСК)';
+    default:
+      return '';
+  }
+};
+
+export const OopsPage = ({ message, code = null }: OopsPageProps) => {
   return (
     <Container>
       <Grid
@@ -41,6 +51,11 @@ export const OopsPage = ({ message }: OopsPageProps) => {
             {message && (
               <Grid item>
                 <Typography>{message}</Typography>
+              </Grid>
+            )}
+            {code && (
+              <Grid item>
+                <Typography align="center">{getCodeMessage(code)}</Typography>
               </Grid>
             )}
           </Grid>

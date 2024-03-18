@@ -4,6 +4,6 @@ export const sendError = (res: Response, message: string, errorCode: number = 40
   res.status(errorCode);
   res.json({
     ok: false,
-    message,
+    message: message || 'Unknown error!',
   });
 };

@@ -6,6 +6,7 @@ node_modules/
 dist/
 uploads/
 build/
+test/
 
 *~
 *.sw[mnpcod]
