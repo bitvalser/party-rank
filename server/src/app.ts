@@ -33,7 +33,6 @@ class App {
         limits: { fileSize: 16 * 1024 * 1024 },
         useTempFiles: true,
         tempFileDir: '/temp-assets/',
-        abortOnLimit: true,
       }),
     );
     this.app.use('/test', appTestRouter);
