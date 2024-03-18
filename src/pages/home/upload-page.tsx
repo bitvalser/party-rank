@@ -49,7 +49,10 @@ export const UploadPage = () => {
   const handleFileChange = () => {
     if (fileInputRef.current.files.length === 1) {
       const fileToUpload = fileInputRef.current.files[0];
-      console.log(fileToUpload);
+      if (fileToUpload.size > MAX_FILE_SIZE) {
+        setError('Медиа файл превышает допустимый размер в 16мб');
+        return;
+      }
       setUploading(true);
       setError(null);
       uploadFile(fileToUpload)
