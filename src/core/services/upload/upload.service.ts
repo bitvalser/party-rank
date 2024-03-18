@@ -18,13 +18,13 @@ export class UploadService implements IUploadService {
     this.uploadFile = this.uploadFile.bind(this);
   }
 
-  public uploadFile(file: File): Observable<{ file: string }> {
+  public uploadFile(file: File): Observable<{ file: string; ok: boolean; message?: string }> {
     return of(void 0).pipe(
       combineLatestWith(this.authService.user$.getValue().getIdToken()),
       switchMap(([, token]) => {
         const data = new FormData();
         data.append('file', file);
-        return fetch(`${this.baseUrl}/cdn/upload`, {
+        return fetch(`${this.baseUrl}/party-rank/cdn/upload`, {
           method: 'POST',
           headers: {
             authorization: token,

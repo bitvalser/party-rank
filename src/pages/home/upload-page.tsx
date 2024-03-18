@@ -3,7 +3,7 @@ import { finalize } from 'rxjs/operators';
 
 import styled from '@emotion/styled';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { Button, Card, CardContent, Grid, LinearProgress, Typography } from '@mui/material';
+import { Button, Card, CardContent, FormHelperText, Grid, LinearProgress, Typography } from '@mui/material';
 
 import { useInjectable } from '../../core/hooks/useInjectable';
 import { AppTypes } from '../../core/services/types';
@@ -23,16 +23,28 @@ const VisuallyHiddenInput = styled('input')({
 export const UploadPage = () => {
   const { uploadFile } = useInjectable(AppTypes.UploadService);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef<HTMLInputElement>();
 
   const handleFileChange = () => {
     if (fileInputRef.current.files.length === 1) {
       setUploading(true);
+      setError(null);
       uploadFile(fileInputRef.current.files[0])
         .pipe(finalize(() => setUploading(false)))
-        .subscribe((result) => {
-          console.log(result);
-          fileInputRef.current.value = '';
+        .subscribe({
+          next: (result) => {
+            console.log(result);
+            if (!result.ok) {
+              setError(error?.message || 'Загрузить файл не удалось :(');
+            } else {
+            }
+            fileInputRef.current.value = '';
+          },
+          error: (error) => {
+            setError(error?.message || 'Загрузить файл не удалось :(');
+            fileInputRef.current.value = '';
+          },
         });
     }
   };
@@ -75,6 +87,11 @@ export const UploadPage = () => {
                 <VisuallyHiddenInput ref={fileInputRef} onChange={handleFileChange} type="file" accept=".mp3,.mp4" />
               </Button>
             </Grid>
+            {error && (
+              <Grid item>
+                <FormHelperText error>{error}</FormHelperText>
+              </Grid>
+            )}
           </Grid>
         </CardContent>
       </Card>

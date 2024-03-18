@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
 
 export interface IUploadService {
-  uploadFile(file: File): Observable<{ file: string }>;
+  uploadFile(file: File): Observable<{ file: string; ok: boolean; message?: string }>;
 }

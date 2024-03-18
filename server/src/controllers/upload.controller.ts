@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 
 import { sendError } from '../core/response-helper';
 
-const ASSETS_FOLDER = '/var/www/assets';
+const ASSETS_FOLDER = '/var/www/html/assets';
 const ALLOWED_EXTENSIONS = ['mp3', 'mp4'];
 
 export class AppUploadController {
