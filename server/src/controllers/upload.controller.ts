@@ -34,6 +34,9 @@ export class AppUploadController {
       .collection('cdn')
       .doc(req.firebaseToken.uid)
       .update({ [fileId]: admin.firestore.FieldValue.delete() });
+    res.json({
+      ok: true,
+    });
   }
 
   public async upload(req: Request, res: Response) {
