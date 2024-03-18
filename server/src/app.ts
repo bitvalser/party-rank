@@ -30,9 +30,10 @@ class App {
     this.app.use(cors());
     this.app.use(
       fileUpload({
-        limits: { fileSize: 16 * 1024 * 1024 },
+        limits: { fileSize: 20 * 1024 * 1024 },
         useTempFiles: true,
         tempFileDir: '/temp-assets/',
+        abortOnLimit: true,
       }),
     );
     this.app.use('/test', appTestRouter);
