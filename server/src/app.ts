@@ -27,8 +27,7 @@ class App {
 
   private config(): void {
     this.app.use(bodyParser.json());
-    this.app.use(cors({ origin: ['localhost:3001', 'party-rank.web.app'] }));
-    this.app.options('*', cors({ origin: ['localhost:3001', 'party-rank.web.app'] }));
+    this.app.use(cors({ credentials: true, origin: ['localhost:3001', 'party-rank.web.app'] }));
     this.app.use(
       fileUpload({
         limits: { fileSize: 20 * 1024 * 1024 },
