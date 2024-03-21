@@ -10,7 +10,7 @@ import { appDiscordRouter } from './routes/discord.routes';
 import { appTestRouter } from './routes/test.routes';
 import { appUploadRouter } from './routes/upload.routes';
 
-const serviceAccount = require('../party-rank-firebase-adminsdk-ayjnj-450d6abbba.json');
+const serviceAccount = require('../my-project-1523693285732-firebase-adminsdk-f7ilt-b714af9a52.json');
 
 class App {
   public app: express.Application;

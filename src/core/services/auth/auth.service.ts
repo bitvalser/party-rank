@@ -76,7 +76,7 @@ export class AuthService implements IAuthService {
           }),
           tap((user) => {
             usersCache[user.uid] = {
-              invalidate: Date.now() + 8 * 60 * 60 * 1000,
+              invalidate: Date.now() + 12 * 60 * 60 * 1000,
               data: user,
             };
             this.usersCache$.next(usersCache);
