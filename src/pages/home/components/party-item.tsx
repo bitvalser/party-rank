@@ -33,6 +33,7 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
             {status === PartyRankStatus.Ongoing && <Chip color="primary" size="small" label="В процессе" />}
             {status === PartyRankStatus.Rating && <Chip color="secondary" size="small" label="Голосование" />}
             {status === PartyRankStatus.Finished && <Chip color="success" size="small" label="Завершён" />}
+            {status === PartyRankStatus.Registration && <Chip color="error" size="small" label="Регистрация" />}
           </Grid>
         </Grid>
         <Grid

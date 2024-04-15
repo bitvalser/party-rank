@@ -89,6 +89,9 @@ const InvitePageComponent = () => {
                         {partyRank.status === PartyRankStatus.Finished && (
                           <Chip color="success" size="small" label="Завершён" />
                         )}
+                        {partyRank.status === PartyRankStatus.Registration && (
+                          <Chip color="error" size="small" label="Регистрация" />
+                        )}
                       </Grid>
                     </Grid>
                   </Card>

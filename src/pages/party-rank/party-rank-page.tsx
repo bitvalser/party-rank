@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, Subject, concat, merge, of } from 'rxjs';
 import { catchError, filter, finalize, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 
+import DoneIcon from '@mui/icons-material/Done';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LockIcon from '@mui/icons-material/Lock';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -44,9 +45,9 @@ import { getUserRanksFromResult } from '../../core/utils/get-user-ranks';
 import { AddNewItem, AddNewItemProps } from './components/add-new-item';
 import { EditRankItem } from './components/edit-rank-item';
 import { EditRankParty } from './components/edit-rank-party';
-import { ModeratorsList } from './components/moderators-list';
 import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
+import { UserChips } from './components/user-chips';
 import { UserRankResult } from './components/user-rank-result';
 import { UserRankStatus } from './components/user-rank-status';
 import { UserVotingStatus } from './components/user-voting-status';
@@ -61,6 +62,8 @@ export const PartyRankPage = () => {
     updatePartyRank,
     updateUserRank,
     deletePartyRank,
+    registerToPartyRank,
+    removeUserRegistration,
     partyItems$,
     parties$,
   } = useInjectable(AppTypes.PartyRanks);
@@ -129,7 +132,10 @@ export const PartyRankPage = () => {
     [partyItems, currentUser],
   );
 
-  const userRankCount = useMemo(() => Object.values(getUserRanksFromResult(userRank)).length, [userRank]);
+  const userRankCount = useMemo(() => {
+    const partyItemsIds = partyItems.map((item) => item.id);
+    return Object.keys(getUserRanksFromResult(userRank)).filter((itemId) => partyItemsIds.includes(itemId)).length;
+  }, [partyItems, userRank]);
 
   if (error) {
     return <OopsPage message={error?.message} code={error?.code} />;
@@ -152,8 +158,10 @@ export const PartyRankPage = () => {
     showTable,
     content,
     moderators = [],
+    members = null,
   } = partyRank;
   const isCreator = currentUser?.uid === creatorId || moderators.includes(currentUser?.uid);
+  const isMember = !Array.isArray(members) || members.includes(currentUser?.uid);
   const currentUserItems = partyItemsByUser[currentUser?.uid] || [];
 
   const handleNewRank: AddNewItemProps['onAddNew'] = (item) => {
@@ -240,6 +248,18 @@ export const PartyRankPage = () => {
     setShowEdit(false);
   };
 
+  const handleRegistration = () => {
+    registerToPartyRank(id).subscribe();
+  };
+
+  const handleStartParty = () => {
+    updatePartyRank(id, { status: PartyRankStatus.Ongoing }).subscribe();
+  };
+
+  const handleRemoveUserRegistration = (userId: string) => {
+    removeUserRegistration(id, userId).subscribe();
+  };
+
   const handleCsvExport = () => {
     exportCsv(
       EXPORT_COLUMN_DEFINITION,
@@ -280,7 +300,7 @@ export const PartyRankPage = () => {
                         <MoreVertIcon />
                       </IconButton>
                       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleCloseMenu}>
-                        <MenuItem onClick={handleEdit}>Редатировать</MenuItem>
+                        <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
                         <MenuItem onClick={handleConfirmDelete}>Удалить</MenuItem>
                       </Menu>
                     </div>
@@ -298,6 +318,7 @@ export const PartyRankPage = () => {
                   {status === PartyRankStatus.Ongoing && <Chip color="primary" size="small" label="В процессе" />}
                   {status === PartyRankStatus.Rating && <Chip color="secondary" size="small" label="Голосование" />}
                   {status === PartyRankStatus.Finished && <Chip color="success" size="small" label="Завершён" />}
+                  {status === PartyRankStatus.Registration && <Chip color="error" size="small" label="Регистрация" />}
                 </Grid>
               </Grid>
               {content && (
@@ -328,9 +349,19 @@ export const PartyRankPage = () => {
             </CardContent>
 
             <CardActions>
+              {status === PartyRankStatus.Registration && isCreator && (
+                <Button onClick={handleStartParty} size="small">
+                  Начать Пати Ранг
+                </Button>
+              )}
               {status === PartyRankStatus.Ongoing && isCreator && (
                 <Button onClick={handleStartVoting} size="small">
                   Начать Голосование
+                </Button>
+              )}
+              {status === PartyRankStatus.Registration && !isMember && (
+                <Button onClick={handleRegistration} size="small">
+                  Зарегистрироваться
                 </Button>
               )}
               {status === PartyRankStatus.Rating && isCreator && (
@@ -366,13 +397,21 @@ export const PartyRankPage = () => {
           </Card>
         </Grid>
       </Grid>
-      {isCreator && moderators?.length > 0 && <ModeratorsList moderators={moderators} />}
+      {isCreator && moderators?.length > 0 && <UserChips users={moderators} title="Модераторы" />}
+      {isCreator && members?.length > 0 && status !== PartyRankStatus.Finished && (
+        <UserChips
+          key={members.join()}
+          users={members}
+          title="Участники"
+          onDelete={isCreator ? handleRemoveUserRegistration : null}
+        />
+      )}
       {status === PartyRankStatus.Finished && <ParticipantsList partyItems={partyItems} />}
-      {isCreator && status === PartyRankStatus.Rating && (
+      {isCreator && status === PartyRankStatus.Rating && !listLoading && (
         <UserVotingStatus id={id} required={partyItems.length} partyItems={partyItems} />
       )}
-      {isCreator && status === PartyRankStatus.Ongoing && (
-        <UserRankStatus partyItems={partyItems} required={requiredQuantity} />
+      {isCreator && status === PartyRankStatus.Ongoing && !listLoading && (
+        <UserRankStatus partyItems={partyItems} required={requiredQuantity} members={members} />
       )}
       {currentUserItems.length > 0 && status === PartyRankStatus.Ongoing && (
         <Card
@@ -392,7 +431,23 @@ export const PartyRankPage = () => {
           </CardContent>
         </Card>
       )}
-      {currentUserItems.length === 0 && status === PartyRankStatus.Ongoing && (
+      {status === PartyRankStatus.Registration && isMember && (
+        <Card
+          sx={{
+            mt: 2,
+          }}
+        >
+          <CardContent>
+            <Grid container direction="row" alignItems="center">
+              <Typography sx={{ mr: 2 }} variant="h6" component="div">
+                Вы зарегестрированы!
+              </Typography>
+              <DoneIcon color="success" />
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
+      {currentUserItems.length === 0 && status === PartyRankStatus.Ongoing && isMember && (
         <Card
           sx={{
             mt: 2,
@@ -408,7 +463,7 @@ export const PartyRankPage = () => {
           </CardContent>
         </Card>
       )}
-      {status === PartyRankStatus.Rating && !userRank.favoriteId && (
+      {status === PartyRankStatus.Rating && !userRank.favoriteId && isMember && (
         <Card
           sx={{
             mt: 2,
@@ -425,7 +480,7 @@ export const PartyRankPage = () => {
           </CardContent>
         </Card>
       )}
-      {status === PartyRankStatus.Rating && (
+      {status === PartyRankStatus.Rating && isMember && (
         <Card
           sx={{
             mt: 2,
@@ -525,7 +580,7 @@ export const PartyRankPage = () => {
           </Fab>
         </Tooltip>
       )}
-      {status === PartyRankStatus.Rating && (
+      {status === PartyRankStatus.Rating && (isMember || isCreator) && (
         <Fab
           sx={{
             position: 'fixed',
@@ -542,7 +597,7 @@ export const PartyRankPage = () => {
           Начать оценивание
         </Fab>
       )}
-      {status === PartyRankStatus.Ongoing && (
+      {status === PartyRankStatus.Ongoing && (isMember || isCreator) && (
         <AddNewItem
           disabled={(currentUserItems.length >= requiredQuantity && !isCreator) || listLoading}
           partyId={id}

@@ -9,8 +9,12 @@ import { UserRank } from '../../interfaces/user-rank.interface';
 export interface IPartyRanks {
   parties$: BehaviorSubject<Record<string, PartyRank>>;
   partyItems$: BehaviorSubject<Record<string, RankItem>>;
-  createPartyRank(payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id' | 'createdDate'>): Observable<PartyRank>;
+  createPartyRank(
+    payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id' | 'createdDate' | 'members'>,
+  ): Observable<PartyRank>;
   updatePartyRank(id: string, payload: Partial<Omit<PartyRank, 'creator' | 'creatorId' | 'id'>>): Observable<PartyRank>;
+  registerToPartyRank(id: string): Observable<PartyRank>;
+  removeUserRegistration(id: string, userId: string): Observable<PartyRank>;
   deletePartyRank(id: string): Observable<void>;
   getParties(): Observable<PartyRank[]>;
   getPartyRank(id: string): Observable<PartyRank>;

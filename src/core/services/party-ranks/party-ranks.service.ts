@@ -1,6 +1,8 @@
 import { FirebaseApp } from 'firebase/app';
 import {
   Firestore,
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -52,14 +54,17 @@ export class PartyRanks implements IPartyRanks {
     this.updateRankItem = this.updateRankItem.bind(this);
     this.deletePartyRank = this.deletePartyRank.bind(this);
     this.deleteUserRank = this.deleteUserRank.bind(this);
+    this.registerToPartyRank = this.registerToPartyRank.bind(this);
+    this.removeUserRegistration = this.removeUserRegistration.bind(this);
   }
 
-  public createPartyRank(payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id'>): Observable<PartyRank> {
+  public createPartyRank(payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id' | 'members'>): Observable<PartyRank> {
     const newRef = doc(collection(this.firestore, FirestoreCollection.Parties));
     const newItem = {
       id: newRef.id,
       creatorId: this.authService.user$.getValue().uid,
       createdDate: DateTime.now().toISO(),
+      members: [] as string[],
       ...payload,
     };
     return of(void 0).pipe(
@@ -79,7 +84,7 @@ export class PartyRanks implements IPartyRanks {
 
   public updatePartyRank(
     id: string,
-    payload: Partial<Omit<PartyRank, 'creator' | 'creatorId' | 'id'>>,
+    payload: Partial<Omit<PartyRank, 'creator' | 'creatorId' | 'id' | 'members'>>,
   ): Observable<PartyRank> {
     return of(void 0).pipe(
       switchMap(() => updateDoc(doc(this.firestore, FirestoreCollection.Parties, id), payload)),
@@ -87,6 +92,43 @@ export class PartyRanks implements IPartyRanks {
       map(([, parties]) => ({
         ...parties[id],
         ...payload,
+      })),
+      tap((partyRank) => {
+        this.parties$.next({
+          ...this.parties$.getValue(),
+          [partyRank.id]: partyRank,
+        });
+      }),
+    );
+  }
+
+  public registerToPartyRank(id: string): Observable<PartyRank> {
+    const userId = this.authService.user$.getValue().uid;
+    return of(void 0).pipe(
+      switchMap(() => updateDoc(doc(this.firestore, FirestoreCollection.Parties, id), { members: arrayUnion(userId) })),
+      withLatestFrom(this.parties$),
+      map(([, parties]) => ({
+        ...parties[id],
+        members: [...parties[id]?.members, userId],
+      })),
+      tap((partyRank) => {
+        this.parties$.next({
+          ...this.parties$.getValue(),
+          [partyRank.id]: partyRank,
+        });
+      }),
+    );
+  }
+
+  public removeUserRegistration(id: string, userId: string): Observable<PartyRank> {
+    return of(void 0).pipe(
+      switchMap(() =>
+        updateDoc(doc(this.firestore, FirestoreCollection.Parties, id), { members: arrayRemove(userId) }),
+      ),
+      withLatestFrom(this.parties$),
+      map(([, parties]) => ({
+        ...parties[id],
+        members: (parties[id]?.members || []).filter((itemId) => itemId !== userId),
       })),
       tap((partyRank) => {
         this.parties$.next({

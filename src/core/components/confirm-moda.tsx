@@ -30,7 +30,7 @@ export const ConfirmModal = ({ onClose, onConfirm, text, title }: ConfirmModalPr
         <Grid container flexDirection="column">
           <Grid item>
             {title && <Typography variant="h5">{title}</Typography>}
-            {text && <Typography sx={{ mt: 1 }}>{title}</Typography>}
+            {text && <Typography sx={{ mt: 1 }}>{text}</Typography>}
           </Grid>
           <Grid sx={{ mt: 2 }} item>
             <Grid container flexDirection="row" justifyContent="flex-end">

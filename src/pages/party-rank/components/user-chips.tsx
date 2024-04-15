@@ -8,16 +8,22 @@ import useSubscription from '../../../core/hooks/useSubscription';
 import { AppTypes } from '../../../core/services/types';
 import { concatReduce } from '../../../core/utils/concat-reduce';
 
-interface ModeratorsListProps {
-  moderators: string[];
+interface UserChipsProps {
+  users: string[];
+  title: string;
+  onDelete?: (id: string) => void;
 }
 
-export const ModeratorsList = ({ moderators }: ModeratorsListProps) => {
+export const UserChips = ({ users, title, onDelete }: UserChipsProps) => {
   const { getUser } = useInjectable(AppTypes.AuthService);
   const participants = useSubscription(
-    of(moderators).pipe(switchMap((ids) => concatReduce(...ids.map((id) => getUser(id))))),
+    of(users).pipe(switchMap((ids) => concatReduce(...ids.map((id) => getUser(id))))),
     [],
   );
+
+  const handleDelete = (id: string) => () => {
+    onDelete(id);
+  };
 
   return (
     <Card
@@ -28,7 +34,7 @@ export const ModeratorsList = ({ moderators }: ModeratorsListProps) => {
       <CardContent>
         <Grid container direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="h5" component="div">
-            Модераторы ({participants.length})
+            {title} ({participants.length})
           </Typography>
         </Grid>
         <Grid
@@ -52,6 +58,7 @@ export const ModeratorsList = ({ moderators }: ModeratorsListProps) => {
                 avatar={<Avatar alt={user.displayName} src={user.photoURL} />}
                 label={user.displayName}
                 variant="filled"
+                onDelete={onDelete ? handleDelete(user.uid) : null}
               />
             </Grid>
           ))}

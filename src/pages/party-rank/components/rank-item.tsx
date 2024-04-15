@@ -9,6 +9,7 @@ import TagIcon from '@mui/icons-material/Tag';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Avatar, Box, Chip, Grid, IconButton, Modal, Popover, SxProps, Tooltip, Typography } from '@mui/material';
 
+import { ConfirmModal } from '../../../core/components/confirm-moda';
 import { GradeMark } from '../../../core/components/grade-mark';
 import { RankPartyPlayer } from '../../../core/components/rank-party-player';
 import { useInjectable } from '../../../core/hooks/useInjectable';
@@ -21,11 +22,12 @@ import { UsersList } from './users-list';
 interface RankItemProps {
   sx?: SxProps;
   data: IRankItem;
-  partyStatus: PartyRankStatus;
+  partyStatus?: PartyRankStatus;
   isCreator?: boolean;
   grade?: number;
   isFavorite?: boolean;
   showAuthor?: boolean;
+  showPreviewIcon?: boolean;
   oneLine?: boolean;
   rank?: number;
   favoriteCount?: number;
@@ -39,8 +41,9 @@ export const RankItem = memo(
   ({
     sx,
     data,
-    partyStatus,
+    partyStatus = null,
     isCreator = false,
+    showPreviewIcon = true,
     oneLine = false,
     grade = null,
     isFavorite = false,
@@ -56,14 +59,25 @@ export const RankItem = memo(
     const currentUser = useSubscription(user$);
     const [showPreview, setShowPreview] = useState(false);
     const [showLikesEl, setShowLikesEl] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const likesContainerRef = useRef();
 
     const { author, authorId, name, type, value, id } = data;
     const showAuthor =
       (currentUser?.uid === authorId || isCreator || partyStatus === PartyRankStatus.Finished) && showAuthorProp;
-    const canDelete = currentUser?.uid === authorId || isCreator;
+    const canEdit =
+      (partyStatus === PartyRankStatus.Ongoing && (currentUser?.uid === authorId || isCreator)) ||
+      (partyStatus === PartyRankStatus.Rating && isCreator);
 
     const handleDelete = () => {
+      setShowDeleteModal(true);
+    };
+
+    const handleCloseDelete = () => {
+      setShowDeleteModal(false);
+    };
+
+    const handleConfirmDelete = () => {
       onDelete(id);
     };
 
@@ -158,7 +172,7 @@ export const RankItem = memo(
           <Grid container flex={0} direction="row" alignItems="center" justifyContent="flex-end" wrap="nowrap">
             <Grid
               sx={{
-                mr: 2,
+                mr: showPreviewIcon ? 2 : 0,
               }}
               flex={0}
               container
@@ -212,21 +226,23 @@ export const RankItem = memo(
                   </Box>
                 </>
               )}
-              {grade && <GradeMark size={32} value={grade} />}
+              {typeof grade === 'number' && <GradeMark size={32} value={grade} />}
             </Grid>
-            <Tooltip placement="top" title="Превью медиа">
-              <IconButton onClick={handleView} aria-label="view">
-                <VisibilityIcon fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
-            {partyStatus === PartyRankStatus.Ongoing && canDelete && (
+            {showPreviewIcon && (
+              <Tooltip placement="top" title="Превью медиа">
+                <IconButton onClick={handleView} aria-label="view">
+                  <VisibilityIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {canEdit && (
               <Tooltip placement="top" title="Редактировать предложение">
                 <IconButton onClick={handleEdit} aria-label="edit">
                   <EditIcon fontSize="inherit" />
                 </IconButton>
               </Tooltip>
             )}
-            {partyStatus === PartyRankStatus.Ongoing && canDelete && (
+            {canEdit && (
               <Tooltip placement="top" title="Удалить предложение">
                 <IconButton onClick={handleDelete} aria-label="delete">
                   <DeleteIcon color="error" fontSize="inherit" />
@@ -242,6 +258,14 @@ export const RankItem = memo(
             )}
           </Grid>
         </Grid>
+        {showDeleteModal && (
+          <ConfirmModal
+            title={name}
+            text="Вы действительно хотите удалить этого кандидата из пати ранга?"
+            onClose={handleCloseDelete}
+            onConfirm={handleConfirmDelete}
+          />
+        )}
         <Modal open={showPreview} onClose={handleClosePreview}>
           <Box
             sx={(theme) => ({

@@ -1,41 +1,55 @@
 import { useMemo } from 'react';
+import { of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 import { Avatar, Card, CardContent, Chip, Grid, LinearProgress, Typography } from '@mui/material';
 
+import { useInjectable } from '../../../core/hooks/useInjectable';
+import useSubscription from '../../../core/hooks/useSubscription';
 import { AppUser } from '../../../core/interfaces/app-user.interface';
 import { RankItem } from '../../../core/interfaces/rank-item.interface';
+import { AppTypes } from '../../../core/services/types';
+import { concatReduce } from '../../../core/utils/concat-reduce';
 
 interface UserRankStatusProps {
   partyItems: RankItem[];
   required: number;
+  members?: string[];
 }
 
-export const UserRankStatus = ({ partyItems, required }: UserRankStatusProps) => {
+export const UserRankStatus = ({ partyItems, required, members = [] }: UserRankStatusProps) => {
+  const { getUser } = useInjectable(AppTypes.AuthService);
+  const usersById = useSubscription<Record<string, { author: AppUser; count: number }>>(
+    of(members).pipe(
+      switchMap((ids) => concatReduce(...ids.map((itemId) => getUser(itemId)))),
+      map((result) => result.reduce((acc, val) => ({ ...acc, [val.uid]: { author: val, count: 0 } }), {})),
+    ),
+    {},
+  );
   const usersStatus = useMemo(() => {
-    const byUser = partyItems
-      ? partyItems.reduce<
-          Record<
-            string,
-            {
-              author: AppUser;
-              count: number;
-            }
-          >
-        >(
-          (acc, val) => ({
-            ...acc,
-            [val.authorId]: {
-              author: val.author,
-              count: (acc[val.authorId]?.count ?? 0) + 1,
-            },
-          }),
-          {},
-        )
-      : {};
+    const byUser = (partyItems || []).reduce<
+      Record<
+        string,
+        {
+          author: AppUser;
+          count: number;
+        }
+      >
+    >(
+      (acc, val) => ({
+        ...acc,
+        [val.authorId]: {
+          author: val.author,
+          count: (acc[val.authorId]?.count ?? 0) + 1,
+        },
+      }),
+      usersById,
+    );
+
     return Object.values(byUser).sort(({ author: authorA }, { author: authorB }) =>
       authorA.displayName.localeCompare(authorB.displayName),
     );
-  }, [partyItems]);
+  }, [partyItems, usersById]);
 
   return (
     <Card

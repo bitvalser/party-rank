@@ -12,7 +12,6 @@ import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { AppTypes } from '../../core/services/types';
-import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
 import { UserScoreAvg } from './components/user-score-avg';
 import { useSortedPartyItems } from './hooks/useSortedPartyItems';
