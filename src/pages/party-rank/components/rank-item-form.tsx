@@ -1,5 +1,5 @@
 import { Duration } from 'luxon';
-import { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 
 import {
@@ -37,6 +37,41 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
   const type = watch('type');
   const value = watch('value');
   const startTime = watch('startTime');
+
+  const [keyState, setKeyState] = useState({
+    ArrowLeft: false,
+    ArrowRight: false,
+    Shift: false,
+  });
+
+  useEffect(
+    () => { 
+      if (keyState.ArrowRight || keyState.ArrowLeft) handleTweakPlayTime()
+    },
+    [keyState],
+  );
+
+  const handleTweakPlayTime = () => {
+    let tweakAmount = 0.01;
+
+    if (keyState.Shift) {
+      tweakAmount = 0.001;
+    }
+
+    if (keyState.ArrowRight) {
+      setValue('startTime', startTime + tweakAmount);
+    } else if (keyState.ArrowLeft) {
+      setValue('startTime', startTime - tweakAmount);
+    }
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    setKeyState(prevState => ({ ...prevState, [event.key]: true }));
+  }
+
+  const handleKeyUp = (event: React.KeyboardEvent) => {
+    setKeyState(prevState => ({ ...prevState, [event.key]: false }));
+  }
 
   const handleStartTime = async () => {
     const time = await playerRef.current.getCurrentTimestamp();
@@ -151,7 +186,16 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             <Button type="button" variant="text" onClick={handleStartTime}>
               Зафиксировать время начала
             </Button>
-            <Button type="button" variant="text" color="info" onClick={handlePlayTime}>
+            <Button 
+              type="button" 
+              variant="text" 
+              color="info" 
+              onClick={handlePlayTime} 
+              onMouseEnter={event => event.currentTarget.focus()}
+              onMouseLeave={event => event.currentTarget.blur()}
+              onKeyDownCapture={handleKeyDown}
+              onKeyUpCapture={handleKeyUp}
+            >
               <Typography color="white">{Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:SSS')}</Typography>
             </Button>
           </Grid>
