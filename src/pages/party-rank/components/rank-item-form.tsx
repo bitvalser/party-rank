@@ -1,5 +1,5 @@
 import { Duration } from 'luxon';
-import React, { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 
 import {
@@ -38,39 +38,13 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
   const value = watch('value');
   const startTime = watch('startTime');
 
-  const [keyState, setKeyState] = useState({
-    ArrowLeft: false,
-    ArrowRight: false,
-    Shift: false,
-  });
+  const handleKeyDown = async (event: React.KeyboardEvent) => {
+    if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      const tweakAmount = (event.shiftKey ? 0.001 : 0.01) * (event.key === 'ArrowLeft' ? -1 :  1);
+      const value = Math.max(startTime + tweakAmount, 0)
 
-  useEffect(
-    () => { 
-      if (keyState.ArrowRight || keyState.ArrowLeft) handleTweakPlayTime()
-    },
-    [keyState],
-  );
-
-  const handleTweakPlayTime = () => {
-    let tweakAmount = 0.01;
-
-    if (keyState.Shift) {
-      tweakAmount = 0.001;
+      setValue('startTime', value);
     }
-
-    if (keyState.ArrowRight) {
-      setValue('startTime', startTime + tweakAmount);
-    } else if (keyState.ArrowLeft) {
-      setValue('startTime', startTime - tweakAmount);
-    }
-  }
-
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    setKeyState(prevState => ({ ...prevState, [event.key]: true }));
-  }
-
-  const handleKeyUp = (event: React.KeyboardEvent) => {
-    setKeyState(prevState => ({ ...prevState, [event.key]: false }));
   }
 
   const handleStartTime = async () => {
@@ -194,7 +168,6 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
               onMouseEnter={event => event.currentTarget.focus()}
               onMouseLeave={event => event.currentTarget.blur()}
               onKeyDownCapture={handleKeyDown}
-              onKeyUpCapture={handleKeyUp}
             >
               <Typography color="white">{Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:SSS')}</Typography>
             </Button>
