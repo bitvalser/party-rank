@@ -38,6 +38,22 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
   const value = watch('value');
   const startTime = watch('startTime');
 
+  const time = useRef<number>();
+
+  const handleKeyDown = async (event: React.KeyboardEvent) => {
+    if(Date.now() - time.current < 500) {
+      return
+    }
+
+    if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      const tweakAmount = (event.shiftKey ? 0.001 : 0.01) * (event.key === 'ArrowLeft' ? -1 :  1);
+      const value = Math.max(startTime + tweakAmount, 0)
+
+      setValue('startTime', value);
+      time.current = Date.now();
+    }
+  }
+
   const handleStartTime = async () => {
     const time = await playerRef.current.getCurrentTimestamp();
     if (time) {
@@ -151,7 +167,15 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             <Button type="button" variant="text" onClick={handleStartTime}>
               Зафиксировать время начала
             </Button>
-            <Button type="button" variant="text" color="info" onClick={handlePlayTime}>
+            <Button 
+              type="button" 
+              variant="text" 
+              color="info" 
+              onClick={handlePlayTime} 
+              onMouseEnter={event => event.currentTarget.focus()}
+              onMouseLeave={event => event.currentTarget.blur()}
+              onKeyDownCapture={handleKeyDown}
+            >
               <Typography color="white">{Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:SSS')}</Typography>
             </Button>
           </Grid>
