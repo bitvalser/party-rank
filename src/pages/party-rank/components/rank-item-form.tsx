@@ -41,7 +41,7 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
   const time = useRef<number>();
 
   const handleKeyDown = async (event: React.KeyboardEvent) => {
-    if(new Date().getTime() - time.current < 500) {
+    if(Date.now() - time.current < 500) {
       return
     }
 
@@ -50,7 +50,7 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
       const value = Math.max(startTime + tweakAmount, 0)
 
       setValue('startTime', value);
-      time.current = new Date().getTime();
+      time.current = Date.now();
     }
   }
 
