@@ -38,12 +38,19 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
   const value = watch('value');
   const startTime = watch('startTime');
 
+  const time = useRef<number>();
+
   const handleKeyDown = async (event: React.KeyboardEvent) => {
+    if(new Date().getTime() - time.current < 500) {
+      return
+    }
+
     if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
       const tweakAmount = (event.shiftKey ? 0.001 : 0.01) * (event.key === 'ArrowLeft' ? -1 :  1);
       const value = Math.max(startTime + tweakAmount, 0)
 
       setValue('startTime', value);
+      time.current = new Date().getTime();
     }
   }
 
