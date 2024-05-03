@@ -1,6 +1,7 @@
 import { of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+import AddIcon from '@mui/icons-material/Add';
 import { Avatar, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 
 import { useInjectable } from '../../../core/hooks/useInjectable';
@@ -11,10 +12,12 @@ import { concatReduce } from '../../../core/utils/concat-reduce';
 interface UserChipsProps {
   users: string[];
   title: string;
+  showAdd?: boolean;
   onDelete?: (id: string) => void;
+  onAdd?: () => void;
 }
 
-export const UserChips = ({ users, title, onDelete }: UserChipsProps) => {
+export const UserChips = ({ users, title, onDelete, onAdd, showAdd = false }: UserChipsProps) => {
   const { getUser } = useInjectable(AppTypes.AuthService);
   const participants = useSubscription(
     of(users).pipe(switchMap((ids) => concatReduce(...ids.map((id) => getUser(id))))),
@@ -62,6 +65,20 @@ export const UserChips = ({ users, title, onDelete }: UserChipsProps) => {
               />
             </Grid>
           ))}
+          {showAdd && (
+            <Grid item key="add_item">
+              <Chip
+                sx={{
+                  mr: 1,
+                }}
+                avatar={<AddIcon />}
+                size="medium"
+                label="Добавить участника"
+                variant="outlined"
+                onClick={onAdd}
+              />
+            </Grid>
+          )}
         </Grid>
       </CardContent>
     </Card>

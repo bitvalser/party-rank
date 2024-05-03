@@ -15,6 +15,7 @@ export interface IPartyRanks {
   updatePartyRank(id: string, payload: Partial<Omit<PartyRank, 'creator' | 'creatorId' | 'id'>>): Observable<PartyRank>;
   registerToPartyRank(id: string): Observable<PartyRank>;
   removeUserRegistration(id: string, userId: string): Observable<PartyRank>;
+  addUserRegistration(id: string, userId: string): Observable<PartyRank>;
   deletePartyRank(id: string): Observable<void>;
   getParties(): Observable<PartyRank[]>;
   getPartyRank(id: string): Observable<PartyRank>;

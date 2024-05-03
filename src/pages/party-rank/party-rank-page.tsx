@@ -47,6 +47,7 @@ import { EditRankItem } from './components/edit-rank-item';
 import { EditRankParty } from './components/edit-rank-party';
 import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
+import { SelectUserModel } from './components/select-user-modal';
 import { UserChips } from './components/user-chips';
 import { UserRankResult } from './components/user-rank-result';
 import { UserRankStatus } from './components/user-rank-status';
@@ -64,6 +65,7 @@ export const PartyRankPage = () => {
     deletePartyRank,
     registerToPartyRank,
     removeUserRegistration,
+    addUserRegistration,
     partyItems$,
     parties$,
   } = useInjectable(AppTypes.PartyRanks);
@@ -86,6 +88,7 @@ export const PartyRankPage = () => {
   const [menuAnchor, setMenuAnchor] = useState<HTMLButtonElement>(null);
   const [listLoading, setListLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
+  const [showAddUser, setShowAddUser] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const updateRanksRef = useRef(new Subject<void>());
@@ -260,6 +263,19 @@ export const PartyRankPage = () => {
     removeUserRegistration(id, userId).subscribe();
   };
 
+  const handleShowAddUser = () => {
+    setShowAddUser(true);
+  };
+
+  const handleAddUser = (uid: string) => {
+    addUserRegistration(id, uid).subscribe();
+    setShowAddUser(false);
+  };
+
+  const handleCloseAddUser = () => {
+    setShowAddUser(false);
+  };
+
   const handleCsvExport = () => {
     exportCsv(
       EXPORT_COLUMN_DEFINITION,
@@ -399,12 +415,17 @@ export const PartyRankPage = () => {
       </Grid>
       {isCreator && moderators?.length > 0 && <UserChips users={moderators} title="Модераторы" />}
       {isCreator && members?.length > 0 && status !== PartyRankStatus.Finished && (
-        <UserChips
-          key={members.join()}
-          users={members}
-          title="Участники"
-          onDelete={isCreator ? handleRemoveUserRegistration : null}
-        />
+        <>
+          <UserChips
+            key={members.join()}
+            users={members}
+            title="Участники"
+            showAdd={isCreator}
+            onDelete={isCreator ? handleRemoveUserRegistration : null}
+            onAdd={handleShowAddUser}
+          />
+          {showAddUser && <SelectUserModel onClose={handleCloseAddUser} onSelect={handleAddUser} />}
+        </>
       )}
       {status === PartyRankStatus.Finished && <ParticipantsList partyItems={partyItems} />}
       {isCreator && status === PartyRankStatus.Rating && !listLoading && (
