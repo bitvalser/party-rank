@@ -19,6 +19,7 @@ export interface YoutubePlayerProps {
   autoplay?: boolean;
   hideControls?: boolean;
   showTimeControls?: boolean;
+  onReady?: () => void;
   onPause?: () => void;
   onManualPause?: () => void;
   onPlay?: () => void;
@@ -40,6 +41,7 @@ export const YoutubePlayer = memo(
         onManualPause = () => {},
         onManualPlay = () => {},
         onPlay = () => {},
+        onReady = () => {},
       },
       componentRef,
     ) => {
@@ -80,6 +82,7 @@ export const YoutubePlayer = memo(
 
         const readyListener = playerRef.current.on('ready', () => {
           setReady(true);
+          onReady();
         });
 
         return () => {

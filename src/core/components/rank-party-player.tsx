@@ -57,38 +57,43 @@ export const RankPartyPlayer = memo(
       const containerRef = useRef<HTMLDivElement>(null);
       const playerRef = useRef<RankPartyPlayerRef>(null);
       const [clientBoundingRect, setClientBoundingRect] = useState<DOMRect>();
-      playerRef.current = ((): RankPartyPlayerRef => {
-        switch (type) {
-          case RankItemType.Audio:
-            return audioRef.current;
-          case RankItemType.Video:
-            return videoRef.current;
-          case RankItemType.YouTube:
-            return youtubeRef.current;
-          default:
-            return {
-              play: () => {
-                console.error("RankPartyPlayerRef interface wasn't implemented");
-              },
-              pause: () => {
-                console.error("RankPartyPlayerRef interface wasn't implemented");
-              },
-              setVolume: () => {
-                console.error("RankPartyPlayerRef interface wasn't implemented");
-              },
-              getCurrentTimestamp: () => {
-                console.error("RankPartyPlayerRef interface wasn't implemented");
-                return null;
-              },
-              playWithTimestamp: () => {
-                console.error("RankPartyPlayerRef interface wasn't implemented");
-              },
-            };
-        }
-      })();
+
+      const updatePlayerRef = () => {
+        playerRef.current = ((): RankPartyPlayerRef => {
+          switch (type) {
+            case RankItemType.Audio:
+              return audioRef.current;
+            case RankItemType.Video:
+              return videoRef.current;
+            case RankItemType.YouTube:
+              return youtubeRef.current;
+            default:
+              return {
+                play: () => {
+                  console.error("RankPartyPlayerRef interface wasn't implemented");
+                },
+                pause: () => {
+                  console.error("RankPartyPlayerRef interface wasn't implemented");
+                },
+                setVolume: () => {
+                  console.error("RankPartyPlayerRef interface wasn't implemented");
+                },
+                getCurrentTimestamp: () => {
+                  console.error("RankPartyPlayerRef interface wasn't implemented");
+                  return null;
+                },
+                playWithTimestamp: () => {
+                  console.error("RankPartyPlayerRef interface wasn't implemented");
+                },
+              };
+          }
+        })();
+      };
 
       useEffect(() => {
         setClientBoundingRect(containerRef.current.getBoundingClientRect());
+        updatePlayerRef();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
 
       useEffect(() => {
@@ -97,8 +102,28 @@ export const RankPartyPlayer = memo(
         }
       }, [defaultVolume]);
 
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      useImperativeHandle(componentRef, () => playerRef.current, [type]);
+      useImperativeHandle(
+        componentRef,
+        () => ({
+          play: () => {
+            playerRef.current.play();
+          },
+          pause: () => {
+            playerRef.current.pause();
+          },
+          setVolume: (value: number) => {
+            playerRef.current.setVolume(value);
+          },
+          getCurrentTimestamp: () => {
+            return playerRef.current.getCurrentTimestamp();
+          },
+          playWithTimestamp: (time: number) => {
+            return playerRef.current.playWithTimestamp(time);
+          },
+        }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [type],
+      );
 
       const handlePause = () => {
         onPause();
@@ -111,6 +136,7 @@ export const RankPartyPlayer = memo(
 
       const handleReady = () => {
         setWaiting(false);
+        updatePlayerRef();
       };
 
       const handleWaiting = () => {
@@ -163,6 +189,7 @@ export const RankPartyPlayer = memo(
               ref={youtubeRef}
               width={clientBoundingRect?.width || '100%'}
               height={clientBoundingRect?.height || '100%'}
+              onReady={handleReady}
               onPlay={handlePlay}
               onPause={handlePause}
               onManualPause={onManualPause}

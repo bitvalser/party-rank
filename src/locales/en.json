@@ -9,7 +9,7 @@
     "SOMETHING_WENT_WRONG": "Something went wrong :("
   },
   "AUTH": {
-    "LOGIN_VIA_DISCORD": "Login  via discord",
+    "LOGIN_VIA_DISCORD": "Login via discord",
     "INVITE_FROM": "{{user}} invites you to take part in the party rank!"
   },
   "SETTINGS": {
