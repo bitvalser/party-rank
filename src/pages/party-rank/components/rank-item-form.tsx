@@ -1,6 +1,7 @@
 import { Duration } from 'luxon';
 import { useRef } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 import {
   Button,
@@ -33,26 +34,26 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
     setValue,
   } = useFormContext();
   const playerRef = useRef<RankPartyPlayerRef>();
+  const timeRef = useRef<number>();
+  const { t } = useTranslation();
 
   const type = watch('type');
   const value = watch('value');
   const startTime = watch('startTime');
 
-  const time = useRef<number>();
-
-  const handleKeyDown = async (event: React.KeyboardEvent) => {
-    if(Date.now() - time.current < 500) {
-      return
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (Date.now() - timeRef.current < 100) {
+      return;
     }
 
     if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      const tweakAmount = (event.shiftKey ? 0.001 : 0.01) * (event.key === 'ArrowLeft' ? -1 :  1);
-      const value = Math.max(startTime + tweakAmount, 0)
+      const tweakAmount = (event.shiftKey ? 0.001 : 0.01) * (event.key === 'ArrowLeft' ? -1 : 1);
+      const value = Math.max(startTime + tweakAmount, 0);
 
       setValue('startTime', value);
-      time.current = Date.now();
+      timeRef.current = Date.now();
     }
-  }
+  };
 
   const handleStartTime = async () => {
     const time = await playerRef.current.getCurrentTimestamp();
@@ -79,7 +80,9 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             <Controller
               name="authorId"
               control={control}
-              render={({ field }) => <UsersAutocomplete label="Автор" multiple={false} {...field} />}
+              render={({ field }) => (
+                <UsersAutocomplete label={t('ADD_RANK_ITEM.AUTHOR')} multiple={false} {...field} />
+              )}
             />
           </Grid>
         )}
@@ -89,12 +92,12 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             control={control}
             rules={{
               minLength: 3,
-              required: 'Название обязательное поле!',
+              required: t('ADD_RANK_ITEM.NAME_REQUIRED'),
             }}
             render={({ field }) => (
               <TextField
                 fullWidth
-                label="Название"
+                label={t('ADD_RANK_ITEM.NAME')}
                 error={Boolean(errors.name)}
                 helperText={errors.name?.message as string}
                 {...field}
@@ -108,7 +111,7 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             control={control}
             render={({ field }) => (
               <FormControl>
-                <FormLabel id="type-group-label">Тип медиа</FormLabel>
+                <FormLabel id="type-group-label">{t('ADD_RANK_ITEM.TYPE')}</FormLabel>
                 <RadioGroup
                   aria-labelledby="type-group-label"
                   sx={{
@@ -118,10 +121,14 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
                   }}
                   {...field}
                 >
-                  <FormControlLabel value={RankItemType.Video} control={<Radio />} label="Видео" />
-                  <FormControlLabel value={RankItemType.Audio} control={<Radio />} label="Аудио" />
-                  <FormControlLabel value={RankItemType.Image} control={<Radio />} label="Изображение" />
-                  <FormControlLabel value={RankItemType.YouTube} control={<Radio />} label="YouTube" />
+                  <FormControlLabel value={RankItemType.Video} control={<Radio />} label={t('ADD_RANK_ITEM.VIDEO')} />
+                  <FormControlLabel value={RankItemType.Audio} control={<Radio />} label={t('ADD_RANK_ITEM.AUDIO')} />
+                  <FormControlLabel value={RankItemType.Image} control={<Radio />} label={t('ADD_RANK_ITEM.IMAGE')} />
+                  <FormControlLabel
+                    value={RankItemType.YouTube}
+                    control={<Radio />}
+                    label={t('ADD_RANK_ITEM.YOUTUBE')}
+                  />
                 </RadioGroup>
               </FormControl>
             )}
@@ -132,13 +139,13 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             name="value"
             control={control}
             rules={{
-              required: 'Ссылка обязательное поле!',
-              validate: (value) => (validURL(value) ? null : 'Ссылка должна быть действительной!'),
+              required: 'ADD_RANK_ITEM.LINK_REQUIRED',
+              validate: (value) => (validURL(value) ? null : 'ADD_RANK_ITEM.INVALID_LINK'),
             }}
             render={({ field }) => (
               <TextField
                 fullWidth
-                label="Ссылка на медиа файл"
+                label={t('ADD_RANK_ITEM.MEDIA_LINK')}
                 error={Boolean(errors.value)}
                 helperText={errors.value?.message as string}
                 {...field}
@@ -146,10 +153,7 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             )}
           />
           {[RankItemType.Audio, RankItemType.Video].includes(type) && (
-            <FormHelperText>
-              Ссылка должна ввести напрямую на файл (будет иметь разрешение .mp4, .ogg и тд). Возможно сначала нужно
-              будет залить файл на CDN.
-            </FormHelperText>
+            <FormHelperText>{t('ADD_RANK_ITEM.MEDIA_LINK_TIP')}</FormHelperText>
           )}
         </Grid>
         <Grid
@@ -159,21 +163,21 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
           container
           direction="column"
         >
-          <FormLabel id="anime-provider-group-label">Превью</FormLabel>
+          <FormLabel id="anime-provider-group-label">{t('ADD_RANK_ITEM.PREVIEW')}</FormLabel>
           <RankPartyPlayer ref={playerRef} key={value} type={type} value={value} showTimeControls autoplay={autoplay} />
         </Grid>
         <Grid item>
           <Grid container direction="row" justifyContent="space-between" alignItems="center">
             <Button type="button" variant="text" onClick={handleStartTime}>
-              Зафиксировать время начала
+              {t('ADD_RANK_ITEM.SET_PLAYBACK_TIME')}
             </Button>
-            <Button 
-              type="button" 
-              variant="text" 
-              color="info" 
-              onClick={handlePlayTime} 
-              onMouseEnter={event => event.currentTarget.focus()}
-              onMouseLeave={event => event.currentTarget.blur()}
+            <Button
+              type="button"
+              variant="text"
+              color="info"
+              onClick={handlePlayTime}
+              onMouseEnter={(event) => event.currentTarget.focus()}
+              onMouseLeave={(event) => event.currentTarget.blur()}
               onKeyDownCapture={handleKeyDown}
             >
               <Typography color="white">{Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:SSS')}</Typography>

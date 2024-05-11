@@ -8,8 +8,8 @@ import useSubscription from '../hooks/useSubscription';
 import { RankItemType } from '../interfaces/rank-item.interface';
 import { AppTypes } from '../services/types';
 import { AudioVisualizer } from './audio-visualizer';
-import { VideoPlayer, VideoPlayerRef } from './video-player';
-import { YoutubePlayer, YoutubePlayerRef } from './youtube-player';
+import { VideoPlayer } from './video-player';
+import { YoutubePlayer } from './youtube-player';
 
 export interface RankPartyPlayer {
   type: RankItemType;
@@ -23,10 +23,10 @@ export interface RankPartyPlayer {
   onPlay?: () => void;
   onManualPlay?: () => void;
 }
-
 export interface RankPartyPlayerRef {
   pause: () => void;
   play: () => void;
+  setVolume: (value: number) => void;
   getCurrentTimestamp: () => Promise<number>;
   playWithTimestamp: (time: number) => void;
 }
@@ -51,89 +51,54 @@ export const RankPartyPlayer = memo(
       const { defaultVolume$ } = useInjectable(AppTypes.SettingsService);
       const [waiting, setWaiting] = useState([RankItemType.Audio, RankItemType.Video].includes(type));
       const defaultVolume = useSubscription(defaultVolume$, 1);
-      const videoRef = useRef<VideoPlayerRef>(null);
-      const audioRef = useRef<HTMLAudioElement>(null);
+      const videoRef = useRef<RankPartyPlayerRef>(null);
+      const audioRef = useRef<RankPartyPlayerRef>(null);
+      const youtubeRef = useRef<RankPartyPlayerRef>(null);
       const containerRef = useRef<HTMLDivElement>(null);
-      const youtubeRef = useRef<YoutubePlayerRef>(null);
+      const playerRef = useRef<RankPartyPlayerRef>(null);
       const [clientBoundingRect, setClientBoundingRect] = useState<DOMRect>();
+      playerRef.current = ((): RankPartyPlayerRef => {
+        switch (type) {
+          case RankItemType.Audio:
+            return audioRef.current;
+          case RankItemType.Video:
+            return videoRef.current;
+          case RankItemType.YouTube:
+            return youtubeRef.current;
+          default:
+            return {
+              play: () => {
+                console.error("RankPartyPlayerRef interface wasn't implemented");
+              },
+              pause: () => {
+                console.error("RankPartyPlayerRef interface wasn't implemented");
+              },
+              setVolume: () => {
+                console.error("RankPartyPlayerRef interface wasn't implemented");
+              },
+              getCurrentTimestamp: () => {
+                console.error("RankPartyPlayerRef interface wasn't implemented");
+                return null;
+              },
+              playWithTimestamp: () => {
+                console.error("RankPartyPlayerRef interface wasn't implemented");
+              },
+            };
+        }
+      })();
 
       useEffect(() => {
         setClientBoundingRect(containerRef.current.getBoundingClientRect());
       }, []);
 
       useEffect(() => {
-        if (videoRef.current) {
-          videoRef.current.setVolume(defaultVolume);
-        }
-        if (audioRef.current) {
-          audioRef.current.volume = defaultVolume;
+        if (playerRef.current) {
+          playerRef.current.setVolume(defaultVolume);
         }
       }, [defaultVolume]);
 
-      useImperativeHandle(
-        componentRef,
-        () => ({
-          play: async () => {
-            try {
-              switch (type) {
-                case RankItemType.Audio:
-                  await audioRef.current.play();
-                  break;
-                case RankItemType.Video:
-                  await videoRef.current.play();
-                  break;
-                case RankItemType.YouTube:
-                  youtubeRef.current.play();
-                  break;
-              }
-            } catch (error) {
-              console.error(error);
-            }
-          },
-          pause: () => {
-            switch (type) {
-              case RankItemType.Audio:
-                audioRef.current.pause();
-                break;
-              case RankItemType.Video:
-                videoRef.current.pause();
-                break;
-              case RankItemType.YouTube:
-                youtubeRef.current.pause();
-                break;
-            }
-          },
-          getCurrentTimestamp: async () => {
-            try {
-              switch (type) {
-                case RankItemType.Audio:
-                  return audioRef.current.currentTime;
-                case RankItemType.Video:
-                  return videoRef.current.getCurrentTime();
-                case RankItemType.YouTube:
-                  return await youtubeRef.current.getCurrentTime();
-              }
-            } catch (error) {
-              console.error(error);
-            }
-            return null;
-          },
-          playWithTimestamp: (time: number) => {
-            switch (type) {
-              case RankItemType.Audio:
-                audioRef.current.currentTime = time;
-                break;
-              case RankItemType.Video:
-                videoRef.current.playWithTimestamp(time);
-                break;
-              case RankItemType.YouTube:
-                youtubeRef.current.playWithTimestamp(time);
-                break;
-            }
-          },
-        }),
-        [type],
-      );
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      useImperativeHandle(componentRef, () => playerRef.current, [type]);
 
       const handlePause = () => {
         onPause();

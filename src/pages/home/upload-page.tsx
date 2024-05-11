@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Subject, merge, of } from 'rxjs';
 import { finalize, switchMap } from 'rxjs/operators';
 
@@ -7,6 +8,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LinkIcon from '@mui/icons-material/Link';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Button,
   Card,
@@ -19,8 +21,10 @@ import {
   Typography,
 } from '@mui/material';
 
+import { MediaPreviewModal } from '../../core/components/media-preview-modal';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
+import { RankItemType } from '../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../core/services/types';
 
 const MAX_FILES = 20;
@@ -42,15 +46,24 @@ export const UploadPage = () => {
   const { uploadFile, deleteFile, getAllFiles } = useInjectable(AppTypes.UploadService);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [previewFile, setPreviewFile] = useState<{ url: string; name: string }>(null);
   const fileInputRef = useRef<HTMLInputElement>();
   const updateListsRef = useRef(new Subject<void>());
   const files = useSubscription(merge(of(void 0), updateListsRef.current).pipe(switchMap(() => getAllFiles())), []);
+  const { t } = useTranslation();
+
+  const getRankTypeByMediaUrl = (url: string): RankItemType => {
+    if (url.includes('.mp3')) {
+      return RankItemType.Audio;
+    }
+    return RankItemType.Video;
+  };
 
   const handleFileChange = () => {
     if (fileInputRef.current.files.length === 1) {
       const fileToUpload = fileInputRef.current.files[0];
       if (fileToUpload.size > MAX_FILE_SIZE) {
-        setError('Медиа файл превышает допустимый размер в 16мб');
+        setError(t('UPLOAD.SIZE_ERROR'));
         return;
       }
       setUploading(true);
@@ -60,14 +73,14 @@ export const UploadPage = () => {
         .subscribe({
           next: (result) => {
             if (!result.ok) {
-              setError(error?.message || 'Загрузить файл не удалось :(');
+              setError(error?.message || t('UPLOAD.UPLOAD_ERROR'));
             } else {
               updateListsRef.current.next();
             }
             fileInputRef.current.value = '';
           },
           error: (error) => {
-            setError(error?.message || 'Загрузить файл не удалось :(');
+            setError(error?.message || t('UPLOAD.UPLOAD_ERROR'));
             fileInputRef.current.value = '';
           },
         });
@@ -82,6 +95,14 @@ export const UploadPage = () => {
 
   const handleView = (link: string) => () => {
     window.open(link, '_blank');
+  };
+
+  const handlePreview = (data: { url: string; name: string }) => () => {
+    setPreviewFile(data);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewFile(null);
   };
 
   const handleCopy = (link: string) => () => {
@@ -99,7 +120,7 @@ export const UploadPage = () => {
         <CardContent>
           <Grid container direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="h5" component="div">
-              Загрузить медиа файл
+              {t('UPLOAD.UPLOAD_FILE')}
             </Typography>
           </Grid>
           <Grid
@@ -122,7 +143,7 @@ export const UploadPage = () => {
                 tabIndex={-1}
                 startIcon={<CloudUploadIcon />}
               >
-                Upload file
+                {t('UPLOAD.UPLOAD_FILE_BUTTON')}
                 <VisuallyHiddenInput ref={fileInputRef} onChange={handleFileChange} type="file" accept=".mp3,.mp4" />
               </Button>
             </Grid>
@@ -133,7 +154,7 @@ export const UploadPage = () => {
             )}
             {files.length >= MAX_FILES && (
               <Grid item>
-                <FormHelperText error>Достигнут лимит на количество файлов</FormHelperText>
+                <FormHelperText error>{t('UPLOAD.LIMIT_ERROR')}</FormHelperText>
               </Grid>
             )}
           </Grid>
@@ -148,7 +169,7 @@ export const UploadPage = () => {
           <CardContent>
             <Grid container direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="h5" component="div">
-                Мои файлы
+                {t('UPLOAD.MY_FILES')}
               </Typography>
             </Grid>
             <Grid
@@ -200,17 +221,22 @@ export const UploadPage = () => {
                     </Typography>
                   </Grid>
                   <Grid container flex={0} direction="row" alignItems="center" justifyContent="flex-end" wrap="nowrap">
-                    <Tooltip placement="top" title="Превью медиа">
+                    <Tooltip placement="top" title={t('UPLOAD.MEDIA_PREVIEW')}>
+                      <IconButton onClick={handlePreview({ url: file.url, name: file.name })} aria-label="view">
+                        <VisibilityIcon fontSize="inherit" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip placement="top" title={t('UPLOAD.OPEN_TAB')}>
                       <IconButton onClick={handleView(file.url)} aria-label="view">
                         <OpenInNewIcon fontSize="inherit" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip placement="top" title="Скопировать ссылку">
+                    <Tooltip placement="top" title={t('UPLOAD.COPE_LINK')}>
                       <IconButton onClick={handleCopy(file.url)} aria-label="view">
                         <LinkIcon fontSize="inherit" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip placement="top" title="Удалить медиа файл">
+                    <Tooltip placement="top" title={t('UPLOAD.DELETE_FILE')}>
                       <IconButton onClick={handleDelete(file.id)} aria-label="delete">
                         <DeleteIcon color="error" fontSize="inherit" />
                       </IconButton>
@@ -221,6 +247,14 @@ export const UploadPage = () => {
             </Grid>
           </CardContent>
         </Card>
+      )}
+      {previewFile && (
+        <MediaPreviewModal
+          title={previewFile.name}
+          type={getRankTypeByMediaUrl(previewFile.url)}
+          src={previewFile.url}
+          onClose={handleClosePreview}
+        />
       )}
     </>
   );

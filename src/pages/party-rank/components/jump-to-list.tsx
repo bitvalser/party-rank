@@ -1,4 +1,5 @@
 import { MouseEventHandler, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button, Menu, MenuItem, Typography } from '@mui/material';
 
@@ -12,6 +13,7 @@ interface JumpToListProps {
 
 export const JumpToList = ({ partyItems, renderTitle, onJump }: JumpToListProps) => {
   const [anchor, setAnchor] = useState(null);
+  const { t } = useTranslation();
 
   const handleClose = () => {
     setAnchor(null);
@@ -29,7 +31,7 @@ export const JumpToList = ({ partyItems, renderTitle, onJump }: JumpToListProps)
   return (
     <>
       <Button size="small" variant="text" onClick={handleMenu}>
-        Перейти
+        {t('COMMON.GO')}
       </Button>
       <Menu
         sx={{

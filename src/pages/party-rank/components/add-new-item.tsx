@@ -1,6 +1,7 @@
 import Fuse from 'fuse.js';
 import { useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { finalize } from 'rxjs/operators';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -59,6 +60,7 @@ export const AddNewItem = ({
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [conflictItem, setConflictItem] = useState(null);
+  const { t } = useTranslation();
   const fuseSearch = useMemo(
     () =>
       new Fuse(items, {
@@ -135,7 +137,7 @@ export const AddNewItem = ({
             justifyContent="space-between"
           >
             <Typography variant="h6" component="h2">
-              Добавить новый элемент
+              {t('ADD_RANK_ITEM.TITLE')}
             </Typography>
             <IconButton onClick={handleClose}>
               <CloseIcon />
@@ -164,25 +166,16 @@ export const AddNewItem = ({
                 <RankItemForm showAuthor={isCreator} />
                 {conflictItem && (
                   <Grid item xs>
-                    <FormLabel>Возможный конфликт!</FormLabel>
+                    <FormLabel>{t('ADD_RANK_ITEM.POSSIBLE_CONFLICT')}</FormLabel>
                     <RankItem sx={{ mt: 0 }} data={conflictItem} partyStatus={PartyRankStatus.Ongoing} oneLine />
                   </Grid>
                 )}
                 <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
-                  {!conflictItem && (
-                    <FormHelperText>
-                      Прежде чем сохранить элемент убедитесь что превью работает нормально и показывает ваш медиа файл!
-                    </FormHelperText>
-                  )}
-                  {conflictItem && (
-                    <FormHelperText>
-                      Возможно ваш вариант уже был добавлен другим участником, пожалуйста перепроверьте прежде чем
-                      сохранить
-                    </FormHelperText>
-                  )}
+                  {!conflictItem && <FormHelperText>{t('ADD_RANK_ITEM.BEFORE_SAVE_WARNING')}</FormHelperText>}
+                  {conflictItem && <FormHelperText>{t('ADD_RANK_ITEM.CONFLICT_WARNING')}</FormHelperText>}
                   <Grid item>
                     <Button fullWidth type="submit" variant="contained" disabled={loading}>
-                      Добавить предложение
+                      {t('ADD_RANK_ITEM.SUBMIT')}
                     </Button>
                   </Grid>
                 </Grid>
@@ -205,7 +198,7 @@ export const AddNewItem = ({
         disabled={disabled}
       >
         <AddIcon sx={{ mr: 1 }} />
-        Добавить предложение
+        {t('ADD_RANK_ITEM.ADD_CONTENDER')}
       </Fab>
     </>
   );

@@ -1,4 +1,5 @@
 import { FirebaseApp } from 'firebase/app';
+import { i18n } from 'i18next';
 
 import { IAuthService } from './auth/auth.types';
 import { IPartyRanks } from './party-ranks/party-ranks.types';
@@ -12,6 +13,7 @@ export enum AppTypes {
   PartyRanks = '__PartyRanks',
   SettingsService = '__SettingsService',
   UploadService = '__UploadService',
+  TranslationInstance = '__TranslationInstance',
 }
 
 export interface TypeMap {
@@ -20,4 +22,5 @@ export interface TypeMap {
   [AppTypes.PartyRanks]: IPartyRanks;
   [AppTypes.SettingsService]: ISettingsService;
   [AppTypes.UploadService]: IUploadService;
+  [AppTypes.TranslationInstance]: i18n;
 }

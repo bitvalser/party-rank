@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import { finalize } from 'rxjs/operators';
 
@@ -17,6 +18,7 @@ const InvitePageComponent = () => {
   const { getPartyRank } = useInjectable(AppTypes.PartyRanks);
   const partyRank = useSubscription(getPartyRank(id).pipe(finalize(() => setLoading(false))));
   const creator = partyRank?.creator;
+  const { t } = useTranslation();
 
   return (
     <Container>
@@ -55,7 +57,7 @@ const InvitePageComponent = () => {
                       fontFamily: 'monospace',
                     }}
                   >
-                    {creator?.displayName} приглашает вас принять участие в пати ранке!
+                    {t('AUTH.INVITE_FROM', { user: creator?.displayName })}
                   </Typography>
                 </Grid>
                 <Grid item>
@@ -109,7 +111,7 @@ const InvitePageComponent = () => {
                 fullWidth
                 target="_self"
               >
-                Войти через дискорд
+                {t('AUTH.LOGIN_VIA_DISCORD')}
               </Button>
             </Grid>
           </Grid>

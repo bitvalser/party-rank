@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import { useRef, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { finalize } from 'rxjs/operators';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -38,6 +39,7 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
     defaultValues: DEFAULT_VALUES,
     reValidateMode: 'onBlur',
   });
+  const { t } = useTranslation();
   const {
     handleSubmit,
     formState: { isValid },
@@ -99,7 +101,7 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
             justifyContent="space-between"
           >
             <Typography variant="h6" component="h2">
-              Создать новый пати ранк
+              {t('CREATE_RANK.TITLE')}
             </Typography>
             <IconButton onClick={handleClose}>
               <CloseIcon />
@@ -133,7 +135,7 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
                       variant="contained"
                       disabled={loading || !isValid}
                     >
-                      Создать пати ранк
+                      {t('CREATE_RANK.SUBMIT')}
                     </Button>
                   </Grid>
                 </Grid>

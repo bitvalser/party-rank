@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { Avatar, Button, Card, CardActions, CardContent, Chip, Grid, Typography } from '@mui/material';
@@ -13,6 +14,7 @@ interface PartyItemProps {
 export const PartyItem = memo(({ data }: PartyItemProps) => {
   const { createdDate, creator, deadlineDate, finishDate, id, name, status, finishedDate, showTable } = data;
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleView = () => {
     navigate(`/party-rank/${id}`);
@@ -30,10 +32,12 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
             {name}
           </Typography>
           <Grid item>
-            {status === PartyRankStatus.Ongoing && <Chip color="primary" size="small" label="В процессе" />}
-            {status === PartyRankStatus.Rating && <Chip color="secondary" size="small" label="Голосование" />}
-            {status === PartyRankStatus.Finished && <Chip color="success" size="small" label="Завершён" />}
-            {status === PartyRankStatus.Registration && <Chip color="error" size="small" label="Регистрация" />}
+            {status === PartyRankStatus.Ongoing && <Chip color="primary" size="small" label={t('RANK.ONGOING')} />}
+            {status === PartyRankStatus.Rating && <Chip color="secondary" size="small" label={t('RANK.VOTING')} />}
+            {status === PartyRankStatus.Finished && <Chip color="success" size="small" label={t('RANK.FINISHED')} />}
+            {status === PartyRankStatus.Registration && (
+              <Chip color="error" size="small" label={t('RANK.REGISTRATION')} />
+            )}
           </Grid>
         </Grid>
         <Grid
@@ -47,15 +51,23 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
           spacing={1}
         >
           {status === PartyRankStatus.Ongoing && (
-            <Typography>Дедлайн: {DateTime.fromISO(deadlineDate).toLocaleString(DateTime.DATETIME_MED)}</Typography>
+            <Typography>
+              {t('RANK.DEADLINE_AT', { time: DateTime.fromISO(deadlineDate).toLocaleString(DateTime.DATETIME_MED) })}
+            </Typography>
           )}
           {status === PartyRankStatus.Rating && (
             <Typography>
-              Конец голосования: {DateTime.fromISO(finishDate).toLocaleString(DateTime.DATETIME_MED)}
+              {t('RANK.VOTING_DEADLINE_AT', {
+                time: DateTime.fromISO(finishDate).toLocaleString(DateTime.DATETIME_MED),
+              })}
             </Typography>
           )}
           {status === PartyRankStatus.Finished && finishedDate && (
-            <Typography>Завершён: {DateTime.fromISO(finishedDate).toLocaleString(DateTime.DATETIME_MED)}</Typography>
+            <Typography>
+              {t('RANK.FINISHED_AT', {
+                time: DateTime.fromISO(finishedDate).toLocaleString(DateTime.DATETIME_MED),
+              })}
+            </Typography>
           )}
         </Grid>
       </CardContent>
@@ -85,7 +97,7 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
           >
             {createdDate && (
               <Typography fontSize={14} noWrap>
-                Создан {DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED)}
+                {t('RANK.CREATED_AT', { time: DateTime.fromISO(createdDate).toLocaleString(DateTime.DATETIME_MED) })}
               </Typography>
             )}
           </Grid>
@@ -93,16 +105,16 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
             <Grid container direction="row" justifyContent="flex-end" columnSpacing={1}>
               {status !== PartyRankStatus.Finished && (
                 <Button size="small" onClick={handleView}>
-                  Участвовать
+                  {t('RANK.JOIN')}
                 </Button>
               )}
               {status === PartyRankStatus.Finished && (
                 <>
                   <Button disabled={!showTable} onClick={handleTableView} size="small">
-                    Итоговая таблица
+                    {t('RANK.RESULT_TABLE')}
                   </Button>
                   <Button onClick={handleView} size="small">
-                    Перейти
+                    {t('RANK.GO')}
                   </Button>
                 </>
               )}

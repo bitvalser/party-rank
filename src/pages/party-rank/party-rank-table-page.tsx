@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, concat, merge } from 'rxjs';
 import { finalize, map, tap, withLatestFrom } from 'rxjs/operators';
@@ -22,6 +23,7 @@ export const PartyRankTablePage = () => {
   const partyRank = useSubscription(concat(getPartyRank(id), parties$.pipe(map((parties) => parties[id]))));
   const [listLoading, setListLoading] = useState(true);
   const { user$ } = useInjectable(AppTypes.AuthService);
+  const { t } = useTranslation();
   const currentUser = useSubscription(user$);
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const usersRank = useSubscription(getUserRanks(id), []);
@@ -62,9 +64,9 @@ export const PartyRankTablePage = () => {
         <Card>
           <CardContent>
             <Typography variant="h4" component="div">
-              Таблица Лидеров
+              {t('RANK.LEADERBOARD')}
               {!showTable && (
-                <Tooltip title="Таблица лидеров сейчас закрыта и доступна только вам">
+                <Tooltip title={t('RANK.LEADERBOARD_LOCKED')}>
                   <LockIcon
                     sx={{
                       ml: 1,
@@ -95,7 +97,9 @@ export const PartyRankTablePage = () => {
             >
               {finishedDate && (
                 <Typography>
-                  Завершён: {DateTime.fromISO(finishedDate).toLocaleString(DateTime.DATETIME_MED)}
+                  {t('RANK.FINISHED_AT', {
+                    time: DateTime.fromISO(finishedDate).toLocaleString(DateTime.DATETIME_MED),
+                  })}
                 </Typography>
               )}
             </Grid>
@@ -111,7 +115,7 @@ export const PartyRankTablePage = () => {
       >
         <CardContent>
           <Typography variant="h5" component="div">
-            Итоговый Топ
+            {t('RANK.FINAL_TOP')}
           </Typography>
         </CardContent>
       </Card>
@@ -143,7 +147,7 @@ export const PartyRankTablePage = () => {
         aria-label="Add New"
       >
         <PlayArrowIcon sx={{ mr: 1 }} />
-        Результаты
+        {t('RANK.RESULTS')}
       </Fab>
     </>
   );

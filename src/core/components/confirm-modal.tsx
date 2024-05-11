@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { Box, Button, Grid, Modal, Typography } from '@mui/material';
 
 interface ConfirmModalProps {
@@ -8,6 +10,8 @@ interface ConfirmModalProps {
 }
 
 export const ConfirmModal = ({ onClose, onConfirm, text, title }: ConfirmModalProps) => {
+  const { t } = useTranslation();
+
   return (
     <Modal open onClose={onClose}>
       <Box
@@ -34,8 +38,8 @@ export const ConfirmModal = ({ onClose, onConfirm, text, title }: ConfirmModalPr
           </Grid>
           <Grid sx={{ mt: 2 }} item>
             <Grid container flexDirection="row" justifyContent="flex-end">
-              <Button onClick={onClose}>Отмена</Button>
-              <Button onClick={onConfirm}>Подтвердить</Button>
+              <Button onClick={onClose}>{t('COMMON.CANCEL')}</Button>
+              <Button onClick={onConfirm}>{t('COMMON.CONFIRM')}</Button>
             </Grid>
           </Grid>
         </Grid>

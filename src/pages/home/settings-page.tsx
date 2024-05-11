@@ -1,12 +1,36 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDebouncedCallback } from 'use-debounce';
 
-import { Card, CardContent, Checkbox, FormControlLabel, Grid, Typography } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Grid,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Typography,
+} from '@mui/material';
 
 import { SliderNum } from '../../core/components/slider-num';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { AppTypes } from '../../core/services/types';
+
+const LANGUAGE_OPTIONS = [
+  {
+    value: 'ru',
+    label: 'Русский',
+  },
+  {
+    value: 'en',
+    label: 'English',
+  },
+];
 
 export const SettingsPage = () => {
   const { controllablePlayer$, playDuration$, defaultVolume$, votingPlayerAutoplay$, useVideoStartTime$ } =
@@ -18,6 +42,7 @@ export const SettingsPage = () => {
   const defaultVolume = useSubscription(defaultVolume$, 1);
   const [durationValue, setDurationValue] = useState(null);
   const [volumeValue, setVolumeValue] = useState(null);
+  const { t, i18n } = useTranslation();
 
   const updateDuration = useDebouncedCallback((value: number) => {
     playDuration$.next(value);
@@ -49,6 +74,11 @@ export const SettingsPage = () => {
     useVideoStartTime$.next(value);
   };
 
+  const handleChangeLanguage = (event: SelectChangeEvent) => {
+    localStorage.setItem('settings:language', event.target.value);
+    i18n.changeLanguage(event.target.value);
+  };
+
   return (
     <>
       <Card
@@ -59,7 +89,7 @@ export const SettingsPage = () => {
         <CardContent>
           <Grid container direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="h5" component="div">
-              Звук
+              {t('SETTINGS.SOUND')}
             </Typography>
           </Grid>
           <Grid
@@ -74,7 +104,7 @@ export const SettingsPage = () => {
           >
             <Grid item>
               <SliderNum
-                label="Громкость по умолчанию"
+                label={t('SETTINGS.DEFAULT_VOLUME')}
                 max={100}
                 min={0}
                 step={1}
@@ -94,7 +124,7 @@ export const SettingsPage = () => {
         <CardContent>
           <Grid container direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="h5" component="div">
-              Страница Результатов
+              {t('SETTINGS.RESULT_PAGE')}
             </Typography>
           </Grid>
           <Grid
@@ -109,11 +139,11 @@ export const SettingsPage = () => {
           >
             <Grid item>
               <SliderNum
-                label="Длительность воиспроизведения медиа"
+                label={t('SETTINGS.MEDIA_DURATION')}
                 max={90}
                 min={5}
                 step={5}
-                unit="сек"
+                unit={t('COMMON.SECS_UNIT')}
                 value={durationValue ?? playDuration}
                 onChange={handleDurationChange}
                 disabled={controllablePlayer}
@@ -123,13 +153,13 @@ export const SettingsPage = () => {
               <FormControlLabel
                 disabled={!controllablePlayer}
                 control={<Checkbox checked={useVideoStartTime} onChange={handleChangeUseVideoStartTime} />}
-                label="Использовать сохранённое время начала воспроизведения"
+                label={t('SETTINGS.USE_SAVED_TIME')}
               />
             </Grid>
             <Grid item>
               <FormControlLabel
                 control={<Checkbox checked={controllablePlayer} onChange={handleChangeControllable} />}
-                label="Управляемое воспроизведение"
+                label={t('SETTINGS.CONTROLLED_PLAY')}
               />
             </Grid>
           </Grid>
@@ -143,7 +173,7 @@ export const SettingsPage = () => {
         <CardContent>
           <Grid container direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="h5" component="div">
-              Страница Оценивания
+              {t('SETTINGS.RANKING_PAGE')}
             </Typography>
           </Grid>
           <Grid
@@ -159,8 +189,48 @@ export const SettingsPage = () => {
             <Grid item>
               <FormControlLabel
                 control={<Checkbox checked={votingPlayerAutoplay} onChange={handleChangeVotingAutoplay} />}
-                label="Автовоиспроизведение во время оценивания"
+                label={t('SETTINGS.RANKING_AUTOPLAY')}
               />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+      <Card
+        sx={{
+          mt: 2,
+        }}
+      >
+        <CardContent>
+          <Grid container direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="h5" component="div">
+              {t('SETTINGS.APP')}
+            </Typography>
+          </Grid>
+          <Grid
+            sx={{
+              marginTop: 1,
+              padding: 1,
+              paddingBottom: 0,
+            }}
+            container
+            direction="column"
+            spacing={1}
+          >
+            <Grid item>
+              <FormControl>
+                <FormLabel>{t('SETTINGS.LANGUAGE')}</FormLabel>
+                <Select
+                  sx={{
+                    width: 300,
+                  }}
+                  value={i18n.language}
+                  onChange={handleChangeLanguage}
+                >
+                  {LANGUAGE_OPTIONS.map(({ label, value }) => (
+                    <MenuItem value={value}>{label}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
           </Grid>
         </CardContent>

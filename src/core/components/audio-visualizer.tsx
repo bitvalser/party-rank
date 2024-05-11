@@ -13,6 +13,8 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Box, IconButton } from '@mui/material';
 
+import { RankPartyPlayerRef } from './rank-party-player';
+
 interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {
   width?: string | number;
   height?: string | number;
@@ -25,7 +27,7 @@ interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {
   onManualPlay?: () => void;
 }
 
-export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps>((props, ref) => {
+export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerProps>((props, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>();
   const audioRef = useRef<HTMLAudioElement>();
   const containerRef = useRef<HTMLDivElement>();
@@ -47,7 +49,31 @@ export const AudioVisualizer = forwardRef<HTMLAudioElement, AudioVisualizerProps
     ...rest
   } = props;
 
-  useImperativeHandle(ref, () => audioRef.current, []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      play: async () => {
+        try {
+          await audioRef.current.play();
+        } catch (error) {
+          console.error(error);
+        }
+      },
+      pause: () => {
+        audioRef.current.pause();
+      },
+      setVolume: (value: number) => {
+        audioRef.current.volume = value;
+      },
+      getCurrentTimestamp: () => {
+        return Promise.resolve(audioRef.current.currentTime);
+      },
+      playWithTimestamp: (time: number) => {
+        audioRef.current.currentTime = time;
+      },
+    }),
+    [],
+  );
 
   const handlePause = () => {
     setPaused(true);

@@ -20,7 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ConfirmModal } from '../../../core/components/confirm-moda';
+import { ConfirmModal } from '../../../core/components/confirm-modal';
 import { useInjectable } from '../../../core/hooks/useInjectable';
 import useSubscription from '../../../core/hooks/useSubscription';
 import { AppUser } from '../../../core/interfaces/app-user.interface';

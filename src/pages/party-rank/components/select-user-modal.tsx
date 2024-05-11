@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Grid, IconButton, Modal, Typography, useTheme } from '@mui/material';
@@ -12,6 +13,7 @@ export interface SelectUserModelProps {
 
 export const SelectUserModel = ({ onSelect, onClose }: SelectUserModelProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [selectedUser, setSelectedUser] = useState(null);
 
   const handleSelect = () => {
@@ -46,7 +48,7 @@ export const SelectUserModel = ({ onSelect, onClose }: SelectUserModelProps) => 
           justifyContent="space-between"
         >
           <Typography variant="h6" component="h2">
-            Добавить участника
+            {t('RANK.ADD_PARTICIPANT')}
           </Typography>
           <IconButton onClick={onClose}>
             <CloseIcon />
@@ -71,7 +73,7 @@ export const SelectUserModel = ({ onSelect, onClose }: SelectUserModelProps) => 
               variant="contained"
               disabled={!selectedUser}
             >
-              Добавить
+              {t('RANK.ADD_PARTICIPANT_SUBMIT')}
             </Button>
           </Grid>
         </Grid>

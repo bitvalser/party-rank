@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
@@ -19,6 +20,7 @@ interface UserRankStatusProps {
 
 export const UserRankStatus = ({ partyItems, required, members = [] }: UserRankStatusProps) => {
   const { getUser } = useInjectable(AppTypes.AuthService);
+  const { t } = useTranslation();
   const usersById = useSubscription<Record<string, { author: AppUser; count: number }>>(
     of(members).pipe(
       switchMap((ids) => concatReduce(...ids.map((itemId) => getUser(itemId)))),
@@ -60,7 +62,7 @@ export const UserRankStatus = ({ partyItems, required, members = [] }: UserRankS
       <CardContent>
         <Grid container direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="h5" component="div">
-            Статус участников
+            {t('RANK.PARTICIPANTS_STATUS')}
           </Typography>
         </Grid>
         <Grid
@@ -95,7 +97,7 @@ export const UserRankStatus = ({ partyItems, required, members = [] }: UserRankS
                     mb: '4px',
                   }}
                 >
-                  Загружено {count} / {required}
+                  {t('RANK.ITEMS_ADDED', { current: count, required })}
                 </Typography>
                 <LinearProgress
                   color={count === required ? 'success' : 'primary'}

@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import { useMemo, useRef, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { finalize } from 'rxjs/operators';
 
 import CloseIcon from '@mui/icons-material/Close';
@@ -22,6 +23,7 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
   const theme = useTheme();
   const { updatePartyRank } = useInjectable(AppTypes.PartyRanks);
   const formRef = useRef<PartyRankFormRef>();
+  const { t } = useTranslation();
   const initialValues = useMemo(
     () => ({
       ...rankParty,
@@ -90,7 +92,7 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
           justifyContent="space-between"
         >
           <Typography variant="h6" component="h2">
-            Редактировать {name}
+            {t('CREATE_RANK.EDIT_TITLE', { name })}
           </Typography>
           <IconButton onClick={onClose}>
             <CloseIcon />
@@ -124,7 +126,7 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
                     variant="contained"
                     disabled={loading || !isValid}
                   >
-                    Сохранить изменения
+                    {t('CREATE_RANK.SAVE_CHANGES')}
                   </Button>
                 </Grid>
               </Grid>

@@ -8,6 +8,7 @@ import { Box, LinearProgress } from '@mui/material';
 import { useInjectable } from '../hooks/useInjectable';
 import useSubscription from '../hooks/useSubscription';
 import { AppTypes } from '../services/types';
+import { RankPartyPlayerRef } from './rank-party-player';
 
 export interface YoutubePlayerProps {
   link: string;
@@ -24,16 +25,8 @@ export interface YoutubePlayerProps {
   onManualPlay?: () => void;
 }
 
-export interface YoutubePlayerRef {
-  pause: () => void;
-  play: () => void;
-  setVolume: (value: number) => void;
-  getCurrentTime: () => Promise<number>;
-  playWithTimestamp: (time: number) => void;
-}
-
 export const YoutubePlayer = memo(
-  forwardRef<YoutubePlayerRef, YoutubePlayerProps>(
+  forwardRef<RankPartyPlayerRef, YoutubePlayerProps>(
     (
       {
         link,
@@ -77,11 +70,11 @@ export const YoutubePlayer = memo(
         const stateListener = playerRef.current.on('stateChange', ({ data }: any) => {
           if (data === 1) {
             onPlay();
-            onManualPlay();
+            // onManualPlay();
           }
           if (data === 2) {
             onPause();
-            onManualPause();
+            // onManualPause();
           }
         });
 
@@ -127,7 +120,7 @@ export const YoutubePlayer = memo(
               playerRef.current.setVolume(value * 100);
             }
           },
-          getCurrentTime: () => {
+          getCurrentTimestamp: () => {
             if (playerRef.current) {
               return playerRef.current.getCurrentTime();
             }

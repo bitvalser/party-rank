@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Avatar, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 
@@ -9,6 +10,8 @@ interface ParticipantsListProps {
 }
 
 export const ParticipantsList = ({ partyItems }: ParticipantsListProps) => {
+  const { t } = useTranslation();
+
   const participants = useMemo(
     () =>
       (partyItems || [])
@@ -26,7 +29,7 @@ export const ParticipantsList = ({ partyItems }: ParticipantsListProps) => {
       <CardContent>
         <Grid container direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="h5" component="div">
-            Участники ({participants.length})
+            {t('RANK.PARTICIPANTS')} ({participants.length})
           </Typography>
         </Grid>
         <Grid

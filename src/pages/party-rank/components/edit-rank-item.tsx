@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { finalize } from 'rxjs/operators';
 
 import CloseIcon from '@mui/icons-material/Close';
@@ -22,6 +23,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
   const [loading, setLoading] = useState(false);
   const { updateRankItem } = useInjectable(AppTypes.PartyRanks);
   const theme = useTheme();
+  const { t } = useTranslation();
   const form = useForm<RankItemFromValues>({
     defaultValues: rankValues,
     reValidateMode: 'onBlur',
@@ -81,7 +83,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
               variant="h6"
               component="h2"
             >
-              Редактировать {rankValues.name}
+              {t('CREATE_RANK.EDIT_TITLE', { name: rankValues.name })}
             </Typography>
           </Grid>
           <IconButton onClick={onClose}>
@@ -109,9 +111,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
             >
               <RankItemForm autoplay={false} />
               <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
-                <FormHelperText>
-                  Прежде чем сохранить элемент убедитесь что превью работает нормально и показывает ваш медиа файл!
-                </FormHelperText>
+                <FormHelperText>{t('CREATE_RANK.BEFORE_SAVE_WARNING')}</FormHelperText>
                 <Grid item>
                   <Button
                     sx={{
@@ -122,7 +122,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
                     variant="contained"
                     disabled={loading}
                   >
-                    Сохранить изменения
+                    {t('CREATE_RANK.SAVE_CHANGES')}
                   </Button>
                 </Grid>
               </Grid>

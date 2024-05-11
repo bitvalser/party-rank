@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -19,6 +20,7 @@ interface UserChipsProps {
 
 export const UserChips = ({ users, title, onDelete, onAdd, showAdd = false }: UserChipsProps) => {
   const { getUser } = useInjectable(AppTypes.AuthService);
+  const { t } = useTranslation();
   const participants = useSubscription(
     of(users).pipe(switchMap((ids) => concatReduce(...ids.map((id) => getUser(id))))),
     [],
@@ -73,7 +75,7 @@ export const UserChips = ({ users, title, onDelete, onAdd, showAdd = false }: Us
                 }}
                 avatar={<AddIcon />}
                 size="medium"
-                label="Добавить участника"
+                label={t('RANK.ADD_USER')}
                 variant="outlined"
                 onClick={onAdd}
               />

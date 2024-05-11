@@ -14,6 +14,7 @@ import {
 } from 'mui-tiptap';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 import { FormControl, FormLabel, Grid, TextField } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
@@ -51,6 +52,7 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
       formState: { errors },
     } = useFormContext<PartyRankFormValues>();
     const rteRef = useRef<RichTextEditorRef>(null);
+    const { t } = useTranslation();
 
     const status = watch('status');
 
@@ -77,12 +79,12 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
             control={control}
             rules={{
               minLength: 3,
-              required: 'Название обязательное поле!',
+              required: t('CREATE_RANK.NAME_REQUIRED'),
             }}
             render={({ field }) => (
               <TextField
                 fullWidth
-                label="Название \ Тематика"
+                label={t('CREATE_RANK.NAME')}
                 error={Boolean(errors.name)}
                 helperText={errors.name?.message as string}
                 {...field}
@@ -110,7 +112,7 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
                 }}
                 fullWidth
               >
-                <FormLabel>Описание</FormLabel>
+                <FormLabel>{t('CREATE_RANK.DESCRIPTION')}</FormLabel>
                 <RichTextEditor
                   ref={rteRef}
                   extensions={[StarterKit, Link]}
@@ -138,7 +140,14 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
             name="requiredQuantity"
             control={control}
             render={({ field }) => (
-              <SliderNum label="Количество предложений от участника" max={10} min={1} step={1} unit="эл." {...field} />
+              <SliderNum
+                label={t('CREATE_RANK.CONTENDERS_COUNT')}
+                max={10}
+                min={0}
+                step={1}
+                unit={t('COMMON.ITEMS_UNIT')}
+                {...field}
+              />
             )}
           />
         </Grid>
@@ -154,7 +163,7 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
                       width: '100%',
                     }}
                     format="dd/MM/yyyy HH:mm"
-                    label="Дедлайн заявок"
+                    label={t('CREATE_RANK.DEADLINE')}
                     ampm={false}
                     minDate={minDate}
                     {...field}
@@ -173,7 +182,7 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
                       width: '100%',
                     }}
                     format="dd/MM/yyyy HH:mm"
-                    label="Конец оценивания"
+                    label={t('CREATE_RANK.VOTING_DEADLINE')}
                     ampm={false}
                     minDate={minDate}
                     {...field}
@@ -187,7 +196,9 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
           <Controller
             name="moderators"
             control={control}
-            render={({ field }) => <UsersAutocomplete label="Модераторы" loadInit={initLoadUsers} {...field} />}
+            render={({ field }) => (
+              <UsersAutocomplete label={t('CREATE_RANK.MODERATORS')} loadInit={initLoadUsers} {...field} />
+            )}
           />
         </Grid>
       </Grid>

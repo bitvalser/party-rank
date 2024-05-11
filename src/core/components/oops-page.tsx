@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { Container, Grid, Paper, Typography } from '@mui/material';
 
 interface OopsPageProps {
@@ -15,6 +17,8 @@ const getCodeMessage = (code: string) => {
 };
 
 export const OopsPage = ({ message, code = null }: OopsPageProps) => {
+  const { t } = useTranslation();
+
   return (
     <Container>
       <Grid
@@ -45,7 +49,7 @@ export const OopsPage = ({ message, code = null }: OopsPageProps) => {
                   textDecoration: 'none',
                 }}
               >
-                Что-то пошло не так :(
+                {t('COMMON.SOMETHING_WENT_WRONG')}
               </Typography>
             </Grid>
             {message && (

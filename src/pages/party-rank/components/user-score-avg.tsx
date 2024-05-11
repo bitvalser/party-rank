@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { finalize, map } from 'rxjs/operators';
 
 import { Card, CardContent, Divider, Grid, LinearProgress, Typography } from '@mui/material';
@@ -18,6 +19,7 @@ interface UserScoreAvgProps {
 export const UserScoreAvg = ({ id, partyItems }: UserScoreAvgProps) => {
   const { getUserRanks } = useInjectable(AppTypes.PartyRanks);
   const [rankLoading, setRankLoading] = useState(true);
+  const { t } = useTranslation();
   const usersRank = useSubscription(
     getUserRanks(id, { includeUser: true }).pipe(
       finalize(() => setRankLoading(false)),
@@ -49,7 +51,7 @@ export const UserScoreAvg = ({ id, partyItems }: UserScoreAvgProps) => {
       <CardContent>
         <Grid container direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="h5" component="div">
-            Результаты участников
+            {t('RANK.PARTICIPANTS_RESULT')}
           </Typography>
         </Grid>
         <Grid

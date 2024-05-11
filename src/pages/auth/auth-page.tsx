@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { Button, Container, Grid, Paper, Typography } from '@mui/material';
 
 import * as Styled from './auth-page.styles';
@@ -5,6 +7,8 @@ import * as Styled from './auth-page.styles';
 export const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=1205222499114160129&response_type=code&redirect_uri=${encodeURIComponent(process.env.DISCORD_REDIRECT_URL)}&scope=identify`;
 
 export const AuthPage = () => {
+  const { t } = useTranslation();
+
   return (
     <Container>
       <Grid
@@ -33,7 +37,7 @@ export const AuthPage = () => {
                   textDecoration: 'none',
                 }}
               >
-                PARTY RANK
+                {t('COMMON.APP_NAME')}
               </Typography>
             </Grid>
             <Grid item>
@@ -47,7 +51,7 @@ export const AuthPage = () => {
                 fullWidth
                 target="_self"
               >
-                Войти через дискорд
+                {t('AUTH.LOGIN_VIA_DISCORD')}
               </Button>
             </Grid>
           </Grid>

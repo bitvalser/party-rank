@@ -17,6 +17,7 @@ import { Box, IconButton } from '@mui/material';
 import { useInjectable } from '../hooks/useInjectable';
 import useSubscription from '../hooks/useSubscription';
 import { AppTypes } from '../services/types';
+import { RankPartyPlayerRef } from './rank-party-player';
 
 export interface VideoPlayerProps extends VideoHTMLAttributes<HTMLVideoElement> {
   src: string;
@@ -31,16 +32,8 @@ export interface VideoPlayerProps extends VideoHTMLAttributes<HTMLVideoElement> 
   onManualPlay?: () => void;
 }
 
-export interface VideoPlayerRef {
-  pause: () => void;
-  play: () => void;
-  setVolume: (value: number) => void;
-  getCurrentTime: () => number;
-  playWithTimestamp: (time: number) => void;
-}
-
 export const VideoPlayer = memo(
-  forwardRef<VideoPlayerRef, VideoPlayerProps>(
+  forwardRef<RankPartyPlayerRef, VideoPlayerProps>(
     (
       {
         src,
@@ -83,8 +76,8 @@ export const VideoPlayer = memo(
           setVolume: (value: number) => {
             videoRef.current.volume = value;
           },
-          getCurrentTime: () => {
-            return videoRef.current.currentTime;
+          getCurrentTimestamp: () => {
+            return Promise.resolve(videoRef.current.currentTime);
           },
           playWithTimestamp: (time: number) => {
             videoRef.current.currentTime = time;

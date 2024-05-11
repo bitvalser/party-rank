@@ -1,4 +1,5 @@
 import { MouseEventHandler, memo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -7,11 +8,11 @@ import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import TagIcon from '@mui/icons-material/Tag';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { Avatar, Box, Chip, Grid, IconButton, Modal, Popover, SxProps, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Chip, Grid, IconButton, Popover, SxProps, Tooltip, Typography } from '@mui/material';
 
-import { ConfirmModal } from '../../../core/components/confirm-moda';
+import { ConfirmModal } from '../../../core/components/confirm-modal';
 import { GradeMark } from '../../../core/components/grade-mark';
-import { RankPartyPlayer } from '../../../core/components/rank-party-player';
+import { MediaPreviewModal } from '../../../core/components/media-preview-modal';
 import { useInjectable } from '../../../core/hooks/useInjectable';
 import useSubscription from '../../../core/hooks/useSubscription';
 import { PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
@@ -61,6 +62,7 @@ export const RankItem = memo(
     const [showLikesEl, setShowLikesEl] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const likesContainerRef = useRef();
+    const { t } = useTranslation();
 
     const { author, authorId, name, type, value, id } = data;
     const showAuthor =
@@ -229,28 +231,28 @@ export const RankItem = memo(
               {typeof grade === 'number' && <GradeMark size={32} value={grade} />}
             </Grid>
             {showPreviewIcon && (
-              <Tooltip placement="top" title="Превью медиа">
+              <Tooltip placement="top" title={t('RANK.MEDIA_PREVIEW')}>
                 <IconButton onClick={handleView} aria-label="view">
                   <VisibilityIcon fontSize="inherit" />
                 </IconButton>
               </Tooltip>
             )}
             {canEdit && (
-              <Tooltip placement="top" title="Редактировать предложение">
+              <Tooltip placement="top" title={t('RANK.EDIT_ITEM')}>
                 <IconButton onClick={handleEdit} aria-label="edit">
                   <EditIcon fontSize="inherit" />
                 </IconButton>
               </Tooltip>
             )}
             {canEdit && (
-              <Tooltip placement="top" title="Удалить предложение">
+              <Tooltip placement="top" title={t('RANK.DELETE_ITEM')}>
                 <IconButton onClick={handleDelete} aria-label="delete">
                   <DeleteIcon color="error" fontSize="inherit" />
                 </IconButton>
               </Tooltip>
             )}
             {partyStatus === PartyRankStatus.Rating && Boolean(grade) && (
-              <Tooltip placement="top" title="Удалить оценку">
+              <Tooltip placement="top" title={t('RANK.DELETE_RANK')}>
                 <IconButton onClick={handleClear} aria-label="clear">
                   <CloseIcon fontSize="inherit" />
                 </IconButton>
@@ -261,64 +263,12 @@ export const RankItem = memo(
         {showDeleteModal && (
           <ConfirmModal
             title={name}
-            text="Вы действительно хотите удалить этого кандидата из пати ранга?"
+            text={t('RANK.DELETE_ITEM_CONFIRMATION')}
             onClose={handleCloseDelete}
             onConfirm={handleConfirmDelete}
           />
         )}
-        <Modal open={showPreview} onClose={handleClosePreview}>
-          <Box
-            sx={(theme) => ({
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              padding: 2,
-              outline: 'none',
-              minWidth: 596,
-              maxWidth: 1200,
-              minHeight: 400,
-              borderRadius: '4px',
-              paddingBottom: 0,
-              display: 'flex',
-              overflow: 'hidden',
-              flexDirection: 'column',
-              backgroundColor: (theme) => theme.palette.background.paper,
-              [theme.breakpoints.down('md')]: {
-                minWidth: '100vw',
-                maxWidth: '100vw',
-              },
-            })}
-          >
-            <Grid
-              sx={{
-                marginBottom: '6px',
-              }}
-              container
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Grid xs item>
-                <Typography
-                  sx={{
-                    lineHeight: '22px',
-                  }}
-                  variant="h6"
-                  component="h2"
-                >
-                  {name}
-                </Typography>
-              </Grid>
-              <Grid xs={1} container item direction="row" justifyContent="flex-end">
-                <IconButton onClick={handleClosePreview}>
-                  <CloseIcon />
-                </IconButton>
-              </Grid>
-            </Grid>
-            <RankPartyPlayer type={type} value={value} showTimeControls />
-          </Box>
-        </Modal>
+        {showPreview && <MediaPreviewModal onClose={handleClosePreview} src={value} title={name} type={type} />}
       </>
     );
   },

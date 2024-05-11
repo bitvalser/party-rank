@@ -2,6 +2,7 @@ import { deleteField } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 import { RichTextReadOnly } from 'mui-tiptap';
 import { MouseEventHandler, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, Subject, concat, merge, of } from 'rxjs';
 import { catchError, filter, finalize, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
@@ -32,7 +33,7 @@ import IconButton from '@mui/material/IconButton';
 import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 
-import { ConfirmModal } from '../../core/components/confirm-moda';
+import { ConfirmModal } from '../../core/components/confirm-modal';
 import { OopsPage } from '../../core/components/oops-page';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
@@ -72,6 +73,7 @@ export const PartyRankPage = () => {
   const { user$ } = useInjectable(AppTypes.AuthService);
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [error, setError] = useState(null);
   const partyRank = useSubscription(
     concat(
@@ -316,8 +318,8 @@ export const PartyRankPage = () => {
                         <MoreVertIcon />
                       </IconButton>
                       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleCloseMenu}>
-                        <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
-                        <MenuItem onClick={handleConfirmDelete}>Удалить</MenuItem>
+                        <MenuItem onClick={handleEdit}>{t('RANK.EDIT')}</MenuItem>
+                        <MenuItem onClick={handleConfirmDelete}>{t('RANK.DELETE')}</MenuItem>
                       </Menu>
                     </div>
                   ) : null
@@ -331,10 +333,18 @@ export const PartyRankPage = () => {
                   {name}
                 </Typography>
                 <Grid item>
-                  {status === PartyRankStatus.Ongoing && <Chip color="primary" size="small" label="В процессе" />}
-                  {status === PartyRankStatus.Rating && <Chip color="secondary" size="small" label="Голосование" />}
-                  {status === PartyRankStatus.Finished && <Chip color="success" size="small" label="Завершён" />}
-                  {status === PartyRankStatus.Registration && <Chip color="error" size="small" label="Регистрация" />}
+                  {status === PartyRankStatus.Ongoing && (
+                    <Chip color="primary" size="small" label={t('RANK.ONGOING')} />
+                  )}
+                  {status === PartyRankStatus.Rating && (
+                    <Chip color="secondary" size="small" label={t('RANK.VOTING')} />
+                  )}
+                  {status === PartyRankStatus.Finished && (
+                    <Chip color="success" size="small" label={t('RANK.FINISHED')} />
+                  )}
+                  {status === PartyRankStatus.Registration && (
+                    <Chip color="error" size="small" label={t('RANK.REGISTRATION')} />
+                  )}
                 </Grid>
               </Grid>
               {content && (
@@ -352,13 +362,21 @@ export const PartyRankPage = () => {
                 direction="column"
                 spacing={1}
               >
-                <Typography>Дедлайн: {DateTime.fromISO(deadlineDate).toLocaleString(DateTime.DATETIME_MED)}</Typography>
                 <Typography>
-                  Конец голосования: {DateTime.fromISO(finishDate).toLocaleString(DateTime.DATETIME_MED)}
+                  {t('RANK.DEADLINE_AT', {
+                    time: DateTime.fromISO(deadlineDate).toLocaleString(DateTime.DATETIME_MED),
+                  })}
+                </Typography>
+                <Typography>
+                  {t('RANK.VOTING_DEADLINE_AT', {
+                    time: DateTime.fromISO(finishDate).toLocaleString(DateTime.DATETIME_MED),
+                  })}
                 </Typography>
                 {status === PartyRankStatus.Finished && finishedDate && (
                   <Typography>
-                    Завершён: {DateTime.fromISO(finishedDate).toLocaleString(DateTime.DATETIME_MED)}
+                    {t('RANK.FINISHED_AT', {
+                      time: DateTime.fromISO(finishedDate).toLocaleString(DateTime.DATETIME_MED),
+                    })}
                   </Typography>
                 )}
               </Grid>
@@ -367,27 +385,27 @@ export const PartyRankPage = () => {
             <CardActions>
               {status === PartyRankStatus.Registration && isCreator && (
                 <Button onClick={handleStartParty} size="small">
-                  Начать Пати Ранг
+                  {t('RANK.START_RANK')}
                 </Button>
               )}
               {status === PartyRankStatus.Ongoing && isCreator && (
                 <Button onClick={handleStartVoting} size="small">
-                  Начать Голосование
+                  {t('RANK.START_VOTING')}
                 </Button>
               )}
               {status === PartyRankStatus.Registration && !isMember && (
                 <Button onClick={handleRegistration} size="small">
-                  Зарегистрироваться
+                  {t('RANK.REGISTER')}
                 </Button>
               )}
               {status === PartyRankStatus.Rating && isCreator && (
                 <Button onClick={handleFinish} size="small">
-                  Завершить
+                  {t('RANK.FINISH_RANK')}
                 </Button>
               )}
               {status === PartyRankStatus.Finished && (showTable || isCreator) && (
                 <Button onClick={handleTableView} size="small">
-                  Таблица Лидеров
+                  {t('RANK.LEADERBOARD')}
                 </Button>
               )}
               {status === PartyRankStatus.Finished && !showTable && isCreator && (
@@ -398,36 +416,39 @@ export const PartyRankPage = () => {
                       mr: 1,
                     }}
                   />
-                  Открыть таблицу Лидеров
+                  {t('RANK.UNLOCK_LEADERBOARD')}
                 </Button>
               )}
               <Button onClick={handleCopyInvite} size="small">
-                Скопировать инвайт-ссылку
+                {t('RANK.COPE_INVITE_LINK')}
               </Button>
               {status === PartyRankStatus.Finished && !listLoading && (
                 <Button onClick={handleCsvExport} size="small">
-                  Экспортировать в CSV
+                  {t('RANK.EXPORT_TO_CSV')}
                 </Button>
               )}
             </CardActions>
           </Card>
         </Grid>
       </Grid>
-      {isCreator && moderators?.length > 0 && <UserChips users={moderators} title="Модераторы" />}
+      {isCreator && moderators?.length > 0 && <UserChips users={moderators} title={t('RANK.MODERATORS')} />}
       {isCreator && members?.length > 0 && status !== PartyRankStatus.Finished && (
         <>
           <UserChips
             key={members.join()}
             users={members}
-            title="Участники"
-            showAdd={isCreator}
+            title={t('RANK.PARTICIPANTS')}
+            showAdd={isCreator && [PartyRankStatus.Registration, PartyRankStatus.Ongoing].includes(status)}
             onDelete={isCreator ? handleRemoveUserRegistration : null}
             onAdd={handleShowAddUser}
           />
           {showAddUser && <SelectUserModel onClose={handleCloseAddUser} onSelect={handleAddUser} />}
         </>
       )}
-      {status === PartyRankStatus.Finished && <ParticipantsList partyItems={partyItems} />}
+      {status === PartyRankStatus.Finished && !members && <ParticipantsList partyItems={partyItems} />}
+      {status === PartyRankStatus.Finished && members?.length > 0 && (
+        <UserChips users={members} title={t('RANK.PARTICIPANTS')} />
+      )}
       {isCreator && status === PartyRankStatus.Rating && !listLoading && (
         <UserVotingStatus id={id} required={partyItems.length} partyItems={partyItems} />
       )}
@@ -444,10 +465,14 @@ export const PartyRankPage = () => {
           <CardContent>
             <Grid container direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="h6" component="div">
-                Загружено предложений ({currentUserItems.length} / {requiredQuantity})
+                {t('RANK.CONTENDERS_ADDED', { current: currentUserItems.length, required: requiredQuantity })}
               </Typography>
-              {currentUserItems.length < requiredQuantity && <Chip color="primary" size="small" label="В процессе" />}
-              {currentUserItems.length >= requiredQuantity && <Chip color="success" size="small" label="Готово" />}
+              {currentUserItems.length < requiredQuantity && (
+                <Chip color="primary" size="small" label={t('RANK.CONTENDERS_ADDED_IN_PROGRESS')} />
+              )}
+              {currentUserItems.length >= requiredQuantity && (
+                <Chip color="success" size="small" label={t('RANK.CONTENDERS_ADDED_READY')} />
+              )}
             </Grid>
           </CardContent>
         </Card>
@@ -461,7 +486,7 @@ export const PartyRankPage = () => {
           <CardContent>
             <Grid container direction="row" alignItems="center">
               <Typography sx={{ mr: 2 }} variant="h6" component="div">
-                Вы зарегестрированы!
+                {t('RANK.REGISTERED')}
               </Typography>
               <DoneIcon color="success" />
             </Grid>
@@ -477,7 +502,7 @@ export const PartyRankPage = () => {
           <CardContent>
             <Grid container direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="h6" component="div">
-                Для участия необходимо загрузить {requiredQuantity} предложений
+                {t('RANK.CONTENDERS_TO_JOIN', { quantity: requiredQuantity })}
               </Typography>
               <Chip color="warning" size="small" label="Ожидание" />
             </Grid>
@@ -494,8 +519,7 @@ export const PartyRankPage = () => {
             <Grid container alignItems="center" flexDirection="row">
               <NotificationsIcon color="warning" />
               <Typography sx={{ ml: 1 }} variant="h6" component="div">
-                Вы ещё не выбрали любимый вариант, не забудьте проголосовать{' '}
-                <FavoriteIcon color="error" sx={{ mb: '-4px' }} fontSize="small" />!
+                {t('RANK.SELECT_FAVORITE')} <FavoriteIcon color="error" sx={{ mb: '-4px' }} fontSize="small" />!
               </Typography>
             </Grid>
           </CardContent>
@@ -509,7 +533,7 @@ export const PartyRankPage = () => {
         >
           <CardContent>
             <Typography sx={{ mb: 2 }} variant="h6" component="div">
-              Ваш результат
+              {t('RANK.YOUR_RESULT')}
             </Typography>
             <UserRankResult partyItems={partyItems} user={currentUser} userRank={userRank} />
             <Grid
@@ -540,9 +564,7 @@ export const PartyRankPage = () => {
                     alignItems="center"
                     wrap="nowrap"
                   >
-                    <Typography>
-                      Оценено {userRankCount} / {partyItems.length}
-                    </Typography>
+                    <Typography>{t('RANK.RATED', { current: userRankCount, required: partyItems.length })}</Typography>
                   </Grid>
                   <LinearProgress
                     color={userRankCount === partyItems.length ? 'success' : 'primary'}
@@ -563,7 +585,7 @@ export const PartyRankPage = () => {
         {listLoading && <LinearProgress />}
         <CardContent>
           <Typography variant="h5" component="div">
-            Лист кандидатов ({partyItems.length})
+            {t('RANK.CONTENDERS_LIST', { quantity: partyItems.length })}
           </Typography>
         </CardContent>
       </Card>
@@ -583,7 +605,7 @@ export const PartyRankPage = () => {
         ))}
       </Grid>
       {status === PartyRankStatus.Finished && (
-        <Tooltip title="Вы можете изменить параметры воспроизведения в настройках">
+        <Tooltip title={t('RANK.RESULTS_TOOLTIP')}>
           <Fab
             sx={{
               position: 'fixed',
@@ -597,7 +619,7 @@ export const PartyRankPage = () => {
             aria-label="Add New"
           >
             <PlayArrowIcon sx={{ mr: 1 }} />
-            Результаты
+            {t('RANK.RESULTS')}
           </Fab>
         </Tooltip>
       )}
@@ -615,7 +637,7 @@ export const PartyRankPage = () => {
           aria-label="Add New"
         >
           <PlayArrowIcon sx={{ mr: 1 }} />
-          Начать оценивание
+          {t('RANK.START_VOTING_FAB')}
         </Fab>
       )}
       {status === PartyRankStatus.Ongoing && (isMember || isCreator) && (
@@ -639,7 +661,7 @@ export const PartyRankPage = () => {
       {showEdit && <EditRankParty rankParty={partyRank} onClose={handleCloseEdit} onEdit={handleCloseEdit} />}
       {confirmDelete && (
         <ConfirmModal
-          title="Вы точно хотите удалить пати ранк?"
+          title={t('RANK.DELETE_RANK_CONFIRMATION')}
           onClose={handleCloseConfirmDelete}
           onConfirm={handleDelete}
         />

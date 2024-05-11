@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, concat, finalize, map, merge, tap, withLatestFrom } from 'rxjs';
 import { useThrottledCallback } from 'use-debounce';
@@ -55,6 +56,7 @@ const PartRankRankingPageComponent = memo(
   ({ items, partyRank, userRank, currentUser, votingPlayerAutoplay }: PartRankRankingPageComponentProps) => {
     const currentPlayerRef = useRef<RankPartyPlayerRef[]>(Array.from({ length: 2 }));
     const { updateUserRank } = useInjectable(AppTypes.PartyRanks);
+    const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(() => {
       const index = items.findIndex((item) => !userRank[item.id]);
       if (index < 0) return 0;
@@ -246,7 +248,7 @@ const PartRankRankingPageComponent = memo(
                   container
                   direction="column"
                 >
-                  <Typography>Ваша оценка</Typography>
+                  <Typography>{t('RANK.YOUR_RANK')}</Typography>
                   <Rating
                     value={currentRank[item.id]?.value}
                     onChange={(event, value) => doRank(item.id, value)}
@@ -308,6 +310,7 @@ export const PartyRankRankingPage = () => {
   const { user$ } = useInjectable(AppTypes.AuthService);
   const { votingPlayerAutoplay$ } = useInjectable(AppTypes.SettingsService);
   const currentUser = useSubscription(user$);
+  const { t } = useTranslation();
   const votingPlayerAutoplay = useSubscription(votingPlayerAutoplay$);
   const partyRank = useSubscription(getPartyRank(id));
   const partyItems = useSubscription(
@@ -330,7 +333,7 @@ export const PartyRankRankingPage = () => {
   }
 
   if (partyItems.length === 0) {
-    return <Typography>Не было добавлено ни одного предложения</Typography>;
+    return <Typography>{t('RANK.CONTENDERS_MISSING')}</Typography>;
   }
 
   if (partyRank.status !== PartyRankStatus.Rating) {

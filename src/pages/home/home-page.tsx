@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, Route, Routes, useMatch, useNavigate } from 'react-router-dom';
 
 import { AppBar, Avatar, Box, Button, ButtonBase, Container, Grid, Menu, MenuItem, Typography } from '@mui/material';
@@ -18,6 +19,7 @@ export const HomePage = () => {
   const navigate = useNavigate();
   const match = useMatch('/');
   const user = useSubscription(user$);
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     setAnchorElUser(null);
@@ -77,7 +79,7 @@ export const HomePage = () => {
                 textDecoration: 'none',
               }}
             >
-              PARTY RANK
+              {t('COMMON.APP_NAME')}
             </Typography>
           </Grid>
           <Grid
@@ -90,14 +92,14 @@ export const HomePage = () => {
           >
             {!match && (
               <Button sx={{ color: '#fff' }} onClick={handleHome}>
-                Список Ранков
+                {t('MAIN.RANKS_LIST')}
               </Button>
             )}
             <Button sx={{ color: '#fff' }} onClick={handleSettings}>
-              Настройки
+              {t('MAIN.SETTINGS')}
             </Button>
             <Button sx={{ color: '#fff' }} onClick={handleCdn}>
-              Загрузить Медиа
+              {t('MAIN.UPLOAD_MEDIA')}
             </Button>
           </Grid>
           {user && (
@@ -134,7 +136,7 @@ export const HomePage = () => {
                 onClose={handleCloseUserMenu}
               >
                 <MenuItem onClick={handleLogout}>
-                  <Typography textAlign="center">Выход</Typography>
+                  <Typography textAlign="center"> {t('MAIN.EXIT')}</Typography>
                 </MenuItem>
               </Menu>
             </Grid>
