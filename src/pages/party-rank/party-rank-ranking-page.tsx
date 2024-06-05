@@ -10,7 +10,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import DoneIcon from '@mui/icons-material/Done';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { Box, Card, Grid, IconButton, LinearProgress, Rating, SxProps, Theme, Typography } from '@mui/material';
+import { Box, Button, Card, Grid, IconButton, LinearProgress, Rating, SxProps, Theme, Typography } from '@mui/material';
 
 import { GradeMark } from '../../core/components/grade-mark';
 import { RankPartyPlayer, RankPartyPlayerRef } from '../../core/components/rank-party-player';
@@ -126,6 +126,13 @@ const PartRankRankingPageComponent = memo(
       { trailing: false },
     );
 
+    const handleSkipToNotRated = () => {
+      const nextNotRated = items.findIndex((item) => !userRank[item.id]);
+      if (nextNotRated > 0) {
+        setCurrentIndex(nextNotRated);
+      }
+    };
+
     return (
       <Box
         sx={{
@@ -206,6 +213,24 @@ const PartRankRankingPageComponent = memo(
                 autoplay={votingPlayerAutoplay && currentIndex === i}
                 showTimeControls
               />
+            )}
+            {userRank?.[items?.[currentIndex + 1]?.id] && userRank?.[items?.[currentIndex]?.id] && (
+              <Box
+                sx={{
+                  zIndex: 5,
+                  position: 'absolute',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  top: '10vh',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
+              >
+                <Button onClick={handleSkipToNotRated} color="secondary" variant="contained">
+                  {t('RANK.SKIP_TO_NOT_RATED')}
+                </Button>
+              </Box>
             )}
             <Box
               sx={(theme) => ({

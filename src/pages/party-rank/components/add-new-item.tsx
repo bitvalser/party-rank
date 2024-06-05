@@ -101,7 +101,7 @@ export const AddNewItem = ({
           setLoading(false);
           onAddNew(result);
           setShowModal(false);
-          form.reset();
+          form.reset({ authorId: data.authorId });
           setConflictItem(null);
         });
     }

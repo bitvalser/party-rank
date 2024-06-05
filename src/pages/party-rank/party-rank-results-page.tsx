@@ -24,6 +24,7 @@ import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { getUserRanksFromResult } from '../../core/utils/get-user-ranks';
 import { JumpToList } from './components/jump-to-list';
+import { ParticipantsRanks } from './components/participants-ranks';
 import { useSortedPartyItems } from './hooks/useSortedPartyItems';
 
 interface PartyRankResultsPageComponentProps {
@@ -435,75 +436,7 @@ const PartyRankResultsPageComponent = memo(
             },
           })}
         >
-          <Grid container flexDirection="row" wrap="wrap" justifyContent="space-around" alignContent="start">
-            {ranks.map(({ author, favorite, myRank, value }) => (
-              <Grid
-                key={author.uid}
-                sx={{ width: 120 * sizeFactor, height: 120 * sizeFactor, position: 'relative' }}
-                item
-                container
-                direction="column"
-                justifyContent="center"
-                alignItems="center"
-                wrap="nowrap"
-              >
-                <Typography
-                  sx={{
-                    mb: '-12px',
-                    zIndex: 2,
-                    color: (theme) => (myRank ? '#00fff9' : theme.palette.text.primary),
-                    textShadow: (theme) =>
-                      `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
-                  }}
-                  fontSize={author.displayName.length <= 10 ? 18 * sizeFactor : '1em'}
-                  fontWeight="bold"
-                  whiteSpace="nowrap"
-                >
-                  {author.displayName}
-                </Typography>
-                <Avatar
-                  sx={{
-                    width: 70 * sizeFactor,
-                    height: 70 * sizeFactor,
-                    borderRadius: 2,
-                    border: (theme) => `2px solid ${!favorite ? theme.palette.grey[900] : theme.palette.error.main}`,
-                  }}
-                  alt={author.displayName}
-                  src={author.photoURL}
-                  variant="square"
-                />
-                {favorite && (
-                  <FavoriteIcon
-                    sx={{
-                      top: 28,
-                      right: 12,
-                      width: `${sizeFactor}em`,
-                      height: `${sizeFactor}em`,
-                      position: 'absolute',
-                    }}
-                    color="error"
-                  />
-                )}
-                <Box
-                  sx={{
-                    mt: '-12px',
-                    zIndex: 2,
-                    padding: '4px',
-                    borderRadius: '50%',
-                    backgroundColor: (theme) => theme.palette.grey[900],
-                  }}
-                >
-                  <GradeMark
-                    size={32 * sizeFactor}
-                    fontSize={14 * sizeFactor}
-                    value={value}
-                    showDecimal={1}
-                    isAuthorRank={myRank}
-                  />
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
+          {ranks?.length > 0 && <ParticipantsRanks ranks={ranks} sizeFactor={sizeFactor} rankId={partyRank.id} />}
         </Box>
       </Box>
     );

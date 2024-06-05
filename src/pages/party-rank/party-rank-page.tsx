@@ -7,6 +7,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, Subject, concat, merge, of } from 'rxjs';
 import { catchError, filter, finalize, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DoneIcon from '@mui/icons-material/Done';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LockIcon from '@mui/icons-material/Lock';
@@ -94,6 +96,7 @@ export const PartyRankPage = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const updateRanksRef = useRef(new Subject<void>());
+  const [sortOder, setSortOder] = useState<string>(null);
   const [editRank, setEditRank] = useState<IRankItem>(null);
   const userRank = useSubscription<UserRank>(
     merge(
@@ -126,6 +129,19 @@ export const PartyRankPage = () => {
     ),
     [],
   );
+
+  const sortedItems = useMemo(() => {
+    if (sortOder) {
+      return partyItems
+        .slice()
+        .sort((itemA, itemB) =>
+          sortOder === 'asc'
+            ? (userRank[itemA.id]?.value ?? 0) - (userRank[itemB.id]?.value ?? 0)
+            : (userRank[itemB.id]?.value ?? 0) - (userRank[itemA.id]?.value ?? 0),
+        );
+    }
+    return partyItems;
+  }, [partyItems, sortOder, userRank]);
 
   const partyItemsByUser = useMemo(
     () =>
@@ -300,6 +316,10 @@ export const PartyRankPage = () => {
       }),
       `${name}.csv`,
     );
+  };
+
+  const handleSortOrder = () => {
+    setSortOder((prevOrder) => (prevOrder === null ? 'asc' : prevOrder === 'asc' ? 'desc' : null));
   };
 
   return (
@@ -584,13 +604,31 @@ export const PartyRankPage = () => {
       >
         {listLoading && <LinearProgress />}
         <CardContent>
-          <Typography variant="h5" component="div">
-            {t('RANK.CONTENDERS_LIST', { quantity: partyItems.length })}
-          </Typography>
+          <Grid container direction="row" justifyContent="space-between">
+            <Grid item>
+              <Typography variant="h5" component="div">
+                {t('RANK.CONTENDERS_LIST', { quantity: partyItems.length })}
+              </Typography>
+            </Grid>
+            {Object.values(userRank).length > 0 && (
+              <Grid item>
+                <Button
+                  color="inherit"
+                  variant="text"
+                  onClick={handleSortOrder}
+                  endIcon={
+                    sortOder === 'asc' ? <ArrowUpwardIcon /> : sortOder === 'desc' ? <ArrowDownwardIcon /> : null
+                  }
+                >
+                  {t('RANK.SCORE_SORT')}
+                </Button>
+              </Grid>
+            )}
+          </Grid>
         </CardContent>
       </Card>
       <Grid container direction="column">
-        {partyItems.map((item) => (
+        {sortedItems.map((item) => (
           <RankItem
             key={item.id}
             data={item}

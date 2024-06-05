@@ -7,6 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import TagIcon from '@mui/icons-material/Tag';
+import TimerOffIcon from '@mui/icons-material/TimerOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Avatar, Box, Chip, Grid, IconButton, Popover, SxProps, Tooltip, Typography } from '@mui/material';
 
@@ -64,7 +65,7 @@ export const RankItem = memo(
     const likesContainerRef = useRef();
     const { t } = useTranslation();
 
-    const { author, authorId, name, type, value, id } = data;
+    const { author, authorId, name, type, value, startTime, id } = data;
     const showAuthor =
       (currentUser?.uid === authorId || isCreator || partyStatus === PartyRankStatus.Finished) && showAuthorProp;
     const canEdit =
@@ -230,6 +231,11 @@ export const RankItem = memo(
               )}
               {typeof grade === 'number' && <GradeMark size={32} value={grade} />}
             </Grid>
+            {canEdit && partyStatus === PartyRankStatus.Ongoing && !startTime && (
+              <Tooltip placement="top" title={t('RANK.TIME_WARNING')}>
+                <TimerOffIcon sx={{ mr: 2 }} color="warning" fontSize="medium" />
+              </Tooltip>
+            )}
             {showPreviewIcon && (
               <Tooltip placement="top" title={t('RANK.MEDIA_PREVIEW')}>
                 <IconButton onClick={handleView} aria-label="view">

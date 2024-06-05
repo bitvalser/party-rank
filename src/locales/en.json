@@ -28,6 +28,10 @@
     "RANKS_LIST": "Ranks List",
     "SETTINGS": "Settings",
     "UPLOAD_MEDIA": "UploadMedia",
+    "FILTERS": "Filters",
+    "FILTER_NAME": "Name",
+    "FILTER_CREATOR": "Creator",
+    "FILTER_CLEAR": "Clear filters",
     "EXIT": "Exit"
   },
   "RANK": {
@@ -40,6 +44,7 @@
     "FINISHED_AT": "Finished: {{time}}",
     "CREATED_AT": "Created at {{time}}",
     "JOIN": "Join",
+    "SCORE_SORT": "Score Sort",
     "RESULT_TABLE": "Result table",
     "GO": "Go",
     "EDIT": "Edit",
@@ -76,9 +81,11 @@
     "PARTICIPANTS_STATUS": "Participants status",
     "ADD_PARTICIPANT": "Add participants",
     "ADD_PARTICIPANT_SUBMIT": "Add",
+    "SKIP_TO_NOT_RATED": "Skip to next not rated",
     "PARTICIPANTS_RESULT": "Participants results",
     "DELETE_ITEM_CONFIRMATION": "Do you really want to remove this item from party rank?",
-    "YOU_RANK": "Your mark",
+    "YOUR_RANK": "Your mark",
+    "TIME_WARNING": "Looks like you didn't set the start time on this rank",
     "CONTENDERS_MISSING": "No contenders have been added",
     "LEADERBOARD_LOCKED": "The leaderboard is now private and only available to you",
     "FINAL_TOP": "Final Top"
