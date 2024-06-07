@@ -22,7 +22,9 @@
     "RANKING_PAGE": "Vote Page",
     "RANKING_AUTOPLAY": "Media autoplay during voting",
     "APP": "App",
-    "LANGUAGE": "Language"
+    "LANGUAGE": "Language",
+    "SHOW_COMMENTS_ON_RESULT": "Show comments",
+    "RANKING_AUTO_HIDE_RANK_SECTION": "Hide the rating section when the cursor is outside the section area"
   },
   "MAIN": {
     "RANKS_LIST": "Ranks List",
@@ -87,6 +89,7 @@
     "YOUR_RANK": "Your mark",
     "TIME_WARNING": "Looks like you didn't set the start time on this rank",
     "CONTENDERS_MISSING": "No contenders have been added",
+    "NO_ACCESS": "You do not have access to this page!",
     "LEADERBOARD_LOCKED": "The leaderboard is now private and only available to you",
     "FINAL_TOP": "Final Top"
   },
@@ -125,7 +128,8 @@
     "MODERATORS": "Moderators",
     "EDIT_TITLE": "Edit {{name}}",
     "SAVE_CHANGES": "Save changes",
-    "SUBMIT": "Create a party rank"
+    "SUBMIT": "Create a party rank",
+    "ALLOW_COMMENTS": "Allow comments"
   },
   "UPLOAD": {
     "SIZE_ERROR": "The media file exceeds the allowed size of 16mb",

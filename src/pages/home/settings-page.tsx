@@ -33,11 +33,20 @@ const LANGUAGE_OPTIONS = [
 ];
 
 export const SettingsPage = () => {
-  const { controllablePlayer$, playDuration$, defaultVolume$, votingPlayerAutoplay$, useVideoStartTime$ } =
-    useInjectable(AppTypes.SettingsService);
+  const {
+    controllablePlayer$,
+    playDuration$,
+    defaultVolume$,
+    votingPlayerAutoplay$,
+    useVideoStartTime$,
+    autoHideRankSection$,
+    showCommentsOnResult$,
+  } = useInjectable(AppTypes.SettingsService);
   const playDuration = useSubscription(playDuration$, 0);
   const controllablePlayer = useSubscription(controllablePlayer$, false);
   const votingPlayerAutoplay = useSubscription(votingPlayerAutoplay$, false);
+  const autoHideRankSection = useSubscription(autoHideRankSection$, false);
+  const showCommentsOnResult = useSubscription(showCommentsOnResult$, true);
   const useVideoStartTime = useSubscription(useVideoStartTime$, true);
   const defaultVolume = useSubscription(defaultVolume$, 1);
   const [durationValue, setDurationValue] = useState(null);
@@ -68,6 +77,14 @@ export const SettingsPage = () => {
 
   const handleChangeVotingAutoplay = (event: any, value: boolean) => {
     votingPlayerAutoplay$.next(value);
+  };
+
+  const handleChangeAutoHideSection = (event: any, value: boolean) => {
+    autoHideRankSection$.next(value);
+  };
+
+  const handleChangeShowComments = (event: any, value: boolean) => {
+    showCommentsOnResult$.next(value);
   };
 
   const handleChangeUseVideoStartTime = (event: any, value: boolean) => {
@@ -162,6 +179,12 @@ export const SettingsPage = () => {
                 label={t('SETTINGS.CONTROLLED_PLAY')}
               />
             </Grid>
+            <Grid item>
+              <FormControlLabel
+                control={<Checkbox checked={showCommentsOnResult} onChange={handleChangeShowComments} />}
+                label={t('SETTINGS.SHOW_COMMENTS_ON_RESULT')}
+              />
+            </Grid>
           </Grid>
         </CardContent>
       </Card>
@@ -190,6 +213,12 @@ export const SettingsPage = () => {
               <FormControlLabel
                 control={<Checkbox checked={votingPlayerAutoplay} onChange={handleChangeVotingAutoplay} />}
                 label={t('SETTINGS.RANKING_AUTOPLAY')}
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                control={<Checkbox checked={autoHideRankSection} onChange={handleChangeAutoHideSection} />}
+                label={t('SETTINGS.RANKING_AUTO_HIDE_RANK_SECTION')}
               />
             </Grid>
           </Grid>

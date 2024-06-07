@@ -23,6 +23,7 @@ import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { getUserRanksFromResult } from '../../core/utils/get-user-ranks';
+import { ItemResultCommentsViewer } from './components/item-result-comments-viewer';
 import { JumpToList } from './components/jump-to-list';
 import { ParticipantsRanks } from './components/participants-ranks';
 import { useSortedPartyItems } from './hooks/useSortedPartyItems';
@@ -37,6 +38,7 @@ interface PartyRankResultsPageComponentProps {
   initialControllable: boolean;
   playDuration: number;
   useVideoStartTime: boolean;
+  showCommentsOnResult: boolean;
 }
 
 const controlButtonSx: SxProps<Theme> = {
@@ -68,6 +70,7 @@ const PartyRankResultsPageComponent = memo(
     initialControllable,
     playDuration,
     useVideoStartTime,
+    showCommentsOnResult,
   }: PartyRankResultsPageComponentProps) => {
     const currentPlayerRef = useRef<RankPartyPlayerRef[]>(Array.from({ length: 2 }));
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -238,6 +241,9 @@ const PartyRankResultsPageComponent = memo(
                 },
               })}
             >
+              {currentIndex === i && showCommentsOnResult && partyRank.allowComments && (
+                <ItemResultCommentsViewer rankItem={item} />
+              )}
               <Grid
                 sx={{
                   top: 0,
@@ -449,11 +455,14 @@ export const PartyRankResultsPage = () => {
   const [listLoading, setListLoading] = useState(true);
   const [rankLoading, setRankLoading] = useState(true);
   const { getRankItems, getPartyRank, getUserRanks, partyItems$ } = useInjectable(AppTypes.PartyRanks);
-  const { controllablePlayer$, playDuration$, useVideoStartTime$ } = useInjectable(AppTypes.SettingsService);
+  const { controllablePlayer$, playDuration$, useVideoStartTime$, showCommentsOnResult$ } = useInjectable(
+    AppTypes.SettingsService,
+  );
   const playDuration = useSubscription(playDuration$.pipe(map((time) => time * 1000)), 15);
   const controllablePlayer = useSubscription(controllablePlayer$, false);
   const useVideoStartTime = useSubscription(useVideoStartTime$, true);
   const partyRank = useSubscription(getPartyRank(id));
+  const showCommentsOnResult = useSubscription(showCommentsOnResult$, true);
   const usersRank = useSubscription(
     getUserRanks(id, { includeUser: true }).pipe(finalize(() => setRankLoading(false))),
     [],
@@ -482,9 +491,9 @@ export const PartyRankResultsPage = () => {
     return <Typography>Не было добавлено ни одного предложения</Typography>;
   }
 
-  if (partyRank.status !== PartyRankStatus.Finished) {
-    return <Navigate to={`/party-rank/${id}`} replace />;
-  }
+  // if (partyRank.status !== PartyRankStatus.Finished) {
+  //   return <Navigate to={`/party-rank/${id}`} replace />;
+  // }
 
   return (
     <PartyRankResultsPageComponent
@@ -494,6 +503,7 @@ export const PartyRankResultsPage = () => {
       playDuration={playDuration}
       initialControllable={controllablePlayer}
       useVideoStartTime={useVideoStartTime}
+      showCommentsOnResult={showCommentsOnResult}
     />
   );
 };

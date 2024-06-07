@@ -6,4 +6,6 @@ export interface ISettingsService {
   defaultVolume$: CachedSubject<number>;
   votingPlayerAutoplay$: CachedSubject<boolean>;
   useVideoStartTime$: CachedSubject<boolean>;
+  autoHideRankSection$: CachedSubject<boolean>;
+  showCommentsOnResult$: CachedSubject<boolean>;
 }

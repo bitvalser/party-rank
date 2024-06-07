@@ -16,7 +16,7 @@ import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { FormControl, FormLabel, Grid, TextField } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormLabel, Grid, TextField } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
@@ -33,6 +33,7 @@ export interface PartyRankFormValues {
   deadlineDate: DateTime;
   finishDate: DateTime;
   status: PartyRankStatus;
+  allowComments: boolean;
 }
 
 interface PartyRankFormProps {
@@ -198,6 +199,15 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
             control={control}
             render={({ field }) => (
               <UsersAutocomplete label={t('CREATE_RANK.MODERATORS')} loadInit={initLoadUsers} {...field} />
+            )}
+          />
+        </Grid>
+        <Grid item>
+          <Controller
+            name="allowComments"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel control={<Checkbox {...field} />} label={t('CREATE_RANK.ALLOW_COMMENTS')} />
             )}
           />
         </Grid>

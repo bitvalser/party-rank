@@ -22,4 +22,14 @@ export class SettingsService implements ISettingsService {
     'settings:votingPlayerAutoplay',
     true,
   );
+  public autoHideRankSection$: CachedSubject<boolean> = new CachedSubject(
+    localStorage,
+    'settings:autoHideRankSection',
+    false,
+  );
+  public showCommentsOnResult$: CachedSubject<boolean> = new CachedSubject(
+    localStorage,
+    'settings:showCommentsOnResult',
+    true,
+  );
 }

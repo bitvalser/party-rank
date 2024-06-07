@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, concat, finalize, map, merge, tap, withLatestFrom } from 'rxjs';
@@ -22,6 +22,7 @@ import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { JumpToList } from './components/jump-to-list';
+import { RankItemComment } from './components/rank-item-comment';
 
 interface PartRankRankingPageComponentProps {
   partyRank: PartyRank;
@@ -29,6 +30,7 @@ interface PartRankRankingPageComponentProps {
   userRank: UserRank;
   currentUser: AppUser;
   votingPlayerAutoplay: boolean;
+  autoHideRankSection: boolean;
 }
 
 const controlButtonSx: SxProps<Theme> = {
@@ -53,8 +55,20 @@ const controlButtonSx: SxProps<Theme> = {
 };
 
 const PartRankRankingPageComponent = memo(
-  ({ items, partyRank, userRank, currentUser, votingPlayerAutoplay }: PartRankRankingPageComponentProps) => {
+  ({
+    items,
+    partyRank,
+    userRank,
+    currentUser,
+    votingPlayerAutoplay,
+    autoHideRankSection,
+  }: PartRankRankingPageComponentProps) => {
     const currentPlayerRef = useRef<RankPartyPlayerRef[]>(Array.from({ length: 2 }));
+    const rankItemCommentsManagerFactory = useInjectable(AppTypes.RankItemCommentsManagerFactory);
+    const rankItemCommentsManager = useMemo(
+      () => rankItemCommentsManagerFactory(items),
+      [items, rankItemCommentsManagerFactory],
+    );
     const { updateUserRank } = useInjectable(AppTypes.PartyRanks);
     const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(() => {
@@ -141,6 +155,7 @@ const PartRankRankingPageComponent = memo(
           display: 'flex',
           position: 'relative',
           flexDirection: 'row',
+          overflow: 'hidden',
         }}
       >
         {items.map((item, i) => (
@@ -234,64 +249,92 @@ const PartRankRankingPageComponent = memo(
             )}
             <Box
               sx={(theme) => ({
-                zIndex: 5,
+                zIndex: 15,
                 position: 'absolute',
                 left: '50%',
                 transform: 'translateX(-50%)',
                 bottom: '60px',
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
                 [theme.breakpoints.down('md')]: {
                   bottom: '20vh',
                 },
+                '&:hover': {
+                  '& > div': {
+                    transform: 'translateY(0)',
+                  },
+                },
               })}
             >
-              <IconButton
-                sx={{
-                  mr: 2,
-                  p: 1,
-                  fontSize: '36px',
-                  backgroundColor: (theme) => theme.palette.grey[900],
-                }}
-                disabled={item.authorId === currentUser?.uid}
-                onClick={() => doFavorite(item.id)}
-              >
-                {currentRank.favoriteId === item.id ? (
-                  <FavoriteIcon color="error" fontSize="inherit" />
-                ) : (
-                  <FavoriteBorderIcon color="error" fontSize="inherit" />
-                )}
-              </IconButton>
-              <Card>
-                <Grid
-                  sx={{
-                    p: 2,
-                    pt: 1,
-                    pb: 1,
-                  }}
-                  container
-                  direction="column"
-                >
-                  <Typography>{t('RANK.YOUR_RANK')}</Typography>
-                  <Rating
-                    value={currentRank[item.id]?.value}
-                    onChange={(event, value) => doRank(item.id, value)}
-                    precision={0.5}
-                    max={10}
-                    size="large"
-                  />
-                </Grid>
-              </Card>
               <Box
+                component="div"
                 sx={{
-                  backgroundColor: (theme) => theme.palette.grey[900],
-                  borderRadius: '50%',
-                  p: 1,
-                  ml: 2,
+                  transform: autoHideRankSection ? 'translateY(calc(20vh + 80px))' : 'none',
+                  transition: (theme) =>
+                    theme.transitions.create('transform', {
+                      duration: theme.transitions.duration.shortest,
+                    }),
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'flex-end',
                 }}
               >
-                <GradeMark size={38} fontSize="18px" value={currentRank[item.id]?.value ?? 0} showDecimal={1} />
+                <IconButton
+                  sx={{
+                    mr: 2,
+                    p: 1,
+                    mb: 1,
+                    fontSize: '36px',
+                    backgroundColor: (theme) => theme.palette.grey[900],
+                  }}
+                  disabled={item.authorId === currentUser?.uid}
+                  onClick={() => doFavorite(item.id)}
+                >
+                  {currentRank.favoriteId === item.id ? (
+                    <FavoriteIcon color="error" fontSize="inherit" />
+                  ) : (
+                    <FavoriteBorderIcon color="error" fontSize="inherit" />
+                  )}
+                </IconButton>
+                <Grid container direction="column">
+                  {currentUser && currentIndex === i && partyRank.allowComments && (
+                    <RankItemComment
+                      partyRankId={partyRank.id}
+                      rankItem={item}
+                      currentUser={currentUser}
+                      rankItemCommentsManager={rankItemCommentsManager}
+                    />
+                  )}
+                  <Card>
+                    <Grid
+                      sx={{
+                        p: 2,
+                        pt: 1,
+                        pb: 1,
+                      }}
+                      container
+                      direction="column"
+                    >
+                      <Typography>{t('RANK.YOUR_RANK')}</Typography>
+                      <Rating
+                        value={currentRank[item.id]?.value}
+                        onChange={(event, value) => doRank(item.id, value)}
+                        precision={0.5}
+                        max={10}
+                        size="large"
+                      />
+                    </Grid>
+                  </Card>
+                </Grid>
+                <Box
+                  sx={{
+                    backgroundColor: (theme) => theme.palette.grey[900],
+                    borderRadius: '50%',
+                    p: 1,
+                    ml: 2,
+                    mb: 1,
+                  }}
+                >
+                  <GradeMark size={38} fontSize="18px" value={currentRank[item.id]?.value ?? 0} showDecimal={1} />
+                </Box>
               </Box>
             </Box>
           </Box>
@@ -333,11 +376,12 @@ export const PartyRankRankingPage = () => {
   const [rankLoading, setRankLoading] = useState(true);
   const { getRankItems, getPartyRank, getUserRank, partyItems$ } = useInjectable(AppTypes.PartyRanks);
   const { user$ } = useInjectable(AppTypes.AuthService);
-  const { votingPlayerAutoplay$ } = useInjectable(AppTypes.SettingsService);
+  const { votingPlayerAutoplay$, autoHideRankSection$ } = useInjectable(AppTypes.SettingsService);
   const currentUser = useSubscription(user$);
   const { t } = useTranslation();
   const votingPlayerAutoplay = useSubscription(votingPlayerAutoplay$);
   const partyRank = useSubscription(getPartyRank(id));
+  const autoHideRankSection = useSubscription(autoHideRankSection$, false);
   const partyItems = useSubscription(
     concat(
       getRankItems(id, { fromCache: true }).pipe(
@@ -361,6 +405,10 @@ export const PartyRankRankingPage = () => {
     return <Typography>{t('RANK.CONTENDERS_MISSING')}</Typography>;
   }
 
+  if (Array.isArray(partyRank.members) && !partyRank.members.includes(currentUser?.uid)) {
+    return <Typography>{t('RANK.NO_ACCESS')}</Typography>;
+  }
+
   if (partyRank.status !== PartyRankStatus.Rating) {
     return <Navigate to={`/party-rank/${id}`} replace />;
   }
@@ -372,6 +420,7 @@ export const PartyRankRankingPage = () => {
       userRank={userRank}
       currentUser={currentUser}
       votingPlayerAutoplay={votingPlayerAutoplay}
+      autoHideRankSection={autoHideRankSection}
     />
   );
 };

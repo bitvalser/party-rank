@@ -1,8 +1,11 @@
 import { FirebaseApp } from 'firebase/app';
 import { i18n } from 'i18next';
+import { interfaces } from 'inversify';
 
+import { RankItem } from '../interfaces/rank-item.interface';
 import { IAuthService } from './auth/auth.types';
 import { IPartyRanks } from './party-ranks/party-ranks.types';
+import { IRankItemCommentsManager } from './rank-item-comments/rank-item-comments.types';
 import { ISettingsService } from './settings/settings.types';
 import { IUploadService } from './upload/upload.types';
 
@@ -14,6 +17,7 @@ export enum AppTypes {
   SettingsService = '__SettingsService',
   UploadService = '__UploadService',
   TranslationInstance = '__TranslationInstance',
+  RankItemCommentsManagerFactory = '__RankItemCommentsManagerFactory',
 }
 
 export interface TypeMap {
@@ -22,5 +26,6 @@ export interface TypeMap {
   [AppTypes.PartyRanks]: IPartyRanks;
   [AppTypes.SettingsService]: ISettingsService;
   [AppTypes.UploadService]: IUploadService;
+  [AppTypes.RankItemCommentsManagerFactory]: interfaces.SimpleFactory<IRankItemCommentsManager, [RankItem[]]>;
   [AppTypes.TranslationInstance]: i18n;
 }

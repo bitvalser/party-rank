@@ -200,9 +200,10 @@ export class PartyRanks implements IPartyRanks {
 
   public addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author'>): Observable<RankItem> {
     const newRef = doc(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items));
-    const newItem = {
+    const newItem: Omit<RankItem, 'author'> = {
       id: newRef.id,
       ...payload,
+      comments: [],
       authorId: payload.authorId || this.authService.user$.getValue().uid,
     };
     return of(void 0).pipe(

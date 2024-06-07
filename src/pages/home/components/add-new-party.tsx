@@ -21,6 +21,7 @@ const DEFAULT_VALUES: PartyRankFormValues = {
   deadlineDate: DateTime.now().plus({ days: 1 }),
   finishDate: DateTime.now().plus({ days: 2 }),
   status: PartyRankStatus.Registration,
+  allowComments: true,
 };
 
 const MIN_DATE = DateTime.now().plus({ day: 0.5 });

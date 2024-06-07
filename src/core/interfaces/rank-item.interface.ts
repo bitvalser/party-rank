@@ -7,6 +7,12 @@ export enum RankItemType {
   YouTube = 'youtube',
 }
 
+export interface RankItemComment {
+  id: string;
+  authorId: string;
+  body: string;
+}
+
 export interface RankItem {
   id: string;
   authorId: string;
@@ -15,4 +21,5 @@ export interface RankItem {
   name: string;
   value: string;
   startTime: number;
+  comments?: RankItemComment[];
 }
