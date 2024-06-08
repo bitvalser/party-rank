@@ -6,6 +6,18 @@ import { RankItem } from '../../../core/interfaces/rank-item.interface';
 import { seedRandNumber } from '../../../core/utils/seed-rand-number';
 
 const DEFAULT_PLAY_TIME = 15;
+const MIN_START_TIME = 5;
+
+const getDuration = (text: string): number => {
+  if (text?.length < 6) {
+    return 6;
+  } else if (text?.length <= 30) {
+    return 10;
+  } else if (text?.length > 30) {
+    return 12;
+  }
+  return 10;
+};
 
 const movingEffect = keyframes`
   0% {
@@ -24,7 +36,7 @@ interface ItemResultCommentsViewerProps {
 
 export const ItemResultCommentsViewer = memo(({ rankItem }: ItemResultCommentsViewerProps) => {
   const comments = rankItem.comments || [];
-  const commentsPerSecond = Math.ceil((DEFAULT_PLAY_TIME - 5) / comments.length);
+  const commentsPerSecond = Math.min(Math.ceil((DEFAULT_PLAY_TIME - 5) / comments.length), MIN_START_TIME);
 
   return (
     <Box
@@ -46,7 +58,7 @@ export const ItemResultCommentsViewer = memo(({ rankItem }: ItemResultCommentsVi
               position: 'absolute',
               top: `calc(${Math.floor(rand * 90)}% + 60px)`,
               transform: 'translateX(100%)',
-              animation: `${movingEffect} 10s linear`,
+              animation: `${movingEffect} ${getDuration(comment.body)}s linear`,
               animationDelay: `${i * commentsPerSecond + (rand - 0.5)}s`,
               right: 0,
               fontSize: 24,

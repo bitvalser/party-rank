@@ -1,4 +1,5 @@
 import { ChangeEventHandler, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { map } from 'rxjs/operators';
 import { useThrottledCallback } from 'use-debounce';
 
@@ -27,6 +28,7 @@ export const RankItemComment = ({
   rankItemCommentsManager,
 }: RankItemCommentProps) => {
   const [text, setText] = useState('');
+  const { t } = useTranslation();
   const { partyItemsComments$, addRankItemComment, removeRankItemComment } = rankItemCommentsManager;
   const currentComment = useSubscription(
     partyItemsComments$.pipe(
@@ -73,11 +75,12 @@ export const RankItemComment = ({
         container
         direction="column"
       >
-        <Typography>Комментарий</Typography>
+        <Typography>{t('RANK.COMMENT')}</Typography>
         <OutlinedInput
           fullWidth
           autoComplete="off"
           value={text}
+          readOnly={Boolean(currentComment)}
           onChange={handleChangeComment}
           type="text"
           inputProps={{

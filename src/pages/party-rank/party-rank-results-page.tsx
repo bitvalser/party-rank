@@ -491,9 +491,9 @@ export const PartyRankResultsPage = () => {
     return <Typography>Не было добавлено ни одного предложения</Typography>;
   }
 
-  // if (partyRank.status !== PartyRankStatus.Finished) {
-  //   return <Navigate to={`/party-rank/${id}`} replace />;
-  // }
+  if (partyRank.status !== PartyRankStatus.Finished) {
+    return <Navigate to={`/party-rank/${id}`} replace />;
+  }
 
   return (
     <PartyRankResultsPageComponent
