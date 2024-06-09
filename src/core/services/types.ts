@@ -1,4 +1,5 @@
 import { FirebaseApp } from 'firebase/app';
+import { Firestore } from 'firebase/firestore';
 import { i18n } from 'i18next';
 import { interfaces } from 'inversify';
 
@@ -11,6 +12,7 @@ import { IUploadService } from './upload/upload.types';
 
 export enum AppTypes {
   FirebaseApp = '__FirebaseApp',
+  Firestore = '__Firestore',
   ServerBaseUrl = '__ServerBaseUrl',
   AuthService = '__AuthService',
   PartyRanks = '__PartyRanks',
@@ -22,6 +24,7 @@ export enum AppTypes {
 
 export interface TypeMap {
   [AppTypes.FirebaseApp]: FirebaseApp;
+  [AppTypes.Firestore]: Firestore;
   [AppTypes.AuthService]: IAuthService;
   [AppTypes.PartyRanks]: IPartyRanks;
   [AppTypes.SettingsService]: ISettingsService;

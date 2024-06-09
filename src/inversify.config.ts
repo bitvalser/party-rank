@@ -1,4 +1,5 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
+import { Firestore, initializeFirestore } from 'firebase/firestore';
 import { i18n as Ii18n } from 'i18next';
 import { Container, interfaces } from 'inversify';
 import { createContext } from 'react';
@@ -20,8 +21,12 @@ import i18n from './locales/i18n';
 
 const InversifyContext = createContext<interfaces.Container>(null);
 const appContainer = new Container({ defaultScope: 'Singleton' });
+const firebaseApp = initializeApp(FIREBASE_CONFIG);
 
-appContainer.bind<FirebaseApp>(AppTypes.FirebaseApp).toConstantValue(initializeApp(FIREBASE_CONFIG));
+appContainer.bind<FirebaseApp>(AppTypes.FirebaseApp).toConstantValue(firebaseApp);
+appContainer
+  .bind<Firestore>(AppTypes.Firestore)
+  .toConstantValue(initializeFirestore(firebaseApp, { experimentalForceLongPolling: true }));
 appContainer.bind<string>(AppTypes.ServerBaseUrl).toConstantValue(process.env.SERVER_BASE_URL);
 appContainer.bind<Ii18n>(AppTypes.TranslationInstance).toConstantValue(i18n);
 appContainer.bind<IAuthService>(AppTypes.AuthService).to(AuthService);
@@ -31,7 +36,7 @@ appContainer
   .toFactory<
     IRankItemCommentsManager,
     [RankItem[]]
-  >((context) => (rankItems) => new RankItemCommentsManager(context.container.get<FirebaseApp>(AppTypes.FirebaseApp), context.container.get<IAuthService>(AppTypes.AuthService), rankItems));
+  >((context) => (rankItems) => new RankItemCommentsManager(context.container.get<Firestore>(AppTypes.Firestore), context.container.get<IAuthService>(AppTypes.AuthService), rankItems));
 appContainer.bind<ISettingsService>(AppTypes.SettingsService).to(SettingsService);
 appContainer.bind<IUploadService>(AppTypes.UploadService).to(UploadService);
 

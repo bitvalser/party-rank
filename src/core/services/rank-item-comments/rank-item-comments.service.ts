@@ -1,5 +1,4 @@
-import { FirebaseApp } from 'firebase/app';
-import { Firestore, arrayRemove, arrayUnion, doc, getFirestore, updateDoc } from 'firebase/firestore';
+import { Firestore, arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
@@ -15,8 +14,8 @@ export class RankItemCommentsManager implements IRankItemCommentsManager {
     Record<string, { comments: RankItemComment[] }>
   >({});
 
-  public constructor(firebaseApp: FirebaseApp, authService: IAuthService, rankItems: RankItem[]) {
-    this.firestore = getFirestore(firebaseApp);
+  public constructor(firestore: Firestore, authService: IAuthService, rankItems: RankItem[]) {
+    this.firestore = firestore;
     this.authService = authService;
 
     this.addRankItemComment = this.addRankItemComment.bind(this);

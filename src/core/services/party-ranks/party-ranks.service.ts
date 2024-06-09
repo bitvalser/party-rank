@@ -1,4 +1,3 @@
-import { FirebaseApp } from 'firebase/app';
 import {
   Firestore,
   arrayRemove,
@@ -8,7 +7,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  getFirestore,
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
@@ -36,10 +34,10 @@ export class PartyRanks implements IPartyRanks {
   public partyItems$: BehaviorSubject<Record<string, RankItem>> = new BehaviorSubject<Record<string, RankItem>>({});
 
   public constructor(
-    @inject(AppTypes.FirebaseApp) firebaseApp: FirebaseApp,
+    @inject(AppTypes.Firestore) firestore: Firestore,
     @inject(AppTypes.AuthService) authService: IAuthService,
   ) {
-    this.firestore = getFirestore(firebaseApp);
+    this.firestore = firestore;
     this.authService = authService;
     this.createPartyRank = this.createPartyRank.bind(this);
     this.getParties = this.getParties.bind(this);

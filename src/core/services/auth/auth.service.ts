@@ -1,6 +1,6 @@
 import { FirebaseApp } from 'firebase/app';
 import { Auth, User, UserCredential, getAuth, signInWithCustomToken } from 'firebase/auth';
-import { Firestore, collection, doc, getDoc, getDocs, getFirestore } from 'firebase/firestore';
+import { Firestore, collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { inject, injectable } from 'inversify';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
 import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
@@ -22,9 +22,12 @@ export class AuthService implements IAuthService {
   public ready$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private shareAllUsers$: Observable<AppUser[]>;
 
-  public constructor(@inject(AppTypes.FirebaseApp) firebaseApp: FirebaseApp) {
+  public constructor(
+    @inject(AppTypes.FirebaseApp) firebaseApp: FirebaseApp,
+    @inject(AppTypes.Firestore) firestore: Firestore,
+  ) {
     this.auth = getAuth(firebaseApp);
-    this.firestore = getFirestore(firebaseApp);
+    this.firestore = firestore;
     this.auth.onAuthStateChanged((user) => {
       if (!this.ready$.getValue()) {
         this.ready$.next(true);

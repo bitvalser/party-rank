@@ -19,10 +19,10 @@ export class UploadService implements IUploadService {
 
   public constructor(
     @inject(AppTypes.AuthService) authService: IAuthService,
-    @inject(AppTypes.FirebaseApp) firebaseApp: FirebaseApp,
+    @inject(AppTypes.Firestore) firestore: Firestore,
   ) {
     this.authService = authService;
-    this.firestore = getFirestore(firebaseApp);
+    this.firestore = firestore;
 
     this.uploadFile = this.uploadFile.bind(this);
     this.deleteFile = this.deleteFile.bind(this);

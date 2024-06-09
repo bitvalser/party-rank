@@ -19,6 +19,15 @@ const getDuration = (text: string): number => {
   return 10;
 };
 
+const getFontSize = (text: string): number => {
+  if (text?.length < 2) {
+    return 46;
+  } else if (text?.length < 8) {
+    return 32;
+  }
+  return 24;
+};
+
 const movingEffect = keyframes`
   0% {
     right: 0;
@@ -56,12 +65,12 @@ export const ItemResultCommentsViewer = memo(({ rankItem }: ItemResultCommentsVi
           <Typography
             sx={{
               position: 'absolute',
-              top: `calc(${Math.floor(rand * 90)}% + 60px)`,
+              top: `calc(${Math.floor(rand * 89)}% + 60px)`,
               transform: 'translateX(100%)',
               animation: `${movingEffect} ${getDuration(comment.body)}s linear`,
               animationDelay: `${i * commentsPerSecond + (rand - 0.5)}s`,
               right: 0,
-              fontSize: 24,
+              fontSize: getFontSize(comment.body),
               whiteSpace: 'nowrap',
               textShadow: (theme) =>
                 `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
