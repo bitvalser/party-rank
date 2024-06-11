@@ -83,7 +83,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
               variant="h6"
               component="h2"
             >
-              {t('CREATE_RANK.EDIT_TITLE', { name: rankValues.name })}
+              {t('ADD_RANK_ITEM.EDIT_TITLE', { name: rankValues.name })}
             </Typography>
           </Grid>
           <IconButton onClick={onClose}>
@@ -111,7 +111,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
             >
               <RankItemForm autoplay={false} />
               <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
-                <FormHelperText>{t('CREATE_RANK.BEFORE_SAVE_WARNING')}</FormHelperText>
+                <FormHelperText>{t('ADD_RANK_ITEM.BEFORE_SAVE_WARNING')}</FormHelperText>
                 <Grid item>
                   <Button
                     sx={{
@@ -122,7 +122,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
                     variant="contained"
                     disabled={loading}
                   >
-                    {t('CREATE_RANK.SAVE_CHANGES')}
+                    {t('ADD_RANK_ITEM.SAVE_CHANGES')}
                   </Button>
                 </Grid>
               </Grid>

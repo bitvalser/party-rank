@@ -13,8 +13,10 @@ const getDuration = (text: string): number => {
     return 6;
   } else if (text?.length <= 30) {
     return 10;
-  } else if (text?.length > 30) {
+  } else if (text?.length <= 30) {
     return 12;
+  } else if (text?.length > 60) {
+    return 16;
   }
   return 10;
 };

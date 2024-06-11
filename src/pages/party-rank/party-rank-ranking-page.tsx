@@ -78,6 +78,7 @@ const PartRankRankingPageComponent = memo(
     });
     const [currentRank, setCurrentRank] = useState<UserRank>(userRank);
     const navigate = useNavigate();
+    const hasNotRanked = useMemo(() => items.some((item) => !userRank[item.id]), [items, userRank]);
 
     useEffect(() => {
       const timeout = setTimeout(() => {
@@ -229,7 +230,7 @@ const PartRankRankingPageComponent = memo(
                 showTimeControls
               />
             )}
-            {userRank?.[items?.[currentIndex + 1]?.id] && userRank?.[items?.[currentIndex]?.id] && (
+            {userRank?.[items?.[currentIndex + 1]?.id] && userRank?.[items?.[currentIndex]?.id] && hasNotRanked && (
               <Box
                 sx={{
                   zIndex: 5,
