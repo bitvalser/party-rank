@@ -1,9 +1,10 @@
-import { ReactEventHandler, forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
+import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from 'react';
 // @ts-ignore
 import YouTubePlayer from 'youtube-player';
 
-import { Box, LinearProgress } from '@mui/material';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { Box, IconButton, LinearProgress } from '@mui/material';
 
 import { useInjectable } from '../hooks/useInjectable';
 import useSubscription from '../hooks/useSubscription';
@@ -15,6 +16,7 @@ export interface YoutubePlayerProps {
   loop?: boolean;
   startTime?: number;
   width?: string | number;
+  fontSize?: string | number;
   height?: string | number;
   autoplay?: boolean;
   hideControls?: boolean;
@@ -37,6 +39,8 @@ export const YoutubePlayer = memo(
         loop = true,
         autoplay = true,
         showTimeControls = false,
+        hideControls = false,
+        fontSize,
         onPause = () => {},
         onManualPause = () => {},
         onManualPlay = () => {},
@@ -45,6 +49,7 @@ export const YoutubePlayer = memo(
       },
       componentRef,
     ) => {
+      const [paused, setPaused] = useState(true);
       const { defaultVolume$ } = useInjectable(AppTypes.SettingsService);
       const defaultVolume = useSubscription(defaultVolume$, 1);
       const [ready, setReady] = useState(false);
@@ -72,10 +77,12 @@ export const YoutubePlayer = memo(
         const stateListener = playerRef.current.on('stateChange', ({ data }: any) => {
           if (data === 1) {
             onPlay();
+            setPaused(false);
             // onManualPlay();
           }
           if (data === 2) {
             onPause();
+            setPaused(true);
             // onManualPause();
           }
         });
@@ -149,6 +156,18 @@ export const YoutubePlayer = memo(
         }
       }, [width, height]);
 
+      const handleButtonPause = () => {
+        if (playerRef.current) {
+          playerRef.current.pauseVideo();
+        }
+      };
+
+      const handleButtonPlay = () => {
+        if (playerRef.current) {
+          playerRef.current.playVideo();
+        }
+      };
+
       return (
         <Box
           sx={{
@@ -159,6 +178,59 @@ export const YoutubePlayer = memo(
         >
           {!ready && <LinearProgress />}
           <Box ref={containerRef} />
+          {!paused && !hideControls && (
+            <IconButton
+              onClick={handleButtonPause}
+              disableRipple
+              sx={{
+                borderRadius: '50%',
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                padding: 3,
+                fontSize,
+                zIndex: 2,
+                background: 'rgba(0, 0, 0, 0.6)',
+                transition: (theme) =>
+                  theme.transitions.create('opacity', {
+                    duration: theme.transitions.duration.shortest,
+                  }),
+                opacity: 0,
+                '&:hover': {
+                  opacity: 1,
+                },
+              }}
+            >
+              <PauseIcon fontSize="inherit" />
+            </IconButton>
+          )}
+          {paused && !hideControls && (
+            <IconButton
+              onClick={handleButtonPlay}
+              disableRipple
+              sx={{
+                borderRadius: '50%',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                padding: 3,
+                zIndex: 2,
+                position: 'absolute',
+                fontSize,
+                background: 'rgba(0, 0, 0, 0.6)',
+                transition: (theme) =>
+                  theme.transitions.create('opacity', {
+                    duration: theme.transitions.duration.shortest,
+                  }),
+                '&:hover': {
+                  opacity: 0.9,
+                },
+              }}
+            >
+              <PlayArrowIcon fontSize="inherit" />
+            </IconButton>
+          )}
         </Box>
       );
     },

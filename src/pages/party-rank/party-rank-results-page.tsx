@@ -205,7 +205,7 @@ const PartyRankResultsPageComponent = memo(
       [currentIndex, items, userRankByItemId],
     );
 
-    const sizeFactor = Math.max(Math.min(20 / ranks.length, 2), 1);
+    const sizeFactor = Math.max(Math.min(20 / ranks.length, 1.5), 1);
 
     return (
       <Box
@@ -491,9 +491,9 @@ export const PartyRankResultsPage = () => {
     return <Typography>Не было добавлено ни одного предложения</Typography>;
   }
 
-  if (partyRank.status !== PartyRankStatus.Finished) {
-    return <Navigate to={`/party-rank/${id}`} replace />;
-  }
+  // if (partyRank.status !== PartyRankStatus.Finished) {
+  //   return <Navigate to={`/party-rank/${id}`} replace />;
+  // }
 
   return (
     <PartyRankResultsPageComponent

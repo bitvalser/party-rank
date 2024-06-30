@@ -192,6 +192,7 @@ export const RankPartyPlayer = memo(
               onReady={handleReady}
               onPlay={handlePlay}
               onPause={handlePause}
+              fontSize={fontSize}
               onManualPause={onManualPause}
               onManualPlay={onManualPlay}
               loop
