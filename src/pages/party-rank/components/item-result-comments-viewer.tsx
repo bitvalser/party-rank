@@ -101,8 +101,8 @@ export const ItemResultCommentsViewer = memo(({ comments: rankComments }: ItemRe
                   objectFit: 'contain',
                   borderRadius: 3,
                 }}
-                width={130}
-                height={130}
+                width={200}
+                height={200}
                 src={options.src}
                 alt={`Comment ${comment.id}`}
               />
