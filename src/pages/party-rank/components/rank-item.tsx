@@ -70,7 +70,8 @@ export const RankItem = memo(
       (currentUser?.uid === authorId || isCreator || partyStatus === PartyRankStatus.Finished) && showAuthorProp;
     const canEdit =
       (partyStatus === PartyRankStatus.Ongoing && (currentUser?.uid === authorId || isCreator)) ||
-      (partyStatus === PartyRankStatus.Rating && isCreator);
+      (partyStatus === PartyRankStatus.Rating && isCreator) ||
+      (partyStatus === PartyRankStatus.Registration && isCreator);
 
     const handleDelete = () => {
       setShowDeleteModal(true);

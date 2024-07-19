@@ -8,7 +8,18 @@ import { seedRandNumber } from '../../../core/utils/seed-rand-number';
 const DEFAULT_PLAY_TIME = 15;
 const MIN_START_TIME = 5;
 
+const getType = (text: string): string => {
+  if (text.startsWith('[img]')) {
+    return 'image';
+  }
+  return 'text';
+};
+
 const getDuration = (text: string): number => {
+  const type = getType(text);
+  if (type !== 'text') {
+    return 10;
+  }
   if (text?.length < 6) {
     return 6;
   } else if (text?.length <= 30) {
@@ -42,11 +53,11 @@ const movingEffect = keyframes`
 `;
 
 interface ItemResultCommentsViewerProps {
-  rankItem: RankItem;
+  comments: RankItem['comments'];
 }
 
-export const ItemResultCommentsViewer = memo(({ rankItem }: ItemResultCommentsViewerProps) => {
-  const comments = rankItem.comments || [];
+export const ItemResultCommentsViewer = memo(({ comments: rankComments }: ItemResultCommentsViewerProps) => {
+  const comments = rankComments || [];
   const commentsPerSecond = Math.min(Math.ceil((DEFAULT_PLAY_TIME - 5) / comments.length), MIN_START_TIME);
 
   return (
@@ -63,8 +74,18 @@ export const ItemResultCommentsViewer = memo(({ rankItem }: ItemResultCommentsVi
     >
       {comments.map((comment, i) => {
         const rand = seedRandNumber(comment.id);
+        const type = getType(comment.body);
+        const options =
+          type !== 'text'
+            ? Object.fromEntries(
+                comment.body
+                  .replace(/\[(.*)\]/, '')
+                  .split('@')
+                  .map((option) => option.split(':=')),
+              )
+            : null;
         return (
-          <Typography
+          <Box
             sx={{
               position: 'absolute',
               top: `calc(${Math.floor(rand * 89)}% + 60px)`,
@@ -72,15 +93,34 @@ export const ItemResultCommentsViewer = memo(({ rankItem }: ItemResultCommentsVi
               animation: `${movingEffect} ${getDuration(comment.body)}s linear`,
               animationDelay: `${i * commentsPerSecond + (rand - 0.5)}s`,
               right: 0,
-              fontSize: getFontSize(comment.body),
-              whiteSpace: 'nowrap',
-              textShadow: (theme) =>
-                `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
             }}
-            key={comment.id}
           >
-            {comment.body}
-          </Typography>
+            {type === 'image' && (
+              <img
+                style={{
+                  objectFit: 'contain',
+                  borderRadius: 3,
+                }}
+                width={130}
+                height={130}
+                src={options.src}
+                alt={`Comment ${comment.id}`}
+              />
+            )}
+            {type === 'text' && (
+              <Typography
+                sx={{
+                  fontSize: getFontSize(comment.body),
+                  whiteSpace: 'nowrap',
+                  textShadow: (theme) =>
+                    `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
+                }}
+                key={comment.id}
+              >
+                {comment.body}
+              </Typography>
+            )}
+          </Box>
         );
       })}
     </Box>

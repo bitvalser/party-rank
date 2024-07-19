@@ -2,17 +2,22 @@ import {
   AudioHTMLAttributes,
   ReactEventHandler,
   forwardRef,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 
 import musicBgImage from '@assets/images/music-bg.jpg';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Box, IconButton } from '@mui/material';
 
+import { useInjectable } from '../hooks/useInjectable';
+import useSubscription from '../hooks/useSubscription';
+import { AppTypes } from '../services/types';
 import { RankPartyPlayerRef } from './rank-party-player';
 
 interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {
@@ -33,8 +38,11 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
   const containerRef = useRef<HTMLDivElement>();
   const animationFrameRef = useRef<number>();
   const [paused, setPaused] = useState(true);
+  const [enableVisualizer, setEnableVisualizer] = useState(false);
   const audioContextRef = useRef<AudioContext>();
   const canPlay = useMemo(() => new AudioContext().state === 'running', []);
+  const { defaultVolume$ } = useInjectable(AppTypes.SettingsService);
+  const defaultVolume = useSubscription(defaultVolume$, 1);
   const {
     width,
     height,
@@ -48,6 +56,25 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
     onManualPause = () => {},
     ...rest
   } = props;
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = defaultVolume;
+    }
+  }, [defaultVolume]);
+
+  useEffect(
+    () => () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    },
+    [],
+  );
 
   useImperativeHandle(
     ref,
@@ -77,13 +104,6 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
 
   const handlePause = () => {
     setPaused(true);
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
   };
 
   const handleButtonPlay = () => {
@@ -106,7 +126,7 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-    audioContextRef.current = new AudioContext();
+    audioContextRef.current = new AudioContext({});
 
     const audioSource = audioContextRef.current.createMediaElementSource(audioRef.current);
     const analyser = audioContextRef.current.createAnalyser();
@@ -118,30 +138,23 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
 
     const barWidth = 15;
     let barHeight: number;
-    let x: number;
 
     function animate() {
-      x = 0;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       analyser.getByteFrequencyData(dataArray);
-      drawVisualizer(bufferLength, x, barWidth, barHeight, dataArray);
+      drawVisualizer(bufferLength, barWidth, barHeight, dataArray);
       animationFrameRef.current = requestAnimationFrame(animate);
     }
     animate();
 
-    function drawVisualizer(
-      bufferLength: number,
-      x: number,
-      barWidth: number,
-      barHeight: number,
-      dataArray: Uint8Array,
-    ) {
+    function drawVisualizer(bufferLength: number, barWidth: number, barHeight: number, dataArray: Uint8Array) {
       for (let i = 0; i < bufferLength; i++) {
         barHeight = dataArray[i] * 1.5;
         ctx.save();
-        let x = Math.sin((i * Math.PI) / 180) + 100;
-        let y = Math.cos((i * Math.PI) / 180) + 100;
-        ctx.translate(canvas.width / 2 + x, canvas.height / 2);
+        const radius = Math.min(canvas.width / 10, 100);
+        let x = Math.sin((i * Math.PI) / 180) + radius;
+        let y = Math.cos((i * Math.PI) / 180) + radius;
+        ctx.translate(canvas.width / 2 + x - radius, canvas.height / 2);
         ctx.rotate(i + (Math.PI * 2) / bufferLength);
 
         const hue = i * 0.6 + 200;
@@ -156,7 +169,7 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
         ctx.globalCompositeOperation = 'source-over';
 
         // line
-        ctx.lineWidth = barHeight / 5;
+        ctx.lineWidth = barHeight / 10;
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(x, y - barHeight);
@@ -166,7 +179,7 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
 
         // circle
         ctx.beginPath();
-        ctx.arc(0, y + barHeight, barHeight / 10, 0, Math.PI * 2);
+        ctx.arc(0, y + barHeight, barHeight / 20, 0, Math.PI * 2);
         ctx.fill();
         ctx.lineWidth = 1.5;
         ctx.strokeStyle = 'hsl(1, 100%, ' + i / 3 + '%)';
@@ -180,14 +193,22 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
 
   const handleAudioInit: ReactEventHandler<HTMLAudioElement> = (event) => {
     (event.target as HTMLAudioElement).currentTime = startTime;
+    (event.target as HTMLAudioElement).volume = defaultVolume;
   };
 
   const handlePlay = (event: any) => {
-    audioRef.current.volume = 1;
     setPaused(false);
     onPlay(event);
-    // startVisualizer();
+    if (enableVisualizer && !audioContextRef.current) {
+      startVisualizer();
+    }
   };
+
+  const handleVolumeChange = useDebouncedCallback((value: number) => {
+    if (typeof value === 'number') {
+      defaultVolume$.next(value);
+    }
+  }, 500);
 
   return (
     <Box
@@ -196,7 +217,7 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
         width: width || '100%',
         height: height || '100%',
         position: 'relative',
-        backgroundImage: `url(${musicBgImage})`,
+        backgroundImage: enableVisualizer ? 'initial' : `url(${musicBgImage})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
@@ -205,6 +226,7 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
     >
       <audio
         {...rest}
+        key={`visualizer_${enableVisualizer}`}
         style={{
           position: 'absolute',
           bottom: 0,
@@ -214,14 +236,17 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
         }}
         ref={audioRef}
         autoPlay={canPlay && autoplay}
+        crossOrigin={enableVisualizer ? 'anonymous' : null}
         loop
+        onVolumeChange={(event) => handleVolumeChange((event.target as HTMLVideoElement)?.volume)}
         onLoadStart={handleAudioInit}
         onPlay={handlePlay}
+        onError={() => setEnableVisualizer(false)}
         onPause={handlePause}
         controls={showTimeControls}
         hidden={!showTimeControls}
       />
-      {/* <canvas width="100%" height="100%" ref={canvasRef} /> */}
+      {enableVisualizer && <canvas width="100%" height="100%" ref={canvasRef} />}
       {!hideControls && (
         <Box
           sx={{

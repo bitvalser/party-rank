@@ -8,9 +8,22 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import DoneIcon from '@mui/icons-material/Done';
+import FastForwardIcon from '@mui/icons-material/FastForward';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { Box, Button, Card, Grid, IconButton, LinearProgress, Rating, SxProps, Theme, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  Grid,
+  IconButton,
+  LinearProgress,
+  Rating,
+  SxProps,
+  Theme,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 
 import { GradeMark } from '../../core/components/grade-mark';
 import { RankPartyPlayer, RankPartyPlayerRef } from '../../core/components/rank-party-player';
@@ -22,6 +35,7 @@ import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { JumpToList } from './components/jump-to-list';
+import { PreviewCommentsViewer } from './components/preview-comments-viewer';
 import { RankItemComment } from './components/rank-item-comment';
 
 interface PartRankRankingPageComponentProps {
@@ -148,6 +162,11 @@ const PartRankRankingPageComponent = memo(
       }
     };
 
+    const handleSkipToSample = () => {
+      const time = items[currentIndex]?.startTime ?? 0;
+      currentPlayerRef.current[0].playWithTimestamp(time);
+    };
+
     return (
       <Box
         sx={{
@@ -175,6 +194,13 @@ const PartRankRankingPageComponent = memo(
               opacity: currentIndex === i ? 1 : 0,
             }}
           >
+            {currentUser && currentIndex === i && partyRank.allowComments && (
+              <PreviewCommentsViewer
+                rankItem={item}
+                currentUser={currentUser}
+                rankItemCommentsManager={rankItemCommentsManager}
+              />
+            )}
             <Grid
               sx={{
                 top: 0,
@@ -230,7 +256,7 @@ const PartRankRankingPageComponent = memo(
                 showTimeControls
               />
             )}
-            {userRank?.[items?.[currentIndex + 1]?.id] && userRank?.[items?.[currentIndex]?.id] && hasNotRanked && (
+            {/* {userRank?.[items?.[currentIndex + 1]?.id] && userRank?.[items?.[currentIndex]?.id] && hasNotRanked && (
               <Box
                 sx={{
                   zIndex: 5,
@@ -247,7 +273,7 @@ const PartRankRankingPageComponent = memo(
                   {t('RANK.SKIP_TO_NOT_RATED')}
                 </Button>
               </Box>
-            )}
+            )} */}
             <Box
               sx={(theme) => ({
                 zIndex: 15,
@@ -340,6 +366,29 @@ const PartRankRankingPageComponent = memo(
             </Box>
           </Box>
         ))}
+        {items[currentIndex]?.startTime > 0 && (
+          <Tooltip title="Перемотать к сэмплу" placement="top">
+            <IconButton
+              sx={(theme) => ({
+                zIndex: 15,
+                position: 'absolute',
+                right: '160px',
+                bottom: '60px',
+                mb: 1,
+                backgroundColor: (theme) => theme.palette.grey[900],
+                borderRadius: '50%',
+                p: 1,
+                [theme.breakpoints.down('md')]: {
+                  top: '100px',
+                  bottom: 'initial',
+                },
+              })}
+              onClick={handleSkipToSample}
+            >
+              <FastForwardIcon fontSize="large" />
+            </IconButton>
+          </Tooltip>
+        )}
         <Box
           sx={{
             ...controlButtonSx,

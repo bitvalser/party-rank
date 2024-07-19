@@ -10,7 +10,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import TagIcon from '@mui/icons-material/Tag';
-import { Avatar, Box, Chip, Grid, IconButton, LinearProgress, SxProps, Theme, Typography } from '@mui/material';
+import { Box, Chip, Grid, IconButton, LinearProgress, SxProps, Theme, Typography } from '@mui/material';
 
 import { GradeMark } from '../../core/components/grade-mark';
 import { RankPartyPlayer, RankPartyPlayerRef } from '../../core/components/rank-party-player';
@@ -18,7 +18,7 @@ import { TimerProgress } from '../../core/components/timer-progress';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { AppUser } from '../../core/interfaces/app-user.interface';
-import { PartyRank, PartyRankStatus } from '../../core/interfaces/party-rank.interface';
+import { PartyRank } from '../../core/interfaces/party-rank.interface';
 import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
@@ -242,7 +242,7 @@ const PartyRankResultsPageComponent = memo(
               })}
             >
               {currentIndex === i && showCommentsOnResult && partyRank.allowComments && (
-                <ItemResultCommentsViewer rankItem={item} />
+                <ItemResultCommentsViewer comments={item.comments} />
               )}
               <Grid
                 sx={{

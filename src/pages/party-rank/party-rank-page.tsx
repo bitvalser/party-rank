@@ -184,6 +184,9 @@ export const PartyRankPage = () => {
   const isCreator = currentUser?.uid === creatorId || moderators.includes(currentUser?.uid);
   const isMember = !Array.isArray(members) || members.includes(currentUser?.uid);
   const currentUserItems = partyItemsByUser[currentUser?.uid] || [];
+  const showAdd =
+    (status === PartyRankStatus.Ongoing || (status === PartyRankStatus.Registration && isCreator)) &&
+    (isMember || isCreator);
 
   const handleNewRank: AddNewItemProps['onAddNew'] = (item) => {
     partyItemsKeysRef.current.next([item.id, ...partyItemsKeysRef.current.getValue()]);
@@ -678,7 +681,7 @@ export const PartyRankPage = () => {
           {t('RANK.START_VOTING_FAB')}
         </Fab>
       )}
-      {status === PartyRankStatus.Ongoing && (isMember || isCreator) && (
+      {showAdd && (
         <AddNewItem
           disabled={(currentUserItems.length >= requiredQuantity && !isCreator) || listLoading}
           partyId={id}

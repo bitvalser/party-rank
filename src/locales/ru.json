@@ -71,6 +71,7 @@
     "YOUR_RESULT": "Ваш результат",
     "RATED": "Оценено {{current}} / {{required}}",
     "CONTENDERS_LIST": "Лист кандидатов ({{quantity}})",
+    "SKIP_TO_SAMPLE": "Перемотать к сэмплу",
     "RESULTS": "Результаты",
     "RESULTS_TOOLTIP": "Вы можете изменить параметры воспроизведения в настройках",
     "START_VOTING_FAB": "Начать оценивание",

@@ -5,7 +5,7 @@ import { useThrottledCallback } from 'use-debounce';
 
 import ClearIcon from '@mui/icons-material/Clear';
 import SendIcon from '@mui/icons-material/Send';
-import { Card, Grid, IconButton, Input, InputAdornment, OutlinedInput, Typography } from '@mui/material';
+import { Card, Grid, IconButton, InputAdornment, OutlinedInput, Typography } from '@mui/material';
 
 import useSubscription from '../../../core/hooks/useSubscription';
 import { AppUser } from '../../../core/interfaces/app-user.interface';
@@ -64,6 +64,8 @@ export const RankItemComment = ({
     setText(event.target.value);
   };
 
+  const isSpecialType = ['[img]'].includes(text.substring(0, 5));
+
   return (
     <Card sx={{ mb: 2 }}>
       <Grid
@@ -84,7 +86,7 @@ export const RankItemComment = ({
           onChange={handleChangeComment}
           type="text"
           inputProps={{
-            maxLength: COMMENT_MAX_LENGTH,
+            maxLength: isSpecialType ? 600 : COMMENT_MAX_LENGTH,
           }}
           endAdornment={
             <InputAdornment position="end">
