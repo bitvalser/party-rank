@@ -18,7 +18,7 @@ import { TimerProgress } from '../../core/components/timer-progress';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { AppUser } from '../../core/interfaces/app-user.interface';
-import { PartyRank } from '../../core/interfaces/party-rank.interface';
+import { PartyRank, PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
@@ -480,7 +480,7 @@ export const PartyRankResultsPage = () => {
     ),
     [],
   );
-  const sortedResults = useSortedPartyItems(partyItems, usersRank);
+  const sortedResults = useSortedPartyItems(partyItems, usersRank, partyRank?.members);
   const reversedItems = useMemo(() => sortedResults.reverse(), [sortedResults]);
 
   if (listLoading || rankLoading) {
@@ -491,9 +491,9 @@ export const PartyRankResultsPage = () => {
     return <Typography>Не было добавлено ни одного предложения</Typography>;
   }
 
-  // if (partyRank.status !== PartyRankStatus.Finished) {
-  //   return <Navigate to={`/party-rank/${id}`} replace />;
-  // }
+  if (partyRank.status !== PartyRankStatus.Finished) {
+    return <Navigate to={`/party-rank/${id}`} replace />;
+  }
 
   return (
     <PartyRankResultsPageComponent

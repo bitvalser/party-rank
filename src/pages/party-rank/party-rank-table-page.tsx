@@ -42,7 +42,7 @@ export const PartyRankTablePage = () => {
     [],
   );
 
-  const sortedItems = useSortedPartyItems(partyItems, usersRank);
+  const sortedItems = useSortedPartyItems(partyItems, usersRank, partyRank?.members);
 
   if (!partyRank || listLoading) {
     return <LinearProgress />;

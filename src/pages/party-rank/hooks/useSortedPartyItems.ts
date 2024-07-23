@@ -6,10 +6,13 @@ import { getUserRanksFromResult } from '../../../core/utils/get-user-ranks';
 
 export const useSortedPartyItems = (
   partyItems: RankItem[],
-  usersRank: UserRank[],
+  dbUsersRank: UserRank[],
+  members: string[],
 ): (RankItem & { favoriteCount: number; grade: number; totalScore: number; userLikesIds: string[] })[] => {
   return useMemo(() => {
-    if (partyItems?.length > 0 && usersRank?.length > 0) {
+    if (partyItems?.length > 0 && dbUsersRank?.length > 0) {
+      const hasMembers = members?.length > 0;
+      const usersRank = dbUsersRank.filter((rank) => !hasMembers || members.includes(rank.uid));
       const rankBy: {
         favorites: Record<string, number>;
         favoritesUsers: Record<string, string[]>;
@@ -35,9 +38,9 @@ export const useSortedPartyItems = (
           favoriteCount: rankBy.favorites[item.id] ?? 0,
           userLikesIds: rankBy.favoritesUsers[item.id],
           totalScore:
-            (rankBy.grades[item.id] || []).reduce((acc, val) => acc + val) + (rankBy.favorites[item.id] ?? 0) * 0.5,
+            (rankBy.grades[item.id] || []).reduce((acc, val) => acc + val, 0) + (rankBy.favorites[item.id] ?? 0) * 0.5,
           grade: rankBy.grades[item.id]
-            ? rankBy.grades[item.id].reduce((acc, val) => acc + val) / rankBy.grades[item.id].length
+            ? rankBy.grades[item.id].reduce((acc, val) => acc + val, 0) / rankBy.grades[item.id].length
             : null,
         }))
         .sort((rankA, rankB) => {
@@ -46,5 +49,5 @@ export const useSortedPartyItems = (
         });
     }
     return [];
-  }, [partyItems, usersRank]);
+  }, [members, dbUsersRank, partyItems]);
 };
