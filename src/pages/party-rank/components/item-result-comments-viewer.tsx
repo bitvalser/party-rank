@@ -18,7 +18,7 @@ const getType = (text: string): string => {
 const getDuration = (text: string): number => {
   const type = getType(text);
   if (type !== 'text') {
-    return 10;
+    return 8 + Math.random() * 4 - 2;
   }
   if (text?.length < 6) {
     return 6;
@@ -88,7 +88,7 @@ export const ItemResultCommentsViewer = memo(({ comments: rankComments }: ItemRe
           <Box
             sx={{
               position: 'absolute',
-              top: `calc(${Math.floor(rand * 89)}% + 60px)`,
+              top: `calc(${Math.floor(rand * 89)}% + 60px - ${type === 'image' ? 60 : 0}px)`,
               transform: 'translateX(100%)',
               animation: `${movingEffect} ${getDuration(comment.body)}s linear`,
               animationDelay: `${i * commentsPerSecond + (rand - 0.5)}s`,
@@ -99,10 +99,16 @@ export const ItemResultCommentsViewer = memo(({ comments: rankComments }: ItemRe
               <img
                 style={{
                   objectFit: 'contain',
-                  borderRadius: 3,
+                  maxHeight: 165,
+                  maxWidth: 165,
+                  overflow: 'hidden',
+                  maskImage:
+                    'linear-gradient(to top, black 0%, black 100%), linear-gradient(to top, transparent 0%, black 100%), linear-gradient(to right, transparent 0%, black 100%), linear-gradient(to bottom, transparent 0%, black 100%), linear-gradient(to left, transparent 0%, black 100%)',
+                  maskPosition: 'center, top, right, bottom, left',
+                  maskSize: '100% 100%, 100% 5px, 5px 100%, 100% 5px, 5px 100%',
+                  maskRepeat: 'no-repeat, no-repeat, no-repeat, no-repeat',
+                  maskComposite: 'subtract, add, add, add',
                 }}
-                width={165}
-                height={165}
                 src={options.src}
                 alt={`Comment ${comment.id}`}
               />

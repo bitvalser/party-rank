@@ -3,7 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { BehaviorSubject, concat, map, merge, of } from 'rxjs';
 import { catchError, finalize, tap, withLatestFrom } from 'rxjs/operators';
 
-import { Button, Card, CardContent, Grid, LinearProgress, TextField, Typography } from '@mui/material';
+import {
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  LinearProgress,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 import { OopsPage } from '../../core/components/oops-page';
 import { UsersAutocomplete } from '../../core/components/users-autocomplete';
@@ -14,12 +24,19 @@ import { AppTypes } from '../../core/services/types';
 import { AddNewParty, AddNewPartyProps } from './components/add-new-party';
 import { PartyItem } from './components/party-item';
 
+interface PartyRanksFilters {
+  name?: string;
+  author?: string;
+  wasAsParticipant?: boolean;
+}
+
 export const PartiesListPage = () => {
   const partyKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const [loading, setLoading] = useState(true);
   const { parties$, getParties } = useInjectable(AppTypes.PartyRanks);
+  const { user$ } = useInjectable(AppTypes.AuthService);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState<{ name?: string; author?: string }>({});
+  const [filters, setFilters] = useState<PartyRanksFilters>({});
   const { t } = useTranslation();
   const parties = useSubscription<PartyRank[]>(
     concat(
@@ -54,21 +71,25 @@ export const PartiesListPage = () => {
                 return acc && party.name.toLocaleLowerCase().includes(value.toLocaleLowerCase());
               case 'author':
                 return acc && party.creatorId === value;
+              case 'wasAsParticipant':
+                return acc && (Array.isArray(party.members) ? party.members.includes(user$.getValue().uid) : false);
               default:
                 return acc;
             }
           }, true),
       ),
-    [filters, parties],
+    [filters, parties, user$],
   );
 
   const handleNew: AddNewPartyProps['onAddNew'] = (item) => {
     partyKeysRef.current.next([item.id, ...partyKeysRef.current.getValue()]);
   };
 
-  const handleChangeFilter = (filterName: string) => (value: string) => {
-    setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
-  };
+  const handleChangeFilter =
+    <T extends keyof PartyRanksFilters>(filterName: T) =>
+    (value: PartyRanksFilters[T]) => {
+      setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
+    };
 
   const handleClearFilters = () => {
     setFilters({});
@@ -96,6 +117,20 @@ export const PartiesListPage = () => {
             <Typography sx={{ mr: 2 }} variant="h6" component="div">
               {t('MAIN.FILTERS')}
             </Typography>
+            <Grid sx={{ mt: 1 }} container direction="row" alignItems="center" spacing={1}>
+              <FormControlLabel
+                sx={{
+                  ml: 1,
+                }}
+                control={
+                  <Checkbox
+                    checked={filters.wasAsParticipant}
+                    onChange={(event) => handleChangeFilter('wasAsParticipant')(event.target.checked)}
+                  />
+                }
+                label={t('MAIN.FILTER_I_WAS_PARTICIPANT')}
+              />
+            </Grid>
             <Grid sx={{ mt: 1 }} container direction="row" alignItems="center" spacing={1}>
               <Grid item xs>
                 <TextField

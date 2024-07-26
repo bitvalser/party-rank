@@ -1,5 +1,24 @@
 rules_version = '2';
 
+function getPartyRankOwners() {
+  return [
+    'zuF7uk185eZN6a4IXpTTl2l1Sdd2', 
+    'fqcgLFyFxFZ8QjYtWZtIpyNnsxC3', 
+    'x9CFXJyTwmbJrZnPohPtyeeEGWm2', 
+    'OzGsYR7iK1XnKV6fA11MITuDNT92', 
+    '07Iv9QcEfpbwJpm0oShXIXLpYw63', 
+    'L8TA5KFbnCXJXV1UFHebLy7LXev2', 
+    '97vRJXXugzZyT3m8yKBdbuaXg8n1',
+    '90opfAKABbaoGBCycuZuI2KndAJ2',
+  ];
+}
+
+function getCommentBannedUsers() {
+  return [
+
+  ];
+}
+
 service cloud.firestore {
   match /databases/{database}/documents {
  		match /discord-oauth/{discordId} {
@@ -20,13 +39,15 @@ service cloud.firestore {
     match /parties/{partyId}/items/{itemId} {
       allow read: if true;
       allow create: if request.auth.uid != null;
-      allow update: if request.auth.uid != null && (!resource.data.diff(request.resource.data).affectedKeys().hasAny(['authorId', 'id']));
+      allow update: if request.auth.uid != null 
+				&& (!resource.data.diff(request.resource.data).affectedKeys().hasAny(['authorId', 'id']))
+        && !(resource.data.diff(request.resource.data).affectedKeys().hasAny(['comments']) && request.auth.uid in getCommentBannedUsers());
       allow delete: if request.auth.uid != null;
     }
     match /parties/{partyId} {
       allow read: if true;
-      allow create: if request.auth.uid != null;
-      allow update: if (request.auth.uid == resource.data.creatorId || request.auth.uid in resource.data.moderators) && (!resource.data.diff(request.resource.data).affectedKeys().hasAny(['createdDate', 'id', 'creatorId'])) || (request.auth.uid != null && resource.data.diff(request.resource.data).affectedKeys().hasOnly(['members']));
+      allow create: if request.auth.uid != null && (request.auth.uid in getPartyRankOwners());
+      allow update: if (request.auth.uid == resource.data.creatorId || request.auth.uid in resource.data.moderators) && (!resource.data.diff(request.resource.data).affectedKeys().hasAny(['createdDate', 'id', 'creatorId']))  || (request.auth.uid != null && resource.data.diff(request.resource.data).affectedKeys().hasOnly(['members']));
       allow delete: if request.auth.uid != null;
     }
   }

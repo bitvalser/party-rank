@@ -232,7 +232,7 @@ export const RankItem = memo(
               )}
               {typeof grade === 'number' && <GradeMark size={32} value={grade} />}
             </Grid>
-            {canEdit && partyStatus === PartyRankStatus.Ongoing && !startTime && (
+            {canEdit && [PartyRankStatus.Ongoing, PartyRankStatus.Registration].includes(partyStatus) && !startTime && (
               <Tooltip placement="top" title={t('RANK.TIME_WARNING')}>
                 <TimerOffIcon sx={{ mr: 2 }} color="warning" fontSize="medium" />
               </Tooltip>

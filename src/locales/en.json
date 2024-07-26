@@ -34,6 +34,7 @@
     "FILTER_NAME": "Name",
     "FILTER_CREATOR": "Creator",
     "FILTER_CLEAR": "Clear filters",
+    "FILTER_I_WAS_PARTICIPANT": "PartyRanks I participated in",
     "EXIT": "Exit"
   },
   "RANK": {
@@ -93,7 +94,12 @@
     "CONTENDERS_MISSING": "No contenders have been added",
     "NO_ACCESS": "You do not have access to this page!",
     "LEADERBOARD_LOCKED": "The leaderboard is now private and only available to you",
-    "FINAL_TOP": "Final Top"
+    "FINAL_TOP": "Final Top",
+    "VOTING_PROGRESS": "Voting progress",
+    "SEE_MARKS": "See marks",
+    "REMOVE_MARKS": "Remove marks",
+    "ARE_YOU_REALLY_WANT_TO_REMOVE_MARKS": "Are you sure you want to delete this participant's marks?",
+    "PARTICIPANT_MARKS": "Participant marks {{name}}"
   },
   "ADD_RANK_ITEM": {
     "TITLE": "Add new item",

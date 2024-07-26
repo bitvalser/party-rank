@@ -5,7 +5,7 @@ import { useThrottledCallback } from 'use-debounce';
 
 import ClearIcon from '@mui/icons-material/Clear';
 import SendIcon from '@mui/icons-material/Send';
-import { Card, Grid, IconButton, InputAdornment, OutlinedInput, Typography } from '@mui/material';
+import { Card, FormHelperText, Grid, IconButton, InputAdornment, OutlinedInput, Typography } from '@mui/material';
 
 import useSubscription from '../../../core/hooks/useSubscription';
 import { AppUser } from '../../../core/interfaces/app-user.interface';
@@ -28,6 +28,7 @@ export const RankItemComment = ({
   rankItemCommentsManager,
 }: RankItemCommentProps) => {
   const [text, setText] = useState('');
+  const [error, setError] = useState(null);
   const { t } = useTranslation();
   const { partyItemsComments$, addRankItemComment, removeRankItemComment } = rankItemCommentsManager;
   const currentComment = useSubscription(
@@ -46,7 +47,12 @@ export const RankItemComment = ({
 
   const handleAddComment = useThrottledCallback(
     () => {
-      addRankItemComment(partyRankId, rankItem.id, text).subscribe();
+      setError(null);
+      addRankItemComment(partyRankId, rankItem.id, text).subscribe({
+        error: (error) => {
+          setError(error?.message || error);
+        },
+      });
     },
     1000,
     { trailing: false },
@@ -88,6 +94,7 @@ export const RankItemComment = ({
           inputProps={{
             maxLength: isSpecialType ? 600 : COMMENT_MAX_LENGTH,
           }}
+          error={Boolean(error)}
           endAdornment={
             <InputAdornment position="end">
               {!currentComment && (
@@ -103,6 +110,7 @@ export const RankItemComment = ({
             </InputAdornment>
           }
         />
+        {error && <FormHelperText error>{error}</FormHelperText>}
       </Grid>
     </Card>
   );

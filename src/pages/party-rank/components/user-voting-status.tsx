@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Subject, from, merge, of } from 'rxjs';
 import { finalize, switchMap } from 'rxjs/operators';
 
@@ -40,6 +41,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
   const [rankLoading, setRankLoading] = useState(true);
   const [userRanksId, setUserRanksId] = useState(null);
   const [deleteUserRanksId, setDeleteUserRanksId] = useState(null);
+  const { t } = useTranslation();
   const updateRanksRef = useRef(new Subject<void>());
   const usersRank = useSubscription(
     merge(of(void 0), updateRanksRef.current).pipe(
@@ -128,7 +130,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
         <CardContent>
           <Grid container direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="h5" component="div">
-              Прогресс оценивания
+              {t('RANK.VOTING_PROGRESS')}
             </Typography>
           </Grid>
           <Grid
@@ -142,7 +144,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
             spacing={1}
           >
             {usersStatus.map(({ authorId, author, count, favoriteId }) => (
-              <Grid key={authorId} container item direction="row" alignItems="center">
+              <Grid key={authorId} container item direction="row" alignItems="center" wrap="nowrap">
                 <Grid item xs={2}>
                   <Chip
                     size="medium"
@@ -154,6 +156,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
                 <Grid
                   sx={{
                     mb: 2,
+                    overflow: 'hidden',
                   }}
                   xs
                   item
@@ -168,12 +171,10 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
                     alignItems="center"
                     wrap="nowrap"
                   >
-                    <Typography>
-                      Оценено {count} / {required}
-                    </Typography>
+                    <Typography whiteSpace="nowrap">{t('RANK.RATED', { current: count, required })}</Typography>
                     {favoriteId && itemsById[favoriteId] && (
                       <Chip
-                        sx={{ ml: 2 }}
+                        sx={{ ml: 2, overflow: 'hidden' }}
                         size="small"
                         avatar={<FavoriteIcon />}
                         label={itemsById[favoriteId]?.name}
@@ -189,12 +190,12 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
                   />
                 </Grid>
                 <Grid sx={{ ml: 1 }} item alignItems="flex-end" justifyContent="flex-end">
-                  <Tooltip placement="top" title="Посмотреть оценки">
+                  <Tooltip placement="top" title={t('RANK.SEE_MARKS')}>
                     <IconButton disabled={count === 0} onClick={handleShowGrades(authorId)} aria-label="clear">
                       <VisibilityIcon fontSize="inherit" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip placement="top" title="Удалить оценки">
+                  <Tooltip placement="top" title={t('RANK.REMOVE_MARKS')}>
                     <IconButton onClick={handleClear(authorId)} aria-label="clear">
                       <CloseIcon fontSize="inherit" />
                     </IconButton>
@@ -208,7 +209,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
       {deleteUserRanksId && (
         <ConfirmModal
           title={byUser[deleteUserRanksId].author.displayName}
-          text="Вы действительно хотите удалить оценки этого участника?"
+          text={t('RANK.ARE_YOU_REALLY_WANT_TO_REMOVE_MARKS')}
           onClose={handleCloseClearModal}
           onConfirm={handleClearConfirm}
         />
@@ -256,7 +257,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
                   variant="h6"
                   component="h2"
                 >
-                  Оценки участника {byUser[userRanksId].author.displayName}
+                  {t('RANK.PARTICIPANT_MARKS', { name: byUser[userRanksId].author.displayName })}
                 </Typography>
               </Grid>
               <Grid xs={1} container item direction="row" justifyContent="flex-end">

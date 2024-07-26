@@ -34,6 +34,7 @@
     "FILTER_NAME": "Название",
     "FILTER_CREATOR": "Создатель",
     "FILTER_CLEAR": "Очистить фильтры",
+    "FILTER_I_WAS_PARTICIPANT": "ПатиРанги в которых я участвовал",
     "EXIT": "Выход"
   },
   "RANK": {
@@ -93,7 +94,12 @@
     "CONTENDERS_MISSING": "Не было добавлено ни одного предложения",
     "NO_ACCESS": "У вас нет доступа к этой странице!",
     "LEADERBOARD_LOCKED": "Таблица лидеров сейчас закрыта и доступна только вам",
-    "FINAL_TOP": "Итоговый Топ"
+    "FINAL_TOP": "Итоговый Топ",
+    "VOTING_PROGRESS": "Прогресс оценивания",
+    "SEE_MARKS": "Посмотреть оценки",
+    "REMOVE_MARKS": "Удалить оценки",
+    "ARE_YOU_REALLY_WANT_TO_REMOVE_MARKS": "Вы действительно хотите удалить оценки этого участника?",
+    "PARTICIPANT_MARKS": "Оценки участника {{name}}"
   },
   "ADD_RANK_ITEM": {
     "TITLE": "Добавить новый элемент",

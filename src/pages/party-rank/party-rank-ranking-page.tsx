@@ -367,7 +367,7 @@ const PartRankRankingPageComponent = memo(
           </Box>
         ))}
         {items[currentIndex]?.startTime > 0 && (
-          <Tooltip title="Перемотать к сэмплу" placement="top">
+          <Tooltip title={t('RANK.SKIP_TO_SAMPLE')} placement="top">
             <IconButton
               sx={(theme) => ({
                 zIndex: 15,
