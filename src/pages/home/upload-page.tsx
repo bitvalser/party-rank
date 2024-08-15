@@ -27,7 +27,7 @@ import useSubscription from '../../core/hooks/useSubscription';
 import { RankItemType } from '../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../core/services/types';
 
-const MAX_FILES = 20;
+const MAX_FILES = 60;
 const MAX_FILE_SIZE = 16 * 1024 * 1024;
 
 const VisuallyHiddenInput = styled('input')({

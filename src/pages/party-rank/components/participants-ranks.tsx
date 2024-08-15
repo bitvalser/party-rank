@@ -10,6 +10,9 @@ import { reorderArray } from '../../../core/utils/reorder-array';
 
 const SORT_ORDER_KEY = 'resultSortOrder:';
 
+const LOW_RANK_COLOR = 'rgb(255, 0, 90)';
+const HIGH_RANK_COLOR = 'rgb(102, 255, 0)';
+
 interface ParticipantsRanksProps {
   ranks: {
     author: AppUser;
@@ -21,13 +24,15 @@ interface ParticipantsRanksProps {
   rankId: string;
 }
 
-const UserRankItem: FC<{ author: AppUser; value: number; favorite: boolean; myRank: boolean; sizeFactor: number }> = ({
-  author,
-  favorite,
-  myRank,
-  value,
-  sizeFactor,
-}) => (
+const UserRankItem: FC<{
+  author: AppUser;
+  value: number;
+  favorite: boolean;
+  myRank: boolean;
+  sizeFactor: number;
+  lowRank: number;
+  highRank: number;
+}> = ({ author, favorite, myRank, value, sizeFactor, highRank, lowRank }) => (
   <Grid
     sx={{ width: 120 * sizeFactor, height: 120 * sizeFactor, position: 'relative', cursor: 'grab' }}
     item
@@ -56,16 +61,28 @@ const UserRankItem: FC<{ author: AppUser; value: number; favorite: boolean; myRa
         width: 70 * sizeFactor,
         height: 70 * sizeFactor,
         borderRadius: 2,
-        border: (theme) => `2px solid ${!favorite ? theme.palette.grey[900] : theme.palette.error.main}`,
+        border: (theme) => {
+          let color = theme.palette.grey[900];
+          if (highRank === value) {
+            color = HIGH_RANK_COLOR;
+          } else if (lowRank === value) {
+            color = LOW_RANK_COLOR;
+          } else if (favorite) {
+            color = theme.palette.error.main;
+          }
+          return `3px solid ${color}`;
+        },
       }}
       alt={author.displayName}
       src={author.photoURL}
       variant="square"
     />
-    {favorite && (
+    {favorite && (  
       <FavoriteIcon
+        strokeWidth={2}
+        stroke="#fff"
         sx={{
-          top: 28,
+          top: 32,
           right: 12,
           width: `${sizeFactor}em`,
           height: `${sizeFactor}em`,
@@ -96,18 +113,27 @@ const UserRankItem: FC<{ author: AppUser; value: number; favorite: boolean; myRa
 
 const SortableItem = SortableElement<ComponentProps<typeof UserRankItem>>(UserRankItem);
 
-const SortableList = SortableContainer<{ items: ParticipantsRanksProps['ranks']; sizeFactor: number }>((({
-  items,
-  sizeFactor,
-}) => {
+const SortableList = SortableContainer<{
+  items: ParticipantsRanksProps['ranks'];
+  sizeFactor: number;
+  lowRank: number;
+  highRank: number;
+}>((({ items, sizeFactor, lowRank, highRank }) => {
   return (
     <Grid container flexDirection="row" wrap="wrap" justifyContent="space-around" alignContent="start">
       {items.map((item, index) => (
-        <SortableItem key={item.author.uid} {...item} sizeFactor={sizeFactor} index={index} />
+        <SortableItem
+          key={item.author.uid}
+          {...item}
+          sizeFactor={sizeFactor}
+          lowRank={lowRank}
+          highRank={highRank}
+          index={index}
+        />
       ))}
     </Grid>
   );
-}) as FC<{ items: ParticipantsRanksProps['ranks']; sizeFactor: number }>);
+}) as FC<{ items: ParticipantsRanksProps['ranks']; sizeFactor: number; lowRank: number; highRank: number }>);
 
 export const ParticipantsRanks = memo(({ ranks, sizeFactor, rankId }: ParticipantsRanksProps) => {
   const [order, setOrder] = useState<string[]>(
@@ -130,6 +156,19 @@ export const ParticipantsRanks = memo(({ ranks, sizeFactor, rankId }: Participan
   );
 
   const items = useMemo(() => order.map((id) => rankById[id]), [rankById, order]);
+  const [lowRank, highRank] = useMemo<[number, number]>(() => {
+    const sorted = [...items].sort((rankA, rankB) => (rankA.value > rankB.value ? 1 : -1));
+    return [sorted[0]?.value, sorted[sorted.length - 1]?.value];
+  }, [items]);
 
-  return <SortableList axis="xy" items={items} sizeFactor={sizeFactor} onSortEnd={handleDragEnd} />;
+  return (
+    <SortableList
+      axis="xy"
+      items={items}
+      sizeFactor={sizeFactor}
+      lowRank={lowRank}
+      highRank={highRank}
+      onSortEnd={handleDragEnd}
+    />
+  );
 });
