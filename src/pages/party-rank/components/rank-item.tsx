@@ -17,7 +17,7 @@ import { MediaPreviewModal } from '../../../core/components/media-preview-modal'
 import { useInjectable } from '../../../core/hooks/useInjectable';
 import useSubscription from '../../../core/hooks/useSubscription';
 import { PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
-import { RankItem as IRankItem } from '../../../core/interfaces/rank-item.interface';
+import { RankItem as IRankItem, RankItemType } from '../../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../../core/services/types';
 import { UsersList } from './users-list';
 
@@ -72,6 +72,11 @@ export const RankItem = memo(
       (partyStatus === PartyRankStatus.Ongoing && (currentUser?.uid === authorId || isCreator)) ||
       (partyStatus === PartyRankStatus.Rating && isCreator) ||
       (partyStatus === PartyRankStatus.Registration && isCreator);
+    const showTimeWarning =
+      canEdit &&
+      [PartyRankStatus.Ongoing, PartyRankStatus.Registration].includes(partyStatus) &&
+      !startTime &&
+      type !== RankItemType.Image;
 
     const handleDelete = () => {
       setShowDeleteModal(true);
@@ -232,7 +237,7 @@ export const RankItem = memo(
               )}
               {typeof grade === 'number' && <GradeMark size={32} value={grade} />}
             </Grid>
-            {canEdit && [PartyRankStatus.Ongoing, PartyRankStatus.Registration].includes(partyStatus) && !startTime && (
+            {showTimeWarning && (
               <Tooltip placement="top" title={t('RANK.TIME_WARNING')}>
                 <TimerOffIcon sx={{ mr: 2 }} color="warning" fontSize="medium" />
               </Tooltip>

@@ -207,7 +207,10 @@ export const PartyRankForm = forwardRef<PartyRankFormRef, PartyRankFormProps>(
             name="allowComments"
             control={control}
             render={({ field }) => (
-              <FormControlLabel control={<Checkbox {...field} />} label={t('CREATE_RANK.ALLOW_COMMENTS')} />
+              <FormControlLabel
+                control={<Checkbox checked={field.value} {...field} />}
+                label={t('CREATE_RANK.ALLOW_COMMENTS')}
+              />
             )}
           />
         </Grid>

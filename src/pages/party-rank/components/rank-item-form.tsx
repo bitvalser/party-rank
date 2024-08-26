@@ -166,24 +166,28 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
           <FormLabel id="anime-provider-group-label">{t('ADD_RANK_ITEM.PREVIEW')}</FormLabel>
           <RankPartyPlayer ref={playerRef} key={value} type={type} value={value} showTimeControls autoplay={autoplay} />
         </Grid>
-        <Grid item>
-          <Grid container direction="row" justifyContent="space-between" alignItems="center">
-            <Button type="button" variant="text" onClick={handleStartTime}>
-              {t('ADD_RANK_ITEM.SET_PLAYBACK_TIME')}
-            </Button>
-            <Button
-              type="button"
-              variant="text"
-              color="info"
-              onClick={handlePlayTime}
-              onMouseEnter={(event) => event.currentTarget.focus()}
-              onMouseLeave={(event) => event.currentTarget.blur()}
-              onKeyDownCapture={handleKeyDown}
-            >
-              <Typography color="white">{Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:SSS')}</Typography>
-            </Button>
+        {type !== RankItemType.Image && (
+          <Grid item>
+            <Grid container direction="row" justifyContent="space-between" alignItems="center">
+              <Button type="button" variant="text" onClick={handleStartTime}>
+                {t('ADD_RANK_ITEM.SET_PLAYBACK_TIME')}
+              </Button>
+              <Button
+                type="button"
+                variant="text"
+                color="info"
+                onClick={handlePlayTime}
+                onMouseEnter={(event) => event.currentTarget.focus()}
+                onMouseLeave={(event) => event.currentTarget.blur()}
+                onKeyDownCapture={handleKeyDown}
+              >
+                <Typography color="white">
+                  {Duration.fromObject({ seconds: startTime }).toFormat('mm:ss:SSS')}
+                </Typography>
+              </Button>
+            </Grid>
           </Grid>
-        </Grid>
+        )}
       </Grid>
     </Grid>
   );

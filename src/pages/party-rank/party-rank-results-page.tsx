@@ -1,4 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BehaviorSubject, concat, finalize, map, merge, tap, withLatestFrom } from 'rxjs';
 import { useThrottledCallback } from 'use-debounce';
@@ -199,7 +200,7 @@ const PartyRankResultsPageComponent = memo(
 
     const ranks = useMemo(
       () =>
-        (userRankByItemId[items[currentIndex].id]?.users || [])
+        (userRankByItemId[items[currentIndex]?.id]?.users || [])
           .filter((item) => Boolean(item.author))
           .sort(({ author: authorA }, { author: authorB }) => authorA.displayName.localeCompare(authorB.displayName)),
       [currentIndex, items, userRankByItemId],
@@ -462,6 +463,7 @@ export const PartyRankResultsPage = () => {
   const controllablePlayer = useSubscription(controllablePlayer$, false);
   const useVideoStartTime = useSubscription(useVideoStartTime$, true);
   const partyRank = useSubscription(getPartyRank(id));
+  const { t } = useTranslation();
   const showCommentsOnResult = useSubscription(showCommentsOnResult$, true);
   const usersRank = useSubscription(
     getUserRanks(id, { includeUser: true }).pipe(finalize(() => setRankLoading(false))),
@@ -487,12 +489,16 @@ export const PartyRankResultsPage = () => {
     return <LinearProgress />;
   }
 
-  if (partyItems.length === 0) {
-    return <Typography>Не было добавлено ни одного предложения</Typography>;
-  }
-
   if (partyRank.status !== PartyRankStatus.Finished) {
     return <Navigate to={`/party-rank/${id}`} replace />;
+  }
+
+  if (partyItems.length === 0) {
+    return <Typography>{t('ERRORS.NO_ITEMS')}</Typography>;
+  }
+
+  if (reversedItems.length === 0) {
+    return <Typography>{t('ERRORS.NO_RANKED_ITEMS')}</Typography>;
   }
 
   return (
