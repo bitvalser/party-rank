@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "party-rank"
-  }
+  },
+  "targets": {
+    "party-rank": {
+      "hosting": {
+        "party-rank-dev": [
+          "party-rank-dev"
+        ],
+        "party-rank": [
+          "party-rank"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
