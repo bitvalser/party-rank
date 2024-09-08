@@ -28,7 +28,7 @@ export class AppUploadController {
 
     res.json({
       ok: true,
-      data: userEntry.assets.values(),
+      data: Array.from(userEntry.assets.values()),
     });
   }
 

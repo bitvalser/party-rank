@@ -32,7 +32,7 @@ export class UploadService implements IUploadService {
 
   public deleteFile(fileId: string): Observable<void> {
     return of(void 0).pipe(
-      switchMap(() => this.axios.delete(`/cdn/delete${fileId}`)),
+      switchMap(() => this.axios.delete(`/cdn/delete/${fileId}`)),
       map(() => {}),
     );
   }

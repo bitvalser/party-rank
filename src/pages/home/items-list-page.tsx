@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { finalize } from 'rxjs/operators';
-import { useDebouncedCallback } from 'use-debounce';
+import { useDebounce, useDebouncedCallback } from 'use-debounce';
 
 import {
   Button,
@@ -32,50 +32,56 @@ export const ItemsListPage = () => {
   const { searchItems } = useInjectable(AppTypes.PartyRanks);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState<IItemsFilters>({});
+  const [search, setSearch] = useState('');
+  const prevSearchRef = useRef('');
+  const [debouncedSearch] = useDebounce(search, SEARCH_DELAY);
   const { t } = useTranslation();
   const [items, setItems] = useState<IRankItem[]>([]);
   const [total, setTotal] = useState(0);
   const infiniteSpinnerRef = useRef<HTMLDivElement>(null);
   const infiniteContinue = useOnScreen(infiniteSpinnerRef);
 
-  const doSearchItems = useDebouncedCallback((filters: IItemsFilters) => {
-    searchItems({ limit: ITEMS_PER_PAGE, offset: offsetRef.current, filters })
-      .pipe(finalize(() => setLoading(false)))
-      .subscribe({
-        next: ({ count, items }) => {
-          if (typeof count === 'number') {
-            setTotal(count);
-          }
-          offsetRef.current += ITEMS_PER_PAGE;
-          setItems((prev) => [...prev, ...items]);
-        },
-        error: setError,
-      });
-  }, SEARCH_DELAY);
+  const doSearchItems = useCallback(
+    (filters: IItemsFilters, searchQuery: string) => {
+      const payload = { ...filters };
+      if (searchQuery) {
+        payload.name = searchQuery;
+      }
+      searchItems({ limit: ITEMS_PER_PAGE, offset: offsetRef.current, filters: payload })
+        .pipe(finalize(() => setLoading(false)))
+        .subscribe({
+          next: ({ count, items }) => {
+            if (typeof count === 'number') {
+              setTotal(count);
+            }
+            offsetRef.current += ITEMS_PER_PAGE;
+            setItems((prev) => [...prev, ...items]);
+          },
+          error: setError,
+        });
+    },
+    [searchItems],
+  );
 
   useEffect(() => {
     if (infiniteContinue && !loading && items.length < total) {
-      doSearchItems(filters);
+      doSearchItems(filters, prevSearchRef.current);
     }
   }, [doSearchItems, filters, infiniteContinue, items, loading, total]);
 
   useEffect(() => {
+    offsetRef.current = 0;
+    setItems([]);
+    prevSearchRef.current = debouncedSearch;
     setLoading(true);
-    doSearchItems(filters);
-  }, [doSearchItems, filters]);
-
-  const handleChangeFilter =
-    <T extends keyof IPartyRanksFilters>(filterName: T) =>
-    (value: IPartyRanksFilters[T]) => {
-      offsetRef.current = 0;
-      setItems([]);
-      setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
-    };
+    doSearchItems(filters, debouncedSearch);
+  }, [debouncedSearch, doSearchItems, filters]);
 
   const handleClearFilters = () => {
     offsetRef.current = 0;
     setItems([]);
     setFilters({});
+    setSearch('');
   };
 
   if (error) {
@@ -103,9 +109,9 @@ export const ItemsListPage = () => {
               <Grid item xs>
                 <TextField
                   fullWidth
-                  value={filters.name || ''}
+                  value={search}
                   label={t('MAIN.FILTER_NAME')}
-                  onChange={(event) => handleChangeFilter('name')(event.target.value)}
+                  onChange={(event) => setSearch(event.target.value)}
                 />
               </Grid>
               {/* <Grid item xs={3}>
