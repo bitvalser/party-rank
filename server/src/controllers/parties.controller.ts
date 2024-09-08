@@ -277,6 +277,17 @@ export class AppPartiesController {
 
   public async unregisterFromPartyRank(req: Request, res: Response): Promise<void> {
     const partyRankId = req.params.id;
+
+    const partyRank = await PartyRankModel.findById(partyRankId);
+
+    if (!partyRank) {
+      return sendError(res, 'Party Rank not found!', 404);
+    }
+
+    if (partyRank.status === PartyRankStatus.Finished) {
+      return sendError(res, "You can't leave already finished party rank!", 403);
+    }
+
     await PartyRankItemModel.deleteMany({ partyRankId: partyRankId, authorId: req.userId });
     await UserRankModel.deleteMany({ partyRankId: partyRankId, userId: req.userId });
     await PartyRankModel.findByIdAndUpdate(partyRankId, {
