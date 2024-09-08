@@ -6,13 +6,12 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "target": "es6",
-    "esModuleInterop": true,
     "typeRoots": ["./@types", "./node_modules/@types"],
     "outDir": "./dist",
     "experimentalDecorators": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
 
