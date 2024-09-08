@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { LinearProgress } from '@mui/material';
@@ -13,16 +14,23 @@ import { PartyRankRankingPage } from './pages/party-rank/party-rank-ranking-page
 import { PartyRankResultsPage } from './pages/party-rank/party-rank-results-page';
 
 export const AppRouter = () => {
-  const { user$, ready$ } = useInjectable(AppTypes.AuthService);
+  const { user$, ready$, signIn, getAuthToken } = useInjectable(AppTypes.AuthService);
+  const { getTags } = useInjectable(AppTypes.TagsService);
   const user = useSubscription(user$);
   const ready = useSubscription(ready$);
+  const isSigned = useMemo(() => Boolean(user) || getAuthToken(), [getAuthToken, user]);
+
+  useEffect(() => {
+    getTags().subscribe();
+    signIn(getAuthToken()).subscribe();
+  }, [getAuthToken, getTags, signIn]);
 
   return ready ? (
     <BrowserRouter>
       <Routes>
         <Route path="/invite/:id" Component={InvitePage} />
         <Route path="/discord-oauth" Component={DiscordOauthPage} />
-        {user && (
+        {isSigned && (
           <>
             <Route path="/party-rank/:id/ranking" Component={PartyRankRankingPage} />
             <Route path="/party-rank/:id/results" Component={PartyRankResultsPage} />
@@ -31,7 +39,7 @@ export const AppRouter = () => {
           </>
         )}
 
-        {!user && (
+        {!isSigned && (
           <>
             <Route path="/auth" Component={AuthPage} />
             <Route path="*" element={<Navigate to="/auth" replace />} />

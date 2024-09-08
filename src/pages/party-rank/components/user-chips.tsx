@@ -1,30 +1,20 @@
 import { useTranslation } from 'react-i18next';
-import { of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 
 import AddIcon from '@mui/icons-material/Add';
 import { Avatar, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 
-import { useInjectable } from '../../../core/hooks/useInjectable';
-import useSubscription from '../../../core/hooks/useSubscription';
-import { AppTypes } from '../../../core/services/types';
-import { concatReduce } from '../../../core/utils/concat-reduce';
+import { AppUser } from '../../../core/interfaces/app-user.interface';
 
 interface UserChipsProps {
-  users: string[];
+  users: AppUser[];
   title: string;
   showAdd?: boolean;
   onDelete?: (id: string) => void;
   onAdd?: () => void;
 }
 
-export const UserChips = ({ users, title, onDelete, onAdd, showAdd = false }: UserChipsProps) => {
-  const { getUser } = useInjectable(AppTypes.AuthService);
+export const UserChips = ({ users: participants, title, onDelete, onAdd, showAdd = false }: UserChipsProps) => {
   const { t } = useTranslation();
-  const participants = useSubscription(
-    of(users).pipe(switchMap((ids) => concatReduce(...ids.map((id) => getUser(id))))),
-    [],
-  );
 
   const handleDelete = (id: string) => () => {
     onDelete(id);
@@ -54,7 +44,7 @@ export const UserChips = ({ users, title, onDelete, onAdd, showAdd = false }: Us
           wrap="wrap"
         >
           {participants.map((user) => (
-            <Grid item key={user.uid}>
+            <Grid item key={user._id}>
               <Chip
                 sx={{
                   mr: 1,
@@ -63,7 +53,7 @@ export const UserChips = ({ users, title, onDelete, onAdd, showAdd = false }: Us
                 avatar={<Avatar alt={user.displayName} src={user.photoURL} />}
                 label={user.displayName}
                 variant="filled"
-                onDelete={onDelete ? handleDelete(user.uid) : null}
+                onDelete={onDelete ? handleDelete(user._id) : null}
               />
             </Grid>
           ))}

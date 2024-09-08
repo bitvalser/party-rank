@@ -1,98 +1,88 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BehaviorSubject, concat, map, merge, of } from 'rxjs';
-import { catchError, finalize, tap, withLatestFrom } from 'rxjs/operators';
+import { BehaviorSubject, map, merge, of } from 'rxjs';
+import { finalize, withLatestFrom } from 'rxjs/operators';
+import { useDebouncedCallback } from 'use-debounce';
 
-import {
-  Button,
-  Card,
-  CardContent,
-  Checkbox,
-  FormControlLabel,
-  Grid,
-  LinearProgress,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Card, CardContent, Grid, LinearProgress, Tab, Tabs, TextField, Typography } from '@mui/material';
 
 import { OopsPage } from '../../core/components/oops-page';
+import { TagsAutocomplete } from '../../core/components/tags-autocomplete';
 import { UsersAutocomplete } from '../../core/components/users-autocomplete';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { PartyRank } from '../../core/interfaces/party-rank.interface';
+import { IPartyRanksFilters } from '../../core/services/party-ranks/party-ranks.types';
 import { AppTypes } from '../../core/services/types';
 import { AddNewParty, AddNewPartyProps } from './components/add-new-party';
 import { PartyItem } from './components/party-item';
 
-interface PartyRanksFilters {
-  name?: string;
-  author?: string;
-  wasAsParticipant?: boolean;
+const SEARCH_DELAY = 500;
+
+enum PartyTabs {
+  All = 'all',
+  MyParties = 'my-parties',
+  Active = 'active',
 }
 
 export const PartiesListPage = () => {
   const partyKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const [loading, setLoading] = useState(true);
   const { parties$, getParties } = useInjectable(AppTypes.PartyRanks);
-  const { user$ } = useInjectable(AppTypes.AuthService);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState<PartyRanksFilters>({});
+  const [filters, setFilters] = useState<IPartyRanksFilters>({});
   const { t } = useTranslation();
+  const [selectedTab, setSelectedTab] = useState(PartyTabs.All);
   const parties = useSubscription<PartyRank[]>(
-    concat(
-      getParties().pipe(
-        finalize(() => setLoading(false)),
-        tap((items) => partyKeysRef.current.next(items.map((item) => item.id))),
-        catchError((error, caught) => {
-          setError(error);
-          return of([]);
-        }),
-      ),
-      merge(partyKeysRef.current, parties$).pipe(
-        withLatestFrom(partyKeysRef.current, parties$),
-        map(([, keys, parties]) => keys.map((key) => parties[key])),
-      ),
-    ).pipe(
-      map((items) =>
-        items.sort((partyA, partyB) => new Date(partyB.createdDate).getTime() - new Date(partyA.createdDate).getTime()),
-      ),
+    merge(partyKeysRef.current, parties$).pipe(
+      withLatestFrom(partyKeysRef.current, parties$),
+      map(([, keys, parties]) => keys.map((key) => parties[key])),
     ),
     [],
   );
 
-  const filteredParties = useMemo(
-    () =>
-      parties.filter((party) =>
-        Object.entries(filters)
-          .filter(([, value]) => value)
-          .reduce((acc, [filter, value]) => {
-            switch (filter) {
-              case 'name':
-                return acc && party.name.toLocaleLowerCase().includes(value.toLocaleLowerCase());
-              case 'author':
-                return acc && party.creatorId === value;
-              case 'wasAsParticipant':
-                return acc && (Array.isArray(party.members) ? party.members.includes(user$.getValue().uid) : false);
-              default:
-                return acc;
-            }
-          }, true),
-      ),
-    [filters, parties, user$],
-  );
+  const searchParties = useDebouncedCallback((filters: IPartyRanksFilters, tab: PartyTabs) => {
+    const payload = { ...filters };
+    switch (tab) {
+      case PartyTabs.Active:
+        payload.active = true;
+        break;
+      case PartyTabs.MyParties:
+        payload.myPartyRanks = true;
+        break;
+    }
+    getParties(payload)
+      .pipe(finalize(() => setLoading(false)))
+      .subscribe({
+        next: (items) => {
+          partyKeysRef.current.next(items.map((item) => item._id));
+        },
+        error: setError,
+      });
+  }, SEARCH_DELAY);
+
+  useEffect(() => {
+    partyKeysRef.current.next([]);
+    setLoading(true);
+    searchParties(filters, selectedTab);
+  }, [filters, searchParties, selectedTab]);
 
   const handleNew: AddNewPartyProps['onAddNew'] = (item) => {
-    partyKeysRef.current.next([item.id, ...partyKeysRef.current.getValue()]);
+    partyKeysRef.current.next([item._id, ...partyKeysRef.current.getValue()]);
   };
 
   const handleChangeFilter =
-    <T extends keyof PartyRanksFilters>(filterName: T) =>
-    (value: PartyRanksFilters[T]) => {
+    <T extends keyof IPartyRanksFilters>(filterName: T) =>
+    (value: IPartyRanksFilters[T]) => {
       setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
     };
 
   const handleClearFilters = () => {
     setFilters({});
+  };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: PartyTabs) => {
+    setSelectedTab(newValue);
   };
 
   if (error) {
@@ -104,7 +94,7 @@ export const PartiesListPage = () => {
   return (
     <>
       <Grid container direction="column" rowSpacing={2}>
-        {loading && <LinearProgress />}
+        <LinearProgress style={{ opacity: loading ? 1 : 0 }} />
         <Card
           sx={{
             mt: 2,
@@ -117,25 +107,26 @@ export const PartiesListPage = () => {
             <Typography sx={{ mr: 2 }} variant="h6" component="div">
               {t('MAIN.FILTERS')}
             </Typography>
-            <Grid sx={{ mt: 1 }} container direction="row" alignItems="center" spacing={1}>
+            {/* <Grid sx={{ mt: 1 }} container direction="row" alignItems="center" spacing={1}>
               <FormControlLabel
                 sx={{
                   ml: 1,
                 }}
                 control={
                   <Checkbox
-                    checked={filters.wasAsParticipant}
-                    onChange={(event) => handleChangeFilter('wasAsParticipant')(event.target.checked)}
+                    checked={filters.isParticipant}
+                    onChange={(event) => handleChangeFilter('isParticipant')(event.target.checked)}
                   />
                 }
                 label={t('MAIN.FILTER_I_WAS_PARTICIPANT')}
               />
-            </Grid>
+            </Grid> */}
             <Grid sx={{ mt: 1 }} container direction="row" alignItems="center" spacing={1}>
               <Grid item xs>
                 <TextField
                   fullWidth
                   label={t('MAIN.FILTER_NAME')}
+                  value={filters.name || ''}
                   onChange={(event) => handleChangeFilter('name')(event.target.value)}
                 />
               </Grid>
@@ -143,10 +134,26 @@ export const PartiesListPage = () => {
                 <UsersAutocomplete
                   label={t('MAIN.FILTER_CREATOR')}
                   multiple={false}
-                  onChange={handleChangeFilter('author')}
+                  onChange={(value) => handleChangeFilter('creatorId')(value?._id)}
                 />
               </Grid>
-              <Grid item xs>
+              <Grid item xs={3}>
+                <TagsAutocomplete
+                  label={t('MAIN.FILTER_TAGS')}
+                  value={filters.tags}
+                  onChange={handleChangeFilter('tags')}
+                />
+              </Grid>
+            </Grid>
+            <Grid
+              sx={{
+                mt: 2,
+              }}
+              container
+              flexDirection="row"
+              justifyContent="flex-end"
+            >
+              <Grid item>
                 <Button onClick={handleClearFilters} variant="text">
                   {t('MAIN.FILTER_CLEAR')}
                 </Button>
@@ -154,8 +161,15 @@ export const PartiesListPage = () => {
             </Grid>
           </CardContent>
         </Card>
-        {filteredParties.map((item) => (
-          <Grid key={item.id} item>
+        <Box sx={{ mt: 2, borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={selectedTab} onChange={handleTabChange} aria-label="basic tabs example">
+            <Tab label={t('MAIN.TABS.ALL')} value={PartyTabs.All} />
+            <Tab label={t('MAIN.TABS.ACTIVE')} value={PartyTabs.Active} />
+            <Tab label={t('MAIN.TABS.MY_RANKS')} value={PartyTabs.MyParties} />
+          </Tabs>
+        </Box>
+        {parties.map((item) => (
+          <Grid key={item._id} item>
             <PartyItem data={item} />
           </Grid>
         ))}

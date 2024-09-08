@@ -1,21 +1,21 @@
-import { Firestore, arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { AxiosInstance } from 'axios';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
-import { FirestoreCollection } from '../../constants/firestore-collection.constants';
+import { ApiResponse } from '../../interfaces/api-response.interface';
 import { RankItem, RankItemComment } from '../../interfaces/rank-item.interface';
 import { IAuthService } from '../auth/auth.types';
 import { IRankItemCommentsManager } from './rank-item-comments.types';
 
 export class RankItemCommentsManager implements IRankItemCommentsManager {
-  private firestore: Firestore;
+  private axios: AxiosInstance;
   private authService: IAuthService;
   public partyItemsComments$: BehaviorSubject<Record<string, { comments: RankItemComment[] }>> = new BehaviorSubject<
     Record<string, { comments: RankItemComment[] }>
   >({});
 
-  public constructor(firestore: Firestore, authService: IAuthService, rankItems: RankItem[]) {
-    this.firestore = firestore;
+  public constructor(axios: AxiosInstance, authService: IAuthService, rankItems: RankItem[]) {
+    this.axios = axios;
     this.authService = authService;
 
     this.addRankItemComment = this.addRankItemComment.bind(this);
@@ -26,15 +26,15 @@ export class RankItemCommentsManager implements IRankItemCommentsManager {
       ...rankItems.reduce(
         (acc, val) => ({
           ...acc,
-          [val.id]: { comments: val.comments },
+          [val._id]: { comments: val.comments },
         }),
         {},
       ),
     });
   }
 
-  public addRankItemComment(partyRankId: string, rankItemId: string, comment: string): Observable<void> {
-    const userId = this.authService.user$.getValue().uid;
+  public addRankItemComment(rankItemId: string, comment: string): Observable<void> {
+    const userId = this.authService.user$.getValue()._id;
     return of(void 0).pipe(
       withLatestFrom(this.partyItemsComments$),
       switchMap(([, partyItemsComments]) => {
@@ -44,17 +44,11 @@ export class RankItemCommentsManager implements IRankItemCommentsManager {
         ) {
           return Promise.resolve(null);
         }
-        const newComment = {
-          body: comment,
-          authorId: userId,
-          id: crypto.randomUUID(),
-        };
-        return updateDoc(
-          doc(this.firestore, FirestoreCollection.Parties, partyRankId, FirestoreCollection.Items, rankItemId),
-          {
-            comments: arrayUnion(newComment),
-          },
-        ).then(() => newComment);
+        return this.axios
+          .post<ApiResponse<RankItemComment>>(`/items/${rankItemId}/comments`, {
+            body: comment,
+          })
+          .then(({ data: { data: comment } }) => comment);
       }),
       map((newComment) => {
         if (newComment) {
@@ -69,22 +63,18 @@ export class RankItemCommentsManager implements IRankItemCommentsManager {
     );
   }
 
-  public removeRankItemComment(partyRankId: string, rankItemId: string, comment: RankItemComment): Observable<void> {
+  public removeRankItemComment(rankItemId: string, comment: RankItemComment): Observable<void> {
     return of(void 0).pipe(
       switchMap(() => {
-        return updateDoc(
-          doc(this.firestore, FirestoreCollection.Parties, partyRankId, FirestoreCollection.Items, rankItemId),
-          {
-            comments: arrayRemove(comment),
-          },
-        );
+        return this.axios.delete(`/items/${rankItemId}/comments/${comment._id}`);
       }),
+      map(() => null),
       tap(() => {
         this.partyItemsComments$.next({
           ...this.partyItemsComments$.getValue(),
           [rankItemId]: {
             comments: (this.partyItemsComments$.getValue()[rankItemId]?.comments || []).filter(
-              (item) => item.id !== comment.id,
+              (item) => item._id !== comment._id,
             ),
           },
         });

@@ -1,5 +1,11 @@
+export enum UserRole {
+  Creator = 'creator',
+  Regular = 'regular',
+}
+
 export interface AppUser {
-  uid: string;
+  _id: string;
   photoURL: string;
   displayName: string;
+  role: UserRole;
 }

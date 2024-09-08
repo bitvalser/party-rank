@@ -32,6 +32,7 @@ export interface RankItemFromValues {
   type: RankItemType;
   value: string;
   startTime: number;
+  metadata: Record<string, any>;
 }
 
 const DEFAULT_VALUES: RankItemFromValues = {
@@ -40,6 +41,7 @@ const DEFAULT_VALUES: RankItemFromValues = {
   type: RankItemType.Video,
   value: '',
   startTime: 0,
+  metadata: {},
 };
 
 export interface AddNewItemProps {
@@ -47,6 +49,9 @@ export interface AddNewItemProps {
   partyId: string;
   items: IRankItem[];
   disabled?: boolean;
+  current: number;
+  required: number;
+  flags?: Record<string, boolean>;
   onAddNew?: (item: IRankItem) => void;
 }
 
@@ -56,6 +61,9 @@ export const AddNewItem = ({
   onAddNew = () => null,
   isCreator = false,
   items = [],
+  current,
+  required,
+  flags,
 }: AddNewItemProps) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -163,7 +171,7 @@ export const AddNewItem = ({
                 flexDirection="column"
                 flexGrow={1}
               >
-                <RankItemForm showAuthor={isCreator} />
+                <RankItemForm showAuthor={isCreator} flags={flags} />
                 {conflictItem && (
                   <Grid item xs>
                     <FormLabel>{t('ADD_RANK_ITEM.POSSIBLE_CONFLICT')}</FormLabel>
@@ -198,7 +206,7 @@ export const AddNewItem = ({
         disabled={disabled}
       >
         <AddIcon sx={{ mr: 1 }} />
-        {t('ADD_RANK_ITEM.ADD_CONTENDER')}
+        {t('ADD_RANK_ITEM.ADD_CONTENDER', { current, required })}
       </Fab>
     </>
   );

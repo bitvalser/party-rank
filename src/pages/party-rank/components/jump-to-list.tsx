@@ -43,7 +43,7 @@ export const JumpToList = ({ partyItems, renderTitle, onJump }: JumpToListProps)
         onClose={handleClose}
       >
         {partyItems.map((option, index) => (
-          <MenuItem key={option.id} onClick={handleSelect(index)}>
+          <MenuItem key={option._id} onClick={handleSelect(index)}>
             <Typography>
               {renderTitle ? renderTitle({ title: option.name, index }) : `${index + 1} - ${option.name}`}
             </Typography>

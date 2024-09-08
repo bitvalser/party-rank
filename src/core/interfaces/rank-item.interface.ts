@@ -8,13 +8,14 @@ export enum RankItemType {
 }
 
 export interface RankItemComment {
-  id: string;
+  _id: string;
   authorId: string;
   body: string;
 }
 
 export interface RankItem {
-  id: string;
+  _id: string;
+  partyRankId: string;
   authorId: string;
   author: AppUser;
   type: RankItemType;
@@ -22,4 +23,5 @@ export interface RankItem {
   value: string;
   startTime: number;
   comments?: RankItemComment[];
+  metadata?: Record<string, string>;
 }

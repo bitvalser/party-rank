@@ -13,10 +13,10 @@ export interface UserRankResultProps {
   user: AppUser;
   userRank: UserRank;
   partyItems: RankItem[];
-  getAverage?: (rank: UserRank) => number;
+  getAverage?: (rank: UserRank & any) => number;
 }
 
-export const UserRankResult = memo(({ partyItems = [], user, userRank = {}, getAverage }: UserRankResultProps) => {
+export const UserRankResult = memo(({ partyItems = [], user, userRank, getAverage }: UserRankResultProps) => {
   const average = useMemo(() => {
     if (getAverage) {
       return getAverage(userRank);
@@ -24,7 +24,7 @@ export const UserRankResult = memo(({ partyItems = [], user, userRank = {}, getA
     const values = Object.values(getUserRanksFromResult(userRank));
     return values.reduce((acc, { value }) => acc + value, 0) / values.length || 0;
   }, [getAverage, userRank]);
-  const favoriteItem = partyItems.find((item) => item.id === userRank.favoriteId);
+  const favoriteItem = partyItems.find((item) => item._id === userRank.favoriteId);
 
   return (
     <Grid

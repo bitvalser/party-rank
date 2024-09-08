@@ -16,7 +16,7 @@ export const ParticipantsList = ({ partyItems }: ParticipantsListProps) => {
     () =>
       (partyItems || [])
         .map((item) => item.author)
-        .reduce((acc, val) => [...acc, acc.some((item) => item.uid === val.uid) ? null : val].filter(Boolean), []),
+        .reduce((acc, val) => [...acc, acc.some((item) => item._id === val._id) ? null : val].filter(Boolean), []),
     [partyItems],
   );
 
@@ -44,7 +44,7 @@ export const ParticipantsList = ({ partyItems }: ParticipantsListProps) => {
           wrap="wrap"
         >
           {participants.map((user) => (
-            <Grid item key={user.uid}>
+            <Grid item key={user._id}>
               <Chip
                 sx={{
                   mr: 1,

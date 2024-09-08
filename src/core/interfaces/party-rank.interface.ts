@@ -8,12 +8,15 @@ export enum PartyRankStatus {
 }
 
 export interface PartyRank {
-  id: string;
+  _id: string;
   creatorId: string;
-  moderators: string[];
-  members?: string[];
-  creator: AppUser;
+  moderatorIds: string[];
+  memberIds: string[];
+  moderators?: AppUser[];
+  members?: AppUser[];
+  creator?: AppUser;
   name: string;
+  tags: string[];
   requiredQuantity: number;
   deadlineDate: string;
   finishDate: string;

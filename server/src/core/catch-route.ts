@@ -9,6 +9,6 @@ export const catchRoute =
       await routeHandler(req, res, next);
     } catch (e) {
       console.error(e.stack);
-      sendError(res, 'Something went wrong', 500);
+      sendError(res, 'Something went wrong', 500, e.stack);
     }
   };

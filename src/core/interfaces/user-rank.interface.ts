@@ -1,4 +1,11 @@
+import { AppUser } from './app-user.interface';
+
 export interface UserRank {
+  userId: string;
+  partyRankId: string;
   favoriteId?: string;
-  [key: string]: { value: number } | any;
+  author?: AppUser;
+  ranks: {
+    [key: string]: { value: number } | any;
+  };
 }

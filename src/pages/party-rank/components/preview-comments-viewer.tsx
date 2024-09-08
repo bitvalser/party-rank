@@ -21,7 +21,7 @@ export const PreviewCommentsViewer = ({
   const currentComment = useSubscription(
     partyItemsComments$.pipe(
       map((partyItemsComments) =>
-        (partyItemsComments[rankItem.id]?.comments || []).find((comment) => comment.authorId === currentUser.uid),
+        (partyItemsComments[rankItem._id]?.comments || []).find((comment) => comment.authorId === currentUser._id),
       ),
     ),
   );

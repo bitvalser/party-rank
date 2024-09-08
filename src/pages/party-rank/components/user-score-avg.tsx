@@ -65,7 +65,7 @@ export const UserScoreAvg = ({ id, partyItems }: UserScoreAvgProps) => {
           spacing={1}
         >
           {usersRank.map((userRank, i) => (
-            <Fragment key={userRank.author.uid}>
+            <Fragment key={userRank.author._id}>
               {i !== 0 && <Divider sx={{ mt: 1 }} />}
               <UserRankResult
                 user={userRank.author}

@@ -1,17 +1,28 @@
+import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Grid, IconButton, Modal, Typography } from '@mui/material';
+import { Box, Button, Grid, IconButton, Modal, Typography } from '@mui/material';
 
 import { RankItemType } from '../interfaces/rank-item.interface';
-import { RankPartyPlayer } from './rank-party-player';
+import { RankPartyPlayer, RankPartyPlayerRef } from './rank-party-player';
 
 interface MediaPreviewModalProps {
   title: string;
   type: RankItemType;
+  startTime?: number;
   src: string;
   onClose: () => void;
 }
 
-export const MediaPreviewModal = ({ onClose, title, src, type }: MediaPreviewModalProps) => {
+export const MediaPreviewModal = ({ onClose, title, src, type, startTime }: MediaPreviewModalProps) => {
+  const { t } = useTranslation();
+  const playerRef = useRef<RankPartyPlayerRef>();
+
+  const handleSample = () => {
+    playerRef.current.playWithTimestamp(startTime);
+  };
+
   return (
     <Modal open onClose={onClose}>
       <Box
@@ -63,7 +74,14 @@ export const MediaPreviewModal = ({ onClose, title, src, type }: MediaPreviewMod
             </IconButton>
           </Grid>
         </Grid>
-        <RankPartyPlayer type={type} value={src} showTimeControls />
+        <RankPartyPlayer ref={playerRef} type={type} value={src} showTimeControls />
+        <Grid item>
+          {!Number.isNaN(startTime) && (
+            <Button sx={{ mt: 1, mb: 1 }} onClick={handleSample}>
+              {t('RANK.SKIP_TO_SAMPLE')}
+            </Button>
+          )}
+        </Grid>
       </Box>
     </Modal>
   );

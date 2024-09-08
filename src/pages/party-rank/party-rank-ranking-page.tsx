@@ -13,7 +13,6 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import {
   Box,
-  Button,
   Card,
   Grid,
   IconButton,
@@ -86,13 +85,13 @@ const PartRankRankingPageComponent = memo(
     const { updateUserRank } = useInjectable(AppTypes.PartyRanks);
     const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(() => {
-      const index = items.findIndex((item) => !userRank[item.id]);
+      const index = items.findIndex((item) => !userRank.ranks[item._id]);
       if (index < 0) return 0;
-      return index === items.length - 1 && Boolean(userRank[items[index].id]) ? 0 : index;
+      return index === items.length - 1 && Boolean(userRank.ranks[items[index]._id]) ? 0 : index;
     });
     const [currentRank, setCurrentRank] = useState<UserRank>(userRank);
     const navigate = useNavigate();
-    const hasNotRanked = useMemo(() => items.some((item) => !userRank[item.id]), [items, userRank]);
+    const hasNotRanked = useMemo(() => items.some((item) => !userRank.ranks[item._id]), [items, userRank]);
 
     useEffect(() => {
       const timeout = setTimeout(() => {
@@ -111,7 +110,7 @@ const PartRankRankingPageComponent = memo(
     const handleNext = useThrottledCallback(
       () => {
         if (currentIndex === items.length - 1) {
-          navigate(`/party-rank/${partyRank.id}`);
+          navigate(`/party-rank/${partyRank._id}`);
         } else {
           setCurrentIndex((prev) => prev + 1);
         }
@@ -132,14 +131,14 @@ const PartRankRankingPageComponent = memo(
     );
 
     const goBack = () => {
-      navigate(`/party-rank/${partyRank.id}`);
+      navigate(`/party-rank/${partyRank._id}`);
     };
 
     const doRank = useThrottledCallback(
       (rankId: string, rank: number) => {
         if (rank && rank >= 1) {
           setCurrentRank((prev) => ({ ...prev, [rankId]: { value: rank } }));
-          updateUserRank(partyRank.id, { [rankId]: { value: rank } }).subscribe();
+          updateUserRank(partyRank._id, { ranks: { [rankId]: { value: rank } } }).subscribe();
         }
       },
       1000,
@@ -149,14 +148,14 @@ const PartRankRankingPageComponent = memo(
     const doFavorite = useThrottledCallback(
       (rankId: string) => {
         setCurrentRank((prev) => ({ ...prev, favoriteId: rankId }));
-        updateUserRank(partyRank.id, { favoriteId: rankId }).subscribe();
+        updateUserRank(partyRank._id, { favoriteId: rankId }).subscribe();
       },
       1000,
       { trailing: false },
     );
 
     const handleSkipToNotRated = () => {
-      const nextNotRated = items.findIndex((item) => !userRank[item.id]);
+      const nextNotRated = items.findIndex((item) => !userRank.ranks[item._id]);
       if (nextNotRated > 0) {
         setCurrentIndex(nextNotRated);
       }
@@ -180,7 +179,7 @@ const PartRankRankingPageComponent = memo(
       >
         {items.map((item, i) => (
           <Box
-            key={item.id}
+            key={item._id}
             sx={{
               width: '100vw',
               height: '100vh',
@@ -312,10 +311,10 @@ const PartRankRankingPageComponent = memo(
                     fontSize: '36px',
                     backgroundColor: (theme) => theme.palette.grey[900],
                   }}
-                  disabled={item.authorId === currentUser?.uid}
-                  onClick={() => doFavorite(item.id)}
+                  disabled={item.authorId === currentUser?._id}
+                  onClick={() => doFavorite(item._id)}
                 >
-                  {currentRank.favoriteId === item.id ? (
+                  {currentRank.favoriteId === item._id ? (
                     <FavoriteIcon color="error" fontSize="inherit" />
                   ) : (
                     <FavoriteBorderIcon color="error" fontSize="inherit" />
@@ -324,7 +323,7 @@ const PartRankRankingPageComponent = memo(
                 <Grid container direction="column">
                   {currentUser && currentIndex === i && partyRank.allowComments && (
                     <RankItemComment
-                      partyRankId={partyRank.id}
+                      partyRankId={partyRank._id}
                       rankItem={item}
                       currentUser={currentUser}
                       rankItemCommentsManager={rankItemCommentsManager}
@@ -342,8 +341,8 @@ const PartRankRankingPageComponent = memo(
                     >
                       <Typography>{t('RANK.YOUR_RANK')}</Typography>
                       <Rating
-                        value={currentRank[item.id]?.value}
-                        onChange={(event, value) => doRank(item.id, value)}
+                        value={currentRank.ranks[item._id]?.value}
+                        onChange={(event, value) => doRank(item._id, value)}
                         precision={0.5}
                         max={10}
                         size="large"
@@ -360,7 +359,12 @@ const PartRankRankingPageComponent = memo(
                     mb: 1,
                   }}
                 >
-                  <GradeMark size={38} fontSize="18px" value={currentRank[item.id]?.value ?? 0} showDecimal={1} />
+                  <GradeMark
+                    size={38}
+                    fontSize="18px"
+                    value={currentRank.ranks[item._id]?.value ?? 0}
+                    showDecimal={1}
+                  />
                 </Box>
               </Box>
             </Box>
@@ -434,9 +438,9 @@ export const PartyRankRankingPage = () => {
   const autoHideRankSection = useSubscription(autoHideRankSection$, false);
   const partyItems = useSubscription(
     concat(
-      getRankItems(id, { fromCache: true }).pipe(
+      getRankItems(id).pipe(
         finalize(() => setListLoading(false)),
-        tap((items) => partyItemsKeysRef.current.next(items.map((item) => item.id))),
+        tap((items) => partyItemsKeysRef.current.next(items.map((item) => item._id))),
       ),
       merge(partyItemsKeysRef.current, partyItems$).pipe(
         withLatestFrom(partyItemsKeysRef.current, partyItems$),
@@ -445,7 +449,9 @@ export const PartyRankRankingPage = () => {
     ),
     [],
   );
-  const userRank = useSubscription(getUserRank(id).pipe(finalize(() => setRankLoading(false))), {});
+  const userRank = useSubscription(getUserRank(id).pipe(finalize(() => setRankLoading(false))), {
+    ranks: {},
+  } as UserRank);
 
   if (listLoading || rankLoading) {
     return <LinearProgress />;
@@ -455,7 +461,7 @@ export const PartyRankRankingPage = () => {
     return <Typography>{t('RANK.CONTENDERS_MISSING')}</Typography>;
   }
 
-  if (Array.isArray(partyRank.members) && !partyRank.members.includes(currentUser?.uid)) {
+  if (Array.isArray(partyRank.memberIds) && !partyRank.memberIds.includes(currentUser?._id)) {
     return <Typography>{t('RANK.NO_ACCESS')}</Typography>;
   }
 

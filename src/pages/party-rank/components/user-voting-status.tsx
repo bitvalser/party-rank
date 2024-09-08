@@ -33,10 +33,11 @@ import { RankItem } from './rank-item';
 interface UserVotingStatusProps {
   id: string;
   partyItems: IRankItem[];
+  members: AppUser[];
   required: number;
 }
 
-export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusProps) => {
+export const UserVotingStatus = ({ id, required, partyItems, members }: UserVotingStatusProps) => {
   const { getUserRanks, deleteUserRank } = useInjectable(AppTypes.PartyRanks);
   const [rankLoading, setRankLoading] = useState(true);
   const [userRanksId, setUserRanksId] = useState(null);
@@ -50,23 +51,21 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
     [],
   );
   const itemsById: Record<string, IRankItem> = useMemo(
-    () => partyItems.reduce((acc, val) => ({ ...acc, [val.id]: val }), {}),
+    () => partyItems.reduce((acc, val) => ({ ...acc, [val._id]: val }), {}),
     [partyItems],
   );
 
   const { users: usersStatus, byUser } = useMemo(() => {
-    const allUsers = (partyItems || [])
-      .map((item) => item.author)
-      .reduce(
-        (acc, val) => ({
-          ...acc,
-          [val.uid]: {
-            author: val,
-            count: 0,
-          },
-        }),
-        {},
-      );
+    const allUsers = members.reduce(
+      (acc, val) => ({
+        ...acc,
+        [val._id]: {
+          author: val,
+          count: 0,
+        },
+      }),
+      {},
+    );
     const byUser = usersRank
       ? usersRank.reduce<
           Record<
@@ -82,8 +81,8 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
         >(
           (acc, val) => ({
             ...acc,
-            [val.uid]: {
-              authorId: val.uid,
+            [val.userId]: {
+              authorId: val.userId,
               author: val.author,
               favoriteId: val.favoriteId,
               count: Object.keys(getUserRanksFromResult(val)).filter((itemId) => Boolean(itemsById[itemId])).length,
@@ -278,7 +277,7 @@ export const UserVotingStatus = ({ id, required, partyItems }: UserVotingStatusP
               {partyItems.map((item) => (
                 <RankItem
                   data={item}
-                  grade={byUser[userRanksId].ranks[item.id]?.value ?? 0}
+                  grade={byUser[userRanksId].ranks[item._id]?.value ?? 0}
                   showAuthor={false}
                   showPreviewIcon={false}
                 />

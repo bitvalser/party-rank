@@ -1,30 +1,25 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 import { Avatar, Card, CardContent, Chip, Grid, LinearProgress, Typography } from '@mui/material';
 
-import { useInjectable } from '../../../core/hooks/useInjectable';
 import useSubscription from '../../../core/hooks/useSubscription';
 import { AppUser } from '../../../core/interfaces/app-user.interface';
 import { RankItem } from '../../../core/interfaces/rank-item.interface';
-import { AppTypes } from '../../../core/services/types';
-import { concatReduce } from '../../../core/utils/concat-reduce';
 
 interface UserRankStatusProps {
   partyItems: RankItem[];
   required: number;
-  members?: string[];
+  members?: AppUser[];
 }
 
 export const UserRankStatus = ({ partyItems, required, members = [] }: UserRankStatusProps) => {
-  const { getUser } = useInjectable(AppTypes.AuthService);
   const { t } = useTranslation();
   const usersById = useSubscription<Record<string, { author: AppUser; count: number }>>(
     of(members).pipe(
-      switchMap((ids) => concatReduce(...ids.map((itemId) => getUser(itemId)))),
-      map((result) => result.reduce((acc, val) => ({ ...acc, [val.uid]: { author: val, count: 0 } }), {})),
+      map((result) => result.reduce((acc, val) => ({ ...acc, [val._id]: { author: val, count: 0 } }), {})),
     ),
     {},
   );

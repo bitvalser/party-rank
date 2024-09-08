@@ -17,11 +17,13 @@ const DEFAULT_VALUES: PartyRankFormValues = {
   name: '',
   content: '',
   moderators: [],
+  tags: [],
   requiredQuantity: 3,
   deadlineDate: DateTime.now().plus({ days: 1 }),
   finishDate: DateTime.now().plus({ days: 2 }),
   status: PartyRankStatus.Registration,
   allowComments: true,
+  isPrivate: false,
 };
 
 const MIN_DATE = DateTime.now().plus({ day: 0.5 });
@@ -55,8 +57,11 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
   };
 
   const onSubmit: SubmitHandler<PartyRankFormValues> = (data) => {
-    const payload = {
-      ...data,
+    const { moderators, ...rest } = data;
+    const payload: Parameters<typeof createPartyRank>[0] = {
+      ...rest,
+      moderatorIds: moderators.map((item) => item._id),
+      tags: [],
       content: formRef.current.getContent() || '',
       showTable: false,
       deadlineDate: data.deadlineDate.toISO(),

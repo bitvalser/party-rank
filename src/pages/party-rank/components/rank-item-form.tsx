@@ -24,9 +24,10 @@ import { validURL } from '../../../core/utils/valid-url';
 interface RankItemFormProps {
   autoplay?: boolean;
   showAuthor?: boolean;
+  flags?: Record<string, boolean>;
 }
 
-export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFormProps) => {
+export const RankItemForm = ({ autoplay = true, showAuthor = false, flags = {} }: RankItemFormProps) => {
   const {
     control,
     formState: { errors },
@@ -134,13 +135,40 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false }: RankItemFo
             )}
           />
         </Grid>
+        {flags?.showMusicType && (
+          <Grid container>
+            <Controller
+              name="metadata.musicType"
+              control={control}
+              render={({ field }) => (
+                <FormControl>
+                  <FormLabel id="type-group-label">{t('ADD_RANK_ITEM.MUSIC_TYPE_TITLE')}</FormLabel>
+                  <RadioGroup
+                    aria-labelledby="type-group-label"
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      flexWrap: 'wrap',
+                    }}
+                    {...field}
+                  >
+                    <FormControlLabel value="op" control={<Radio />} label={t('ADD_RANK_ITEM.MUSIC_TYPE.OPENING')} />
+                    <FormControlLabel value="ed" control={<Radio />} label={t('ADD_RANK_ITEM.MUSIC_TYPE.ENDING')} />
+                    <FormControlLabel value="ins" control={<Radio />} label={t('ADD_RANK_ITEM.MUSIC_TYPE.INSERT')} />
+                    <FormControlLabel value="other" control={<Radio />} label={t('ADD_RANK_ITEM.MUSIC_TYPE.OTHER')} />
+                  </RadioGroup>
+                </FormControl>
+              )}
+            />
+          </Grid>
+        )}
         <Grid item>
           <Controller
             name="value"
             control={control}
             rules={{
-              required: 'ADD_RANK_ITEM.LINK_REQUIRED',
-              validate: (value) => (validURL(value) ? null : 'ADD_RANK_ITEM.INVALID_LINK'),
+              required: t('ADD_RANK_ITEM.LINK_REQUIRED'),
+              validate: (value) => (validURL(value) ? null : t('ADD_RANK_ITEM.INVALID_LINK')),
             }}
             render={({ field }) => (
               <TextField

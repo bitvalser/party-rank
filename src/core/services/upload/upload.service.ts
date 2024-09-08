@@ -1,8 +1,6 @@
-import { FirebaseApp } from 'firebase/app';
-import { Firestore, doc, getDoc, getFirestore } from 'firebase/firestore';
 import { inject, injectable } from 'inversify';
 import { Observable, of } from 'rxjs';
-import { combineLatestWith, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { map, switchMap, withLatestFrom } from 'rxjs/operators';
 
 import { FirestoreCollection } from '../../constants/firestore-collection.constants';
 import { MediaFile } from '../../interfaces/media-file.interface';
@@ -12,18 +10,12 @@ import { IUploadService } from './upload.types';
 
 @injectable()
 export class UploadService implements IUploadService {
+  @inject(AppTypes.AuthService)
   private authService: IAuthService;
-  private firestore: Firestore;
   @inject(AppTypes.ServerBaseUrl)
   private baseUrl: string;
 
-  public constructor(
-    @inject(AppTypes.AuthService) authService: IAuthService,
-    @inject(AppTypes.Firestore) firestore: Firestore,
-  ) {
-    this.authService = authService;
-    this.firestore = firestore;
-
+  public constructor() {
     this.uploadFile = this.uploadFile.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
     this.getAllFiles = this.getAllFiles.bind(this);
@@ -31,14 +23,13 @@ export class UploadService implements IUploadService {
 
   public uploadFile(file: File): Observable<{ file: string; ok: boolean; message?: string }> {
     return of(void 0).pipe(
-      combineLatestWith(this.authService.user$.getValue().getIdToken()),
-      switchMap(([, token]) => {
+      switchMap(() => {
         const data = new FormData();
         data.append('file', file);
         return fetch(`${this.baseUrl}/party-rank/cdn/upload`, {
           method: 'POST',
           headers: {
-            authorization: token,
+            authorization: `Bearer ${this.authService.getAuthToken()}`,
           },
           body: data,
         }).then((res) => res.json());
@@ -48,12 +39,11 @@ export class UploadService implements IUploadService {
 
   public deleteFile(fileId: string): Observable<void> {
     return of(void 0).pipe(
-      combineLatestWith(this.authService.user$.getValue().getIdToken()),
-      switchMap(([, token]) =>
+      switchMap(() =>
         fetch(`${this.baseUrl}/party-rank/cdn/delete/${fileId}`, {
           method: 'DELETE',
           headers: {
-            authorization: token,
+            authorization: `Bearer ${this.authService.getAuthToken()}`,
           },
         }),
       ),
@@ -62,10 +52,11 @@ export class UploadService implements IUploadService {
   }
 
   public getAllFiles(): Observable<MediaFile[]> {
-    return of(void 0).pipe(
-      withLatestFrom(this.authService.user$),
-      switchMap(([, user]) => getDoc(doc(this.firestore, FirestoreCollection.CDN, user.uid))),
-      map((snapshot) => Object.values<MediaFile>(snapshot.data() || {})),
-    );
+    return of([]);
+    // return of(void 0).pipe(
+    //   withLatestFrom(this.authService.user$),
+    //   switchMap(([, user]) => getDoc(doc(this.firestore, FirestoreCollection.CDN, user._id))),
+    //   map((snapshot) => Object.values<MediaFile>(snapshot.data() || {})),
+    // );
   }
 }

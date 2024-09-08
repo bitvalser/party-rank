@@ -32,17 +32,25 @@
   },
   "MAIN": {
     "RANKS_LIST": "Список Ранков",
+    "ENTRIES_LIST": "Общий Список Кандидатов",
     "SETTINGS": "Настройки",
     "UPLOAD_MEDIA": "Загрузить Медиа",
     "FILTERS": "Фильтры",
     "FILTER_NAME": "Название",
     "FILTER_CREATOR": "Создатель",
+    "FILTER_TAGS": "Теги",
     "FILTER_CLEAR": "Очистить фильтры",
     "FILTER_I_WAS_PARTICIPANT": "ПатиРанги в которых я участвовал",
-    "EXIT": "Выход"
+    "EXIT": "Выход",
+    "TABS": {
+      "ALL": "Все",
+      "ACTIVE": "Активные",
+      "MY_RANKS": "Мои Пати Ранги"
+    }
   },
   "RANK": {
     "ONGOING": "В процессе",
+    "UNREGISTER": "Покинуть пати ранг",
     "VOTING": "Голосование",
     "FINISHED": "Завершён",
     "REGISTRATION": "Регистрация",
@@ -52,7 +60,7 @@
     "FINISHED_AT": "Завершён: {{time}}",
     "CREATED_AT": "Создан {{time}}",
     "JOIN": "Участвовать",
-    "RESULT_TABLE": "Итоговая таблица",
+    "RESULT_TABLE": "Результаты",
     "GO": "Перейти",
     "TIME_WARNING": "Похоже вы не установили время начала на этом элементе",
     "EDIT": "Редактировать",
@@ -70,12 +78,12 @@
     "CONTENDERS_ADDED": "Загружено предложений {{current}} / {{required}}",
     "CONTENDERS_ADDED_IN_PROGRESS": "В процессе",
     "CONTENDERS_ADDED_READY": "Готово",
-    "REGISTERED": "Вы зарегестрированы!",
+    "REGISTERED": "Вы зарегистрированы!",
     "CONTENDERS_TO_JOIN": "Для участия необходимо загрузить {{quantity}} предложений",
     "SELECT_FAVORITE": "Вы ещё не выбрали любимый вариант, не забудьте проголосовать",
     "YOUR_RESULT": "Ваш результат",
     "RATED": "Оценено {{current}} / {{required}}",
-    "CONTENDERS_LIST": "Лист кандидатов ({{quantity}})",
+    "CONTENDERS_LIST": "Список ({{quantity}})",
     "SKIP_TO_SAMPLE": "Перемотать к сэмплу",
     "RESULTS": "Результаты",
     "RESULTS_TOOLTIP": "Вы можете изменить параметры воспроизведения в настройках",
@@ -83,6 +91,7 @@
     "DELETE_RANK_CONFIRMATION": "Вы точно хотите удалить пати ранк?",
     "MEDIA_PREVIEW": "Превью медиа",
     "EDIT_ITEM": "Редактировать предложение",
+    "REDIRECT": "Перейти к пати рангу",
     "DELETE_ITEM": "Удалить предложение",
     "DELETE_RANK": "Удалить оценку",
     "ADD_USER": "Добавить пользователя",
@@ -93,6 +102,7 @@
     "ADD_PARTICIPANT_SUBMIT": "Добавить",
     "PARTICIPANTS_RESULT": "Результаты участников",
     "DELETE_ITEM_CONFIRMATION": "Вы действительно хотите удалить этого кандидата из пати ранга?",
+    "NEW_PARTICIPANT": "Новый участник",
     "YOUR_RANK": "Ваша оценка",
     "COMMENT": "Комментарий",
     "CONTENDERS_MISSING": "Не было добавлено ни одного предложения",
@@ -103,13 +113,15 @@
     "SEE_MARKS": "Посмотреть оценки",
     "REMOVE_MARKS": "Удалить оценки",
     "ARE_YOU_REALLY_WANT_TO_REMOVE_MARKS": "Вы действительно хотите удалить оценки этого участника?",
-    "PARTICIPANT_MARKS": "Оценки участника {{name}}"
+    "PARTICIPANT_MARKS": "Оценки участника {{name}}",
+    "COPY_NAME": "Скопировать имя",
+    "ROLLBACK_RANK": "Откатить пати ранк"
   },
   "ADD_RANK_ITEM": {
     "TITLE": "Добавить новый элемент",
     "EDIT_TITLE": "Редактировать {{name}}",
     "SAVE_CHANGES": "Сохранить изменения",
-    "ADD_CONTENDER": "Добавить предложение",
+    "ADD_CONTENDER": "Добавить предложение ({{current}}/{{required}})",
     "POSSIBLE_CONFLICT": "Возможный конфликт!",
     "BEFORE_SAVE_WARNING": "Прежде чем сохранить элемент убедитесь что превью работает нормально и показывает ваш медиа файл!",
     "CONFLICT_WARNING": "Возможно ваш вариант уже был добавлен другим участником, пожалуйста перепроверьте прежде чем сохранить",
@@ -127,13 +139,22 @@
     "MEDIA_LINK": "Ссылка на медиа файл",
     "MEDIA_LINK_TIP": "Ссылка должна ввести напрямую на файл (будет иметь разрешение .mp4, .ogg и тд). Возможно сначала нужно будет залить файл на CDN.",
     "PREVIEW": "Превью",
-    "SET_PLAYBACK_TIME": "Зафиксировать время начала"
+    "PRIVATE": "Приавтный",
+    "SET_PLAYBACK_TIME": "Зафиксировать время начала",
+    "MUSIC_TYPE_TITLE": "Тип музыки",
+    "MUSIC_TYPE": {
+      "OPENING": "Опенинг",
+      "ENDING": "Эндинг",
+      "INSERT": "Инсерт",
+      "OTHER": "Другое"
+    }
   },
   "CREATE_RANK": {
     "TITLE": "Создать новый пати ранк",
     "NAME": "Название \\ Тематика",
     "NAME_REQUIRED": "Название обязательное поле!",
     "DESCRIPTION": "Описание",
+    "TAGS": "Теги",
     "CONTENDERS_COUNT": "Количество предложений от участника",
     "DEADLINE": "Дедлайн заявок",
     "VOTING_DEADLINE": "Конец оценивания",

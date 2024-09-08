@@ -17,7 +17,7 @@ export const SelectUserModel = ({ onSelect, onClose }: SelectUserModelProps) => 
   const [selectedUser, setSelectedUser] = useState(null);
 
   const handleSelect = () => {
-    onSelect(selectedUser);
+    onSelect(selectedUser?._id);
   };
 
   return (
@@ -63,7 +63,12 @@ export const SelectUserModel = ({ onSelect, onClose }: SelectUserModelProps) => 
           flexDirection="column"
           flexGrow={1}
         >
-          <UsersAutocomplete label="Новый участник" multiple={false} onChange={setSelectedUser} value={selectedUser} />
+          <UsersAutocomplete
+            label={t('RANK.NEW_PARTICIPANT')}
+            multiple={false}
+            onChange={setSelectedUser}
+            value={selectedUser}
+          />
           <Grid item>
             <Button
               sx={{ mt: 2 }}

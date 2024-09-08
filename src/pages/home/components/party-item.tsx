@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Avatar, Button, Card, CardActions, CardContent, Chip, Grid, Typography } from '@mui/material';
 
+import { TagChips } from '../../../core/components/tag-chips.component';
 import { PartyRank, PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
 
 interface PartyItemProps {
@@ -12,16 +13,16 @@ interface PartyItemProps {
 }
 
 export const PartyItem = memo(({ data }: PartyItemProps) => {
-  const { createdDate, creator, deadlineDate, finishDate, id, name, status, finishedDate, showTable } = data;
+  const { createdDate, creator, deadlineDate, finishDate, _id, name, status, finishedDate, showTable, tags } = data;
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const handleView = () => {
-    navigate(`/party-rank/${id}`);
+    navigate(`/party-rank/${_id}`);
   };
 
   const handleTableView = () => {
-    navigate(`/party-rank/${id}/table`);
+    navigate(`/party-rank/${_id}/table`);
   };
 
   return (
@@ -40,6 +41,17 @@ export const PartyItem = memo(({ data }: PartyItemProps) => {
             )}
           </Grid>
         </Grid>
+        {tags?.length > 0 && (
+          <Grid
+            sx={{
+              marginTop: 1,
+              paddingBottom: 0,
+            }}
+            item
+          >
+            <TagChips tags={tags} />
+          </Grid>
+        )}
         <Grid
           sx={{
             marginTop: 1,

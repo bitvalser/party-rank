@@ -94,20 +94,20 @@ const PartyRankResultsPageComponent = memo(
         items.forEach((item) => {
           usersRank.forEach((rank) => {
             const ranks = getUserRanksFromResult(rank);
-            result[item.id] = [
-              ...(result[item.id] || []),
+            result[item._id] = [
+              ...(result[item._id] || []),
               {
                 author: rank.author,
-                value: ranks[item.id]?.value || null,
-                favorite: rank.favoriteId === item.id,
-                myRank: rank.author?.uid === item.authorId,
+                value: ranks[item._id]?.value || null,
+                favorite: rank.favoriteId === item._id,
+                myRank: rank.author?._id === item.authorId,
               },
             ];
-            total[item.id] = (total[item.id] ?? 0) + (ranks[item.id]?.value ?? 0);
+            total[item._id] = (total[item._id] ?? 0) + (ranks[item._id]?.value ?? 0);
           });
-          userRankByItem[item.id] = {
-            users: result[item.id],
-            total: total[item.id],
+          userRankByItem[item._id] = {
+            users: result[item._id],
+            total: total[item._id],
           };
         });
         return userRankByItem;
@@ -153,7 +153,7 @@ const PartyRankResultsPageComponent = memo(
     const handleNext = useThrottledCallback(
       () => {
         if (currentIndex === items.length - 1) {
-          navigate(`/party-rank/${partyRank.id}`);
+          navigate(`/party-rank/${partyRank._id}`);
         } else {
           setCurrentIndex((prev) => prev + 1);
         }
@@ -195,12 +195,12 @@ const PartyRankResultsPageComponent = memo(
     };
 
     const goBack = () => {
-      navigate(`/party-rank/${partyRank.id}`);
+      navigate(`/party-rank/${partyRank._id}`);
     };
 
     const ranks = useMemo(
       () =>
-        (userRankByItemId[items[currentIndex]?.id]?.users || [])
+        (userRankByItemId[items[currentIndex]?._id]?.users || [])
           .filter((item) => Boolean(item.author))
           .sort(({ author: authorA }, { author: authorB }) => authorA.displayName.localeCompare(authorB.displayName)),
       [currentIndex, items, userRankByItemId],
@@ -223,7 +223,7 @@ const PartyRankResultsPageComponent = memo(
           const rank = items.length - i;
           return (
             <Box
-              key={item.id}
+              key={item._id}
               sx={(theme) => ({
                 width: '80vw',
                 height: '100vh',
@@ -370,7 +370,7 @@ const PartyRankResultsPageComponent = memo(
                   fontSize="26px"
                   fontWeight="100"
                 >
-                  {userRankByItemId[item.id].total}
+                  {userRankByItemId[item._id].total}
                 </Typography>
               </Box>
               {currentIndex === i && !controllable && !paused && (
@@ -443,7 +443,7 @@ const PartyRankResultsPageComponent = memo(
             },
           })}
         >
-          {ranks?.length > 0 && <ParticipantsRanks ranks={ranks} sizeFactor={sizeFactor} rankId={partyRank.id} />}
+          {ranks?.length > 0 && <ParticipantsRanks ranks={ranks} sizeFactor={sizeFactor} rankId={partyRank._id} />}
         </Box>
       </Box>
     );
@@ -471,9 +471,9 @@ export const PartyRankResultsPage = () => {
   );
   const partyItems = useSubscription(
     concat(
-      getRankItems(id, { fromCache: true }).pipe(
+      getRankItems(id).pipe(
         finalize(() => setListLoading(false)),
-        tap((items) => partyItemsKeysRef.current.next(items.map((item) => item.id))),
+        tap((items) => partyItemsKeysRef.current.next(items.map((item) => item._id))),
       ),
       merge(partyItemsKeysRef.current, partyItems$).pipe(
         withLatestFrom(partyItemsKeysRef.current, partyItems$),
@@ -482,7 +482,8 @@ export const PartyRankResultsPage = () => {
     ),
     [],
   );
-  const sortedResults = useSortedPartyItems(partyItems, usersRank, partyRank?.members);
+  const sortedResults = useSortedPartyItems(partyItems, usersRank, partyRank?.memberIds);
+  console.log(sortedResults);
   const reversedItems = useMemo(() => sortedResults.reverse(), [sortedResults]);
 
   if (listLoading || rankLoading) {

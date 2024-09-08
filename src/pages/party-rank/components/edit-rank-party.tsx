@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { finalize } from 'rxjs/operators';
 
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, Fab, Grid, IconButton, Modal, Typography, useTheme } from '@mui/material';
+import { Box, Button, Grid, IconButton, Modal, Typography, useTheme } from '@mui/material';
 
 import { PartyRankForm, PartyRankFormRef, PartyRankFormValues } from '../../../core/components/party-rank-form';
 import { useInjectable } from '../../../core/hooks/useInjectable';
@@ -42,18 +42,25 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
   } = form;
 
   const onSubmit: SubmitHandler<PartyRankFormValues> = (data) => {
+    const { moderators, ...rest } = data;
     const payload: Partial<PartyRank> = {
       ...data,
+      moderatorIds: moderators.map((item) => item._id),
       content: formRef.current.getContent() || '',
       deadlineDate: data.deadlineDate.toISO(),
       finishDate: data.finishDate.toISO(),
     };
-    delete payload.id;
+    delete payload._id;
     delete payload.creatorId;
     delete payload.creator;
     delete payload.createdDate;
+    delete payload.finishedDate;
+    delete payload.status;
+    delete payload.members;
+    delete payload.moderators;
+    delete payload.memberIds;
     setLoading(true);
-    updatePartyRank(rankParty.id, payload)
+    updatePartyRank(rankParty._id, payload)
       .pipe(finalize(() => setLoading(false)))
       .subscribe((result) => {
         form.reset();
@@ -114,7 +121,7 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
               container
               flexDirection="column"
             >
-              <PartyRankForm ref={formRef} initLoadUsers />
+              <PartyRankForm ref={formRef} />
               <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
                 <Grid item>
                   <Button

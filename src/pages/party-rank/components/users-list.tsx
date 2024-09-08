@@ -1,40 +1,25 @@
 import { Fragment } from 'react';
-import { forkJoin, of } from 'rxjs';
+import { of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import {
-  Avatar,
-  Chip,
-  CircularProgress,
-  Divider,
-  Grid,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-} from '@mui/material';
+import { Avatar, CircularProgress, Divider, Grid, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 
-import { useInjectable } from '../../../core/hooks/useInjectable';
 import useSubscription from '../../../core/hooks/useSubscription';
-import { AppTypes } from '../../../core/services/types';
+import { AppUser } from '../../../core/interfaces/app-user.interface';
 
 interface UsersListProps {
   userIds: string[];
 }
 
 export const UsersList = ({ userIds }: UsersListProps) => {
-  const { getUser } = useInjectable(AppTypes.AuthService);
-  const participants = useSubscription(
-    of(void 0).pipe(switchMap(() => forkJoin(userIds.map((id) => getUser(id))))),
-    [],
-  );
+  const participants = useSubscription<AppUser[]>(of(void 0).pipe(switchMap(() => [])), []); // TODO: add method
 
   return (
     <Grid sx={{ minWidth: '300px' }} container direction="column">
       {participants.length === 0 && <CircularProgress />}
       <List>
         {participants.map((user, i) => (
-          <Fragment key={user.uid}>
+          <Fragment key={user._id}>
             <ListItem>
               <ListItemAvatar>
                 <Avatar alt={user.displayName} src={user.photoURL} />

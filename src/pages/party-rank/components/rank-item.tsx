@@ -2,10 +2,12 @@ import { MouseEventHandler, memo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import ShortcutIcon from '@mui/icons-material/Shortcut';
 import TagIcon from '@mui/icons-material/Tag';
 import TimerOffIcon from '@mui/icons-material/TimerOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -29,6 +31,7 @@ interface RankItemProps {
   grade?: number;
   isFavorite?: boolean;
   showAuthor?: boolean;
+  showRedirect?: boolean;
   showPreviewIcon?: boolean;
   oneLine?: boolean;
   rank?: number;
@@ -47,6 +50,7 @@ export const RankItem = memo(
     isCreator = false,
     showPreviewIcon = true,
     oneLine = false,
+    showRedirect = false,
     grade = null,
     isFavorite = false,
     onDelete = () => null,
@@ -65,11 +69,11 @@ export const RankItem = memo(
     const likesContainerRef = useRef();
     const { t } = useTranslation();
 
-    const { author, authorId, name, type, value, startTime, id } = data;
+    const { author, authorId, name, type, value, startTime, _id } = data;
     const showAuthor =
-      (currentUser?.uid === authorId || isCreator || partyStatus === PartyRankStatus.Finished) && showAuthorProp;
+      (currentUser?._id === authorId || isCreator || partyStatus === PartyRankStatus.Finished) && showAuthorProp;
     const canEdit =
-      (partyStatus === PartyRankStatus.Ongoing && (currentUser?.uid === authorId || isCreator)) ||
+      (partyStatus === PartyRankStatus.Ongoing && (currentUser?._id === authorId || isCreator)) ||
       (partyStatus === PartyRankStatus.Rating && isCreator) ||
       (partyStatus === PartyRankStatus.Registration && isCreator);
     const showTimeWarning =
@@ -87,15 +91,15 @@ export const RankItem = memo(
     };
 
     const handleConfirmDelete = () => {
-      onDelete(id);
+      onDelete(_id);
     };
 
     const handleClear = () => {
-      onClear(id);
+      onClear(_id);
     };
 
     const handleEdit = () => {
-      onEdit(id);
+      onEdit(_id);
     };
 
     const handleView = () => {
@@ -106,8 +110,16 @@ export const RankItem = memo(
       setShowPreview(false);
     };
 
+    const handleViewPartyRank = () => {
+      window.open(`/party-rank/${data.partyRankId}`, '_blank');
+    };
+
     const handleCloseLikes: MouseEventHandler<HTMLDivElement> = (event) => {
       setShowLikesEl(null);
+    };
+
+    const handleCopyName = () => {
+      navigator.clipboard.writeText(name);
     };
 
     const handleShowLikes: MouseEventHandler<HTMLDivElement> = (event) => {
@@ -242,6 +254,11 @@ export const RankItem = memo(
                 <TimerOffIcon sx={{ mr: 2 }} color="warning" fontSize="medium" />
               </Tooltip>
             )}
+            <Tooltip placement="top" title={t('RANK.COPY_NAME')}>
+              <IconButton onClick={handleCopyName} aria-label="view">
+                <ContentCopyIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
             {showPreviewIcon && (
               <Tooltip placement="top" title={t('RANK.MEDIA_PREVIEW')}>
                 <IconButton onClick={handleView} aria-label="view">
@@ -270,6 +287,13 @@ export const RankItem = memo(
                 </IconButton>
               </Tooltip>
             )}
+            {showRedirect && (
+              <Tooltip placement="top" title={t('RANK.REDIRECT')}>
+                <IconButton onClick={handleViewPartyRank} aria-label="delete">
+                  <ShortcutIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            )}
           </Grid>
         </Grid>
         {showDeleteModal && (
@@ -280,7 +304,9 @@ export const RankItem = memo(
             onConfirm={handleConfirmDelete}
           />
         )}
-        {showPreview && <MediaPreviewModal onClose={handleClosePreview} src={value} title={name} type={type} />}
+        {showPreview && (
+          <MediaPreviewModal onClose={handleClosePreview} src={value} startTime={startTime} title={name} type={type} />
+        )}
       </>
     );
   },

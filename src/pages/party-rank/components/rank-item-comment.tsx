@@ -34,7 +34,7 @@ export const RankItemComment = ({
   const currentComment = useSubscription(
     partyItemsComments$.pipe(
       map((partyItemsComments) =>
-        (partyItemsComments[rankItem.id]?.comments || []).find((comment) => comment.authorId === currentUser.uid),
+        (partyItemsComments[rankItem._id]?.comments || []).find((comment) => comment.authorId === currentUser._id),
       ),
     ),
   );
@@ -48,7 +48,7 @@ export const RankItemComment = ({
   const handleAddComment = useThrottledCallback(
     () => {
       setError(null);
-      addRankItemComment(partyRankId, rankItem.id, text).subscribe({
+      addRankItemComment(rankItem._id, text).subscribe({
         error: (error) => {
           setError(error?.message || error);
         },
@@ -60,7 +60,7 @@ export const RankItemComment = ({
 
   const handleRemoveComment = () => {
     if (currentComment) {
-      removeRankItemComment(partyRankId, rankItem.id, currentComment).subscribe(() => {
+      removeRankItemComment(rankItem._id, currentComment).subscribe(() => {
         setText('');
       });
     }

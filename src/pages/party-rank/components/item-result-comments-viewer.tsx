@@ -73,7 +73,7 @@ export const ItemResultCommentsViewer = memo(({ comments: rankComments }: ItemRe
       }}
     >
       {comments.map((comment, i) => {
-        const rand = seedRandNumber(comment.id);
+        const rand = seedRandNumber(comment._id);
         const type = getType(comment.body);
         const options =
           type !== 'text'
@@ -110,7 +110,7 @@ export const ItemResultCommentsViewer = memo(({ comments: rankComments }: ItemRe
                   maskComposite: 'subtract, add, add, add',
                 }}
                 src={options.src}
-                alt={`Comment ${comment.id}`}
+                alt={`Comment ${comment._id}`}
               />
             )}
             {type === 'text' && (
@@ -121,7 +121,7 @@ export const ItemResultCommentsViewer = memo(({ comments: rankComments }: ItemRe
                   textShadow: (theme) =>
                     `2px 0 ${theme.palette.background.default}, -2px 0 ${theme.palette.background.default}, 0 2px ${theme.palette.background.default}, 0 -2px ${theme.palette.background.default}, 1px 1px ${theme.palette.background.default}, -1px -1px ${theme.palette.background.default}, 1px -1px ${theme.palette.background.default}, -1px 1px ${theme.palette.background.default}`,
                 }}
-                key={comment.id}
+                key={comment._id}
               >
                 {comment.body}
               </Typography>

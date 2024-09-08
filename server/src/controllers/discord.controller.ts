@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
-import * as admin from 'firebase-admin';
+import * as JWT from 'jsonwebtoken';
 import fetch from 'node-fetch';
 
 import { sendError } from '../core/response-helper';
+import { DiscordOauthModel, UserModel } from '../models';
+import { UserRole } from '../types';
 
 export class AppDiscordController {
   static CLIENT_ID = process.env.DISCORD_CLIENT_ID;
@@ -50,72 +52,47 @@ export class AppDiscordController {
         if (userResult && userResult.code !== 0) {
           const displayName = userResult.global_name || userResult.username;
 
-          const firebaseUser = await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).get();
-          if (firebaseUser.exists) {
-            const oauthUser = firebaseUser.data();
-            await admin.app().firestore().collection('discord-oauth').doc(`${userResult.id}`).update({
-              accessToken: tokenResponseData.access_token,
-              expiresAt,
-              refreshToken: tokenResponseData.refresh_token,
-            });
-            await admin
-              .app()
-              .auth()
-              .updateUser(oauthUser.uid, {
-                displayName,
-                photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
-              });
-            await admin
-              .app()
-              .firestore()
-              .collection('users')
-              .doc(oauthUser.uid)
-              .update({
-                displayName,
-                photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
-              });
-            const customToken = await admin.app().auth().createCustomToken(oauthUser.uid);
+          const isDiscordAuthUserExists = await DiscordOauthModel.exists({ id: userResult.id });
+          if (isDiscordAuthUserExists) {
+            const oauthUser = await DiscordOauthModel.findOne({ id: userResult.id });
+            oauthUser.accessToken = tokenResponseData.access_token;
+            oauthUser.refreshToken = tokenResponseData.refresh_token;
+            oauthUser.expiresAt = expiresAt;
+            await oauthUser.save();
+
+            const user = await UserModel.findOne({ _id: oauthUser.uid });
+            if (!user) {
+              throw new Error(`User with id ${oauthUser.uid} was not found`);
+            }
+            user.displayName = displayName;
+            user.photoURL = userResult.avatar
+              ? `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`
+              : null;
+            await user.save();
+
+            const customToken = JWT.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET);
             return res.redirect(
               `${process.env.APP_URL || 'http://localhost:3001'}/discord-oauth?token=${customToken}&state=${state}`,
             );
           } else {
-            let newUser = null;
             try {
-              newUser = await admin
-                .app()
-                .auth()
-                .createUser({
-                  displayName,
-                  photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
-                });
-              await admin
-                .app()
-                .firestore()
-                .collection('discord-oauth')
-                .doc(`${userResult.id}`)
-                .set({
-                  id: `${userResult.id}`,
-                  uid: newUser.uid,
-                  accessToken: tokenResponseData.access_token,
-                  expiresAt,
-                  refreshToken: tokenResponseData.refresh_token,
-                });
-              await admin
-                .app()
-                .firestore()
-                .collection('users')
-                .doc(newUser.uid)
-                .set({
-                  uid: newUser.uid,
-                  displayName,
-                  photoURL: `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`,
-                });
-              const customToken = await admin.app().auth().createCustomToken(newUser.uid);
+              const newUser = await UserModel.create({
+                displayName,
+                photoURL: userResult.avatar
+                  ? `https://cdn.discordapp.com/avatars/${userResult.id}/${userResult.avatar}.png`
+                  : null,
+                role: UserRole.Regular,
+              });
+              await DiscordOauthModel.create({
+                id: `${userResult.id}`,
+                uid: newUser._id,
+                accessToken: tokenResponseData.access_token,
+                expiresAt,
+                refreshToken: tokenResponseData.refresh_token,
+              });
+              const customToken = JWT.sign({ userId: newUser._id, role: newUser.role }, process.env.JWT_SECRET);
               return res.redirect(`${process.env.APP_URL}/discord-oauth?token=${customToken}&state=${state}`);
             } catch (error) {
-              if (newUser) {
-                admin.app().auth().deleteUser(newUser.uid);
-              }
               console.error(error);
               return sendError(res, error.message, 403);
             }

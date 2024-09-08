@@ -9,6 +9,7 @@ import useSubscription from '../../core/hooks/useSubscription';
 import { AppTypes } from '../../core/services/types';
 import { PartyRankPage } from '../party-rank/party-rank-page';
 import { PartyRankTablePage } from '../party-rank/party-rank-table-page';
+import { ItemsListPage } from './items-list-page';
 import { PartiesListPage } from './parties-list-page';
 import { SettingsPage } from './settings-page';
 import { UploadPage } from './upload-page';
@@ -44,6 +45,10 @@ export const HomePage = () => {
 
   const handleCdn = () => {
     navigate('/upload');
+  };
+
+  const handleItems = () => {
+    navigate('/items');
   };
 
   return (
@@ -91,14 +96,17 @@ export const HomePage = () => {
             direction="row"
           >
             {!match && (
-              <Button sx={{ color: '#fff' }} onClick={handleHome}>
+              <Button sx={{ color: '#fff', mr: 2 }} onClick={handleHome}>
                 {t('MAIN.RANKS_LIST')}
               </Button>
             )}
-            <Button sx={{ color: '#fff' }} onClick={handleSettings}>
+            <Button sx={{ color: '#fff', mr: 2 }} onClick={handleItems}>
+              {t('MAIN.ENTRIES_LIST')}
+            </Button>
+            <Button sx={{ color: '#fff', mr: 2 }} onClick={handleSettings}>
               {t('MAIN.SETTINGS')}
             </Button>
-            <Button sx={{ color: '#fff' }} onClick={handleCdn}>
+            <Button sx={{ color: '#fff', mr: 2 }} onClick={handleCdn}>
               {t('MAIN.UPLOAD_MEDIA')}
             </Button>
           </Grid>
@@ -162,6 +170,7 @@ export const HomePage = () => {
           <Route path="/party-rank/:id" Component={PartyRankPage} />
           <Route path="/settings" Component={SettingsPage} />
           <Route path="/upload" Component={UploadPage} />
+          <Route path="/items" Component={ItemsListPage} />
           <Route path="/" Component={PartiesListPage} />
           <Route path="/*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -30,9 +30,9 @@ export const PartyRankTablePage = () => {
   const navigate = useNavigate();
   const partyItems = useSubscription(
     concat(
-      getRankItems(id, { fromCache: true }).pipe(
+      getRankItems(id).pipe(
         finalize(() => setListLoading(false)),
-        tap((items) => partyItemsKeysRef.current.next(items.map((item) => item.id))),
+        tap((items) => partyItemsKeysRef.current.next(items.map((item) => item._id))),
       ),
       merge(partyItemsKeysRef.current, partyItems$).pipe(
         withLatestFrom(partyItemsKeysRef.current, partyItems$),
@@ -42,13 +42,13 @@ export const PartyRankTablePage = () => {
     [],
   );
 
-  const sortedItems = useSortedPartyItems(partyItems, usersRank, partyRank?.members);
+  const sortedItems = useSortedPartyItems(partyItems, usersRank, partyRank?.memberIds);
 
   if (!partyRank || listLoading) {
     return <LinearProgress />;
   }
-  const { name, finishedDate, showTable, creatorId, moderators = [] } = partyRank;
-  const isCreator = currentUser?.uid === creatorId || moderators.includes(currentUser?.uid);
+  const { name, finishedDate, showTable, creatorId, moderatorIds = [] } = partyRank;
+  const isCreator = currentUser?._id === creatorId || moderatorIds.includes(currentUser?._id);
 
   if (!showTable && !isCreator) {
     return <Navigate to={`/party-rank/${id}`} replace />;
@@ -123,7 +123,7 @@ export const PartyRankTablePage = () => {
         {sortedItems.map((item, i) => (
           <RankItem
             rank={i + 1}
-            key={item.id}
+            key={item._id}
             data={item}
             partyStatus={PartyRankStatus.Finished}
             favoriteCount={item.favoriteCount}

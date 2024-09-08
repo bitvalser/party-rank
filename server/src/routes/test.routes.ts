@@ -7,3 +7,4 @@ export const appTestRouter = Router();
 const appTestController = new AppTestController();
 
 appTestRouter.get('/connection', catchRoute(appTestController.testConnection));
+appTestRouter.get('/db', catchRoute(appTestController.testDBConnection));

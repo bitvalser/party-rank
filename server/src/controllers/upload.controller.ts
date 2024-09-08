@@ -19,10 +19,10 @@ export class AppUploadController {
     if (!fileId) {
       return sendError(res, 'No file id provided.', 400);
     }
-    if (!req.firebaseToken) {
+    if (!req.userId) {
       return sendError(res, 'Unauthorized.', 400);
     }
-    const fileEntities = await admin.app().firestore().collection('cdn').doc(req.firebaseToken.uid).get();
+    const fileEntities = await admin.app().firestore().collection('cdn').doc(req.userId).get();
     const fileToDelete = (fileEntities.data() || {})[fileId];
     if (!fileToDelete) {
       return sendError(res, 'File not found.', 400);
@@ -32,7 +32,7 @@ export class AppUploadController {
       .app()
       .firestore()
       .collection('cdn')
-      .doc(req.firebaseToken.uid)
+      .doc(req.userId)
       .update({ [fileId]: admin.firestore.FieldValue.delete() });
     res.json({
       ok: true,
@@ -56,12 +56,12 @@ export class AppUploadController {
     const path = `${ASSETS_FOLDER}/${fileName}`;
     const fileUrl = `${process.env.ASSETS_URL || 'http://localhost:3001'}/${fileName}`;
 
-    if (req.firebaseToken) {
+    if (req.userId) {
       await admin
         .app()
         .firestore()
         .collection('cdn')
-        .doc(req.firebaseToken.uid)
+        .doc(req.userId)
         .set(
           {
             [fileId]: { id: fileId, created: new Date().toISOString(), name: fileToUpload.name, url: fileUrl, path },

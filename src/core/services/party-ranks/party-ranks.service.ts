@@ -1,44 +1,26 @@
-import {
-  Firestore,
-  arrayRemove,
-  arrayUnion,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-} from 'firebase/firestore';
+import { AxiosInstance } from 'axios';
 import { inject, injectable } from 'inversify';
-import { DateTime } from 'luxon';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
-import { FirestoreCollection } from '../../constants/firestore-collection.constants';
-import { AppUser } from '../../interfaces/app-user.interface';
-import { FirebaseFetchOptions } from '../../interfaces/firebase-options.interface';
+import { ApiResponse } from '../../interfaces/api-response.interface';
 import { PartyRank } from '../../interfaces/party-rank.interface';
 import { RankItem } from '../../interfaces/rank-item.interface';
 import { UserRank } from '../../interfaces/user-rank.interface';
-import { concatReduce } from '../../utils/concat-reduce';
 import { IAuthService } from '../auth/auth.types';
 import { AppTypes } from '../types';
-import { IPartyRanks } from './party-ranks.types';
+import { IItemsFilters, IPartyRanks } from './party-ranks.types';
 
 @injectable()
 export class PartyRanks implements IPartyRanks {
-  private firestore: Firestore;
+  @inject(AppTypes.AuthService)
   private authService: IAuthService;
+  @inject(AppTypes.Axios)
+  private axios: AxiosInstance;
   public parties$: BehaviorSubject<Record<string, PartyRank>> = new BehaviorSubject<Record<string, PartyRank>>({});
   public partyItems$: BehaviorSubject<Record<string, RankItem>> = new BehaviorSubject<Record<string, RankItem>>({});
 
-  public constructor(
-    @inject(AppTypes.Firestore) firestore: Firestore,
-    @inject(AppTypes.AuthService) authService: IAuthService,
-  ) {
-    this.firestore = firestore;
-    this.authService = authService;
+  public constructor() {
     this.createPartyRank = this.createPartyRank.bind(this);
     this.getParties = this.getParties.bind(this);
     this.updatePartyRank = this.updatePartyRank.bind(this);
@@ -54,28 +36,24 @@ export class PartyRanks implements IPartyRanks {
     this.deleteUserRank = this.deleteUserRank.bind(this);
     this.registerToPartyRank = this.registerToPartyRank.bind(this);
     this.removeUserRegistration = this.removeUserRegistration.bind(this);
+    this.unregisterFromPartyRank = this.unregisterFromPartyRank.bind(this);
     this.addUserRegistration = this.addUserRegistration.bind(this);
+    this.searchItems = this.searchItems.bind(this);
   }
 
-  public createPartyRank(payload: Omit<PartyRank, 'creator' | 'creatorId' | 'id' | 'members'>): Observable<PartyRank> {
-    const newRef = doc(collection(this.firestore, FirestoreCollection.Parties));
-    const newItem = {
-      id: newRef.id,
-      creatorId: this.authService.user$.getValue().uid,
-      createdDate: DateTime.now().toISO(),
-      members: [] as string[],
-      ...payload,
-    };
+  public createPartyRank(
+    payload: Omit<
+      PartyRank,
+      'creator' | 'status' | 'memberIds' | 'finishedDate' | 'creatorId' | '_id' | 'createdDate' | 'members'
+    >,
+  ): Observable<PartyRank> {
     return of(void 0).pipe(
-      switchMap(() => setDoc(newRef, newItem)),
-      map(() => ({
-        ...newItem,
-        creator: this.authService.user$.getValue(),
-      })),
+      switchMap(() => this.axios.post<ApiResponse<PartyRank>>('/parties', payload)),
+      map(({ data: { data: partyRank } }) => partyRank),
       tap((item) => {
         this.parties$.next({
           ...this.parties$.getValue(),
-          [item.id]: item,
+          [item._id]: item,
         });
       }),
     );
@@ -83,10 +61,12 @@ export class PartyRanks implements IPartyRanks {
 
   public updatePartyRank(
     id: string,
-    payload: Partial<Omit<PartyRank, 'creator' | 'creatorId' | 'id' | 'members'>>,
+    payload: Partial<
+      Omit<PartyRank, 'creator' | 'memberIds' | 'finishedDate' | 'creatorId' | '_id' | 'createdDate' | 'members'>
+    >,
   ): Observable<PartyRank> {
     return of(void 0).pipe(
-      switchMap(() => updateDoc(doc(this.firestore, FirestoreCollection.Parties, id), payload)),
+      switchMap(() => this.axios.patch<ApiResponse<PartyRank>>(`/parties/${id}`, payload)),
       withLatestFrom(this.parties$),
       map(([, parties]) => ({
         ...parties[id],
@@ -95,240 +75,207 @@ export class PartyRanks implements IPartyRanks {
       tap((partyRank) => {
         this.parties$.next({
           ...this.parties$.getValue(),
-          [partyRank.id]: partyRank,
+          [partyRank._id]: partyRank,
         });
       }),
     );
   }
 
   public registerToPartyRank(id: string): Observable<PartyRank> {
-    const userId = this.authService.user$.getValue().uid;
+    const userId = this.authService.user$.getValue()._id;
     return of(void 0).pipe(
-      switchMap(() => updateDoc(doc(this.firestore, FirestoreCollection.Parties, id), { members: arrayUnion(userId) })),
+      switchMap(() => this.axios.post<ApiResponse<PartyRank>>(`/parties/${id}/register`)),
       withLatestFrom(this.parties$),
       map(([, parties]) => ({
         ...parties[id],
-        members: [...parties[id]?.members, userId],
+        memberIds: [...parties[id]?.memberIds, userId],
       })),
       tap((partyRank) => {
         this.parties$.next({
           ...this.parties$.getValue(),
-          [partyRank.id]: partyRank,
+          [partyRank._id]: partyRank,
+        });
+      }),
+    );
+  }
+
+  public unregisterFromPartyRank(id: string): Observable<PartyRank> {
+    const userId = this.authService.user$.getValue()._id;
+    const newMemberIds = (this.parties$.getValue()[id]?.memberIds || []).filter((itemId) => itemId !== userId);
+    return of(void 0).pipe(
+      switchMap(() => this.axios.post<ApiResponse<PartyRank>>(`/parties/${id}/unregister`)),
+      withLatestFrom(this.parties$),
+      map(([, parties]) => ({
+        ...parties[id],
+        memberIds: newMemberIds,
+      })),
+      tap((partyRank) => {
+        this.parties$.next({
+          ...this.parties$.getValue(),
+          [partyRank._id]: partyRank,
         });
       }),
     );
   }
 
   public removeUserRegistration(id: string, userId: string): Observable<PartyRank> {
+    const newMemberIds = (this.parties$.getValue()[id]?.memberIds || []).filter((itemId) => itemId !== userId);
     return of(void 0).pipe(
-      switchMap(() =>
-        updateDoc(doc(this.firestore, FirestoreCollection.Parties, id), { members: arrayRemove(userId) }),
-      ),
+      switchMap(() => this.axios.post<ApiResponse<PartyRank>>(`/parties/${id}/kick`, { userId })),
       withLatestFrom(this.parties$),
       map(([, parties]) => ({
         ...parties[id],
-        members: (parties[id]?.members || []).filter((itemId) => itemId !== userId),
+        memberIds: newMemberIds,
       })),
       tap((partyRank) => {
         this.parties$.next({
           ...this.parties$.getValue(),
-          [partyRank.id]: partyRank,
+          [partyRank._id]: partyRank,
         });
       }),
     );
   }
 
   public addUserRegistration(id: string, userId: string): Observable<PartyRank> {
+    const newMemberIds = [...new Set([...(this.parties$.getValue()[id]?.memberIds || []), userId])];
     return of(void 0).pipe(
-      switchMap(() => updateDoc(doc(this.firestore, FirestoreCollection.Parties, id), { members: arrayUnion(userId) })),
+      switchMap(() => this.axios.patch<ApiResponse<PartyRank>>(`/parties/${id}`, { memberIds: newMemberIds })),
       withLatestFrom(this.parties$),
       map(([, parties]) => ({
         ...parties[id],
-        members: [...new Set([...parties[id]?.members, userId])],
+        memberIds: newMemberIds,
       })),
       tap((partyRank) => {
         this.parties$.next({
           ...this.parties$.getValue(),
-          [partyRank.id]: partyRank,
+          [partyRank._id]: partyRank,
         });
       }),
     );
   }
 
   public deletePartyRank(id: string): Observable<void> {
-    return of(void 0).pipe(switchMap(() => deleteDoc(doc(this.firestore, FirestoreCollection.Parties, id))));
+    return of(void 0).pipe(
+      switchMap(() => this.axios.delete(`/parties/${id}`)),
+      map(() => null),
+    );
   }
 
-  public getParties(): Observable<PartyRank[]> {
+  public getParties(filters = {}): Observable<PartyRank[]> {
     return of(void 0).pipe(
-      switchMap(() => getDocs(collection(this.firestore, FirestoreCollection.Parties))),
-      switchMap((snapshot) =>
-        concatReduce(
-          ...snapshot.docs
-            .map((item) => item.data() as Omit<PartyRank, 'creator'>)
-            .map((party) =>
-              this.authService.getUser(party.creatorId).pipe(map((creator): PartyRank => ({ ...party, creator }))),
-            ),
-        ),
+      switchMap(() =>
+        this.axios.post<ApiResponse<PartyRank[]>>('/parties/search?include[]=creator', { limit: 9999, filters }),
       ),
+      map(({ data: { data: parties } }) => parties),
       tap((parties) => {
-        this.parties$.next(parties.reduce((acc, val) => ({ ...acc, [val.id]: val }), this.parties$.getValue()));
+        this.parties$.next(parties.reduce((acc, val) => ({ ...acc, [val._id]: val }), this.parties$.getValue()));
       }),
     );
   }
 
   public getPartyRank(id: string): Observable<PartyRank> {
     return of(void 0).pipe(
-      switchMap(() => getDoc(doc(this.firestore, FirestoreCollection.Parties, id))),
-      switchMap((snapshot) => {
-        if (!snapshot.exists()) {
-          throw new Error('Party rank not exists!');
-        }
-        const data = snapshot.data() as Omit<PartyRank, 'creator'>;
-        return this.authService.getUser(data.creatorId).pipe(map((creator): PartyRank => ({ ...data, creator })));
-      }),
+      switchMap(() => this.axios.get<ApiResponse<PartyRank>>(`/parties/${id}`)),
+      map(({ data: { data: partyRank } }) => partyRank),
       tap((item) => {
         this.parties$.next({
           ...this.parties$.getValue(),
-          [item.id]: item,
+          [item._id]: item,
         });
       }),
     );
   }
 
-  public addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author'>): Observable<RankItem> {
-    const newRef = doc(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items));
-    const newItem: Omit<RankItem, 'author'> = {
-      id: newRef.id,
-      ...payload,
-      comments: [],
-      authorId: payload.authorId || this.authService.user$.getValue().uid,
-    };
+  public addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author' | 'authorId'>): Observable<RankItem> {
     return of(void 0).pipe(
-      switchMap(() => setDoc(newRef, newItem)),
-      switchMap(() => this.authService.getUser(newItem.authorId).pipe(map((author) => ({ ...newItem, author })))),
+      switchMap(() => this.axios.post<ApiResponse<RankItem>>(`/parties/${partyId}/items`, payload)),
+      map(({ data: { data: partyItem } }) => partyItem),
       tap((item) => {
         this.partyItems$.next({
           ...this.partyItems$.getValue(),
-          [item.id]: item,
+          [item._id]: item,
         });
       }),
     );
   }
 
-  public getRankItems(partyId: string, options: FirebaseFetchOptions = {}): Observable<RankItem[]> {
+  public getRankItems(partyId: string): Observable<RankItem[]> {
     return of(void 0).pipe(
-      switchMap(() => {
-        // if (options.fromCache) {
-        //   return getDocsFromCache(
-        //     collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items),
-        //   );
-        // }
-        return getDocs(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items));
-      }),
-      switchMap((snapshot) =>
-        concatReduce(
-          ...snapshot.docs
-            .map((item) => item.data() as Omit<RankItem, 'author'>)
-            .map((party) =>
-              this.authService.getUser(party.authorId).pipe(map((author): RankItem => ({ ...party, author }))),
-            ),
-        ),
-      ),
+      switchMap(() => this.axios.get<ApiResponse<RankItem[]>>(`/parties/${partyId}/items`)),
+      map(({ data: { data: items } }) => items),
       tap((items) => {
-        this.partyItems$.next(items.reduce((acc, val) => ({ ...acc, [val.id]: val }), this.partyItems$.getValue()));
+        this.partyItems$.next(items.reduce((acc, val) => ({ ...acc, [val._id]: val }), this.partyItems$.getValue()));
       }),
     );
   }
 
-  public deleteRankItem(partyId: string, id: string): Observable<void> {
+  public deleteRankItem(id: string): Observable<void> {
     return of(void 0).pipe(
-      switchMap(() =>
-        deleteDoc(doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items, id)),
-      ),
+      switchMap(() => this.axios.delete(`/items/${id}`)),
+      map(() => null),
     );
   }
 
   public updateRankItem(
-    partyId: string,
     itemId: string,
     payload: Partial<Omit<RankItem, 'id' | 'authorId' | 'author'>>,
   ): Observable<RankItem> {
     return of(void 0).pipe(
-      switchMap(() =>
-        updateDoc(
-          doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Items, itemId),
-          payload,
-        ),
-      ),
+      switchMap(() => this.axios.patch(`/items/${itemId}`, payload)),
       withLatestFrom(this.partyItems$),
       map(([, partyItems]): RankItem => ({ ...partyItems[itemId], ...payload })),
       tap((item) => {
-        this.partyItems$.next({ ...this.partyItems$.getValue(), [item.id]: item });
+        this.partyItems$.next({ ...this.partyItems$.getValue(), [item._id]: item });
       }),
     );
   }
 
   public getUserRank(partyId: string): Observable<UserRank> {
     return of(void 0).pipe(
-      withLatestFrom(this.authService.user$),
-      switchMap(([, currentUser]) =>
-        getDoc(doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks, currentUser.uid)),
-      ),
-      map((snapshot) => snapshot.data() || {}),
+      switchMap(() => this.axios.get<ApiResponse<UserRank>>(`/parties/${partyId}/my-rank`)),
+      map(({ data: { data: userRank } }) => userRank || ({ ranks: {} } as UserRank)),
     );
   }
 
   public updateUserRank(partyId: string, payload: Partial<UserRank>): Observable<void> {
     return of(void 0).pipe(
-      withLatestFrom(this.authService.user$),
-      switchMap(([, currentUser]) =>
-        setDoc(
-          doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks, currentUser.uid),
-          payload,
-          { merge: true },
-        ),
-      ),
+      switchMap(() => this.axios.post<ApiResponse<UserRank>>(`/parties/${partyId}/rank`, payload)),
+      map(() => null),
     );
   }
 
   public deleteUserRank(partyId: string, uid: string): Observable<void> {
     return of(void 0).pipe(
-      switchMap(() =>
-        deleteDoc(doc(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks, uid)),
-      ),
+      switchMap(() => this.axios.delete(`/parties/${partyId}/rank/uid`)),
+      map(() => null),
     );
   }
 
-  public getUserRanks(
-    partyId: string,
-    options: { includeUser?: boolean } & FirebaseFetchOptions = {},
-  ): Observable<(UserRank & { uid: string; author?: AppUser })[]> {
+  public getUserRanks(partyId: string, options: { includeUser?: boolean } = {}): Observable<UserRank[]> {
+    const includeUsers = '?include[]=author';
     return of(void 0).pipe(
-      switchMap(() => {
-        // if (options.fromCache) {
-        //   return getDocsFromCache(
-        //     collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks),
-        //   );
-        // }
-        return getDocs(collection(this.firestore, FirestoreCollection.Parties, partyId, FirestoreCollection.Ranks));
-      }),
-      map((snapshot) =>
-        snapshot.docs
-          .map((item) => ({
-            uid: item.id,
-            ...item.data(),
-          }))
-          .filter(Boolean),
+      switchMap(() =>
+        this.axios.get<ApiResponse<UserRank[]>>(`/parties/${partyId}/ranks${options.includeUser ? includeUsers : ''}`),
       ),
-      switchMap((items) => {
-        if (options.includeUser) {
-          return concatReduce(
-            ...items.map((item) => this.authService.getUser(item.uid).pipe(map((author) => ({ ...item, author })))),
-          );
-        }
-        return of(items);
-      }),
+      map(({ data: { data: userRanks } }) => userRanks),
+    );
+  }
+
+  // TODO: move in another service
+  public searchItems(payload: {
+    limit: number;
+    offset: number;
+    filters: IItemsFilters;
+  }): Observable<{ count?: number; items: RankItem[] }> {
+    const includeUsers = '?include[]=author';
+    return of(void 0).pipe(
+      switchMap(() =>
+        this.axios.post<ApiResponse<RankItem[]>>('/items/search', {
+          ...payload,
+          includeCount: payload.offset === 0,
+        }),
+      ),
+      map(({ data: { data: items, metadata } }) => ({ count: metadata.count, items })),
     );
   }
 }

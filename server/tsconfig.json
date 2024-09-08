@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "target": "es6",
+    "typeRoots": ["./@types", "./node_modules/@types"],
     "outDir": "./dist",
     "experimentalDecorators": true,
     "resolveJsonModule": true

@@ -13,13 +13,13 @@ import { RankItemFromValues } from './add-new-item';
 import { RankItemForm } from './rank-item-form';
 
 export interface EditRankItemProps {
-  partyId: string;
   rankValues: RankItem;
+  flags?: Record<string, boolean>;
   onEdit?: (item: RankItem) => void;
   onClose?: () => void;
 }
 
-export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose }: EditRankItemProps) => {
+export const EditRankItem = ({ onEdit = () => null, rankValues, flags, onClose }: EditRankItemProps) => {
   const [loading, setLoading] = useState(false);
   const { updateRankItem } = useInjectable(AppTypes.PartyRanks);
   const theme = useTheme();
@@ -35,8 +35,8 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
     const payload: Partial<RankItem> = { ...data };
     delete payload.author;
     delete payload.authorId;
-    delete payload.id;
-    updateRankItem(partyId, rankValues.id, payload)
+    delete payload._id;
+    updateRankItem(rankValues._id, payload)
       .pipe(finalize(() => setLoading(false)))
       .subscribe((result) => {
         setLoading(false);
@@ -109,7 +109,7 @@ export const EditRankItem = ({ partyId, onEdit = () => null, rankValues, onClose
               container
               flexDirection="column"
             >
-              <RankItemForm autoplay={false} />
+              <RankItemForm autoplay={false} flags={flags} />
               <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
                 <FormHelperText>{t('ADD_RANK_ITEM.BEFORE_SAVE_WARNING')}</FormHelperText>
                 <Grid item>

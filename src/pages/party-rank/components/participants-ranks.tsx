@@ -77,7 +77,7 @@ const UserRankItem: FC<{
       src={author.photoURL}
       variant="square"
     />
-    {favorite && (  
+    {favorite && (
       <FavoriteIcon
         strokeWidth={2}
         stroke="#fff"
@@ -123,7 +123,7 @@ const SortableList = SortableContainer<{
     <Grid container flexDirection="row" wrap="wrap" justifyContent="space-around" alignContent="start">
       {items.map((item, index) => (
         <SortableItem
-          key={item.author.uid}
+          key={item.author._id}
           {...item}
           sizeFactor={sizeFactor}
           lowRank={lowRank}
@@ -139,7 +139,7 @@ export const ParticipantsRanks = memo(({ ranks, sizeFactor, rankId }: Participan
   const [order, setOrder] = useState<string[]>(
     () =>
       JSON.parse(sessionStorage.getItem(`${SORT_ORDER_KEY}${rankId}`) || 'null') ||
-      ranks.map((item) => item.author.uid),
+      ranks.map((item) => item.author._id),
   );
 
   useEffect(() => {
@@ -151,7 +151,7 @@ export const ParticipantsRanks = memo(({ ranks, sizeFactor, rankId }: Participan
   };
 
   const rankById = useMemo<Record<string, ParticipantsRanksProps['ranks'][number]>>(
-    () => ranks.reduce((acc, val) => ({ ...acc, [val.author.uid]: val }), {}),
+    () => ranks.reduce((acc, val) => ({ ...acc, [val.author._id]: val }), {}),
     [ranks],
   );
 
