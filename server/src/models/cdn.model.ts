@@ -9,7 +9,7 @@ export const cdnScheme = new Schema<ICdnItem>(
       type: Map,
       of: new Schema({
         path: String,
-        created: String,
+        created: Date,
         name: String,
         id: String,
         url: String,

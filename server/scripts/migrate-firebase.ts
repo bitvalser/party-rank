@@ -54,7 +54,7 @@ const exportToMongoDb = async () => {
     }),
   );
 
-  await CdnItemModel.insertMany(cdnAssets);
+  await CdnItemModel.collection.insertMany(cdnAssets);
 
   const partyCollection = backupJson.__collections__.parties;
   for (let partyId in partyCollection) {
@@ -150,10 +150,12 @@ const exportToMongoDb = async () => {
 
     await UserRankModel.insertMany(ranksToInsert);
   }
+
   await PartyTagModel.create({
     name: 'Anime',
     color: '#ff0000',
   });
+
   console.log('finished');
 };
 

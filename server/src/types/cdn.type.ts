@@ -6,7 +6,7 @@ export interface ICdnItem {
     string,
     {
       path: string;
-      created: string;
+      created: Date;
       name: string;
       id: string;
       url: string;

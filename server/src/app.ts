@@ -6,6 +6,7 @@ import * as http from 'http';
 import mongoose from 'mongoose';
 
 import './dotenv';
+import { appCdnRouter } from './routes/cdn.routes';
 import { appDiscordRouter } from './routes/discord.routes';
 import { appPartiesRouter } from './routes/parties.routes';
 import { appPartyItemsRouter } from './routes/party-items.routes';
@@ -41,6 +42,7 @@ class App {
     this.app.use('/items', appPartyItemsRouter);
     this.app.use('/users', appUsersRouter);
     this.app.use('/tags', appTagsRouter);
+    this.app.use('/cdn', appCdnRouter);
     this.app.use((err, req, res, next) => {
       if (err) {
         console.error(err.stack);
