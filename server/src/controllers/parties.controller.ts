@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { RootFilterQuery, Types } from 'mongoose';
 
 import { sendError } from '../core/response-helper';
-import { PartyRankItemModel, PartyRankModel, UserRankModel } from '../models';
+import { PartyRankItemModel, PartyRankModel, UserModel, UserRankModel } from '../models';
 import { IPartyRank, IPartyRankFilters, PartyRankStatus } from '../types';
 
 export class AppPartiesController {
@@ -17,6 +17,7 @@ export class AppPartiesController {
     this.unregisterFromPartyRank = this.unregisterFromPartyRank.bind(this);
     this.updatePartyRank = this.updatePartyRank.bind(this);
     this.kickUserFromPartyRank = this.kickUserFromPartyRank.bind(this);
+    this.addUserToPartyRank = this.addUserToPartyRank.bind(this);
   }
 
   public async createPartyRank(req: Request, res: Response): Promise<void> {
@@ -65,6 +66,7 @@ export class AppPartiesController {
       showTable,
       status,
       memberIds,
+      isPrivate,
     } = req.body;
 
     const partyRank = await PartyRankModel.findById(partyRankId);
@@ -93,6 +95,7 @@ export class AppPartiesController {
       status,
       moderatorIds,
       memberIds,
+      isPrivate,
     })) {
       if (value !== undefined) {
         let newValue = value;
@@ -111,6 +114,35 @@ export class AppPartiesController {
     res.json({
       ok: true,
       data: partyRank,
+    });
+  }
+
+  public async addUserToPartyRank(req: Request, res: Response): Promise<void> {
+    const partyRankId = req.params.id;
+    const { userId } = req.body;
+
+    const partyRank = await PartyRankModel.findById(partyRankId);
+    const newUser = await UserModel.findById(userId);
+
+    if (!partyRank) {
+      return sendError(res, 'Party rank not found!', 404);
+    }
+
+    if (!newUser) {
+      return sendError(res, 'User not found!', 404);
+    }
+
+    if (![...partyRank.moderatorIds, partyRank.creatorId].map((id) => id.toString()).includes(req.userId)) {
+      return sendError(res, 'You are not allowed to edit this party rank', 404);
+    }
+
+    await partyRank.updateOne({
+      $addToSet: { memberIds: userId },
+    });
+
+    res.json({
+      ok: true,
+      data: newUser,
     });
   }
 
@@ -277,7 +309,7 @@ export class AppPartiesController {
     await UserRankModel.deleteMany({ partyRankId: partyRankId, userId });
 
     await partyRank.updateOne({
-      $pull: { memberIds: req.userId },
+      $pull: { memberIds: userId },
     });
 
     res.json({

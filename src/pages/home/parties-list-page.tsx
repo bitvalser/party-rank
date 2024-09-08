@@ -11,6 +11,7 @@ import { TagsAutocomplete } from '../../core/components/tags-autocomplete';
 import { UsersAutocomplete } from '../../core/components/users-autocomplete';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
+import { AppUser, UserRole } from '../../core/interfaces/app-user.interface';
 import { PartyRank } from '../../core/interfaces/party-rank.interface';
 import { IPartyRanksFilters } from '../../core/services/party-ranks/party-ranks.types';
 import { AppTypes } from '../../core/services/types';
@@ -18,6 +19,10 @@ import { AddNewParty, AddNewPartyProps } from './components/add-new-party';
 import { PartyItem } from './components/party-item';
 
 const SEARCH_DELAY = 500;
+
+interface IPartyRanksFiltersLocal extends IPartyRanksFilters {
+  creator?: AppUser;
+}
 
 enum PartyTabs {
   All = 'all',
@@ -29,8 +34,10 @@ export const PartiesListPage = () => {
   const partyKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const [loading, setLoading] = useState(true);
   const { parties$, getParties } = useInjectable(AppTypes.PartyRanks);
+  const { user$ } = useInjectable(AppTypes.AuthService);
+  const currentUser = useSubscription(user$);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState<IPartyRanksFilters>({});
+  const [filters, setFilters] = useState<IPartyRanksFiltersLocal>({});
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(PartyTabs.All);
   const parties = useSubscription<PartyRank[]>(
@@ -41,8 +48,9 @@ export const PartiesListPage = () => {
     [],
   );
 
-  const searchParties = useDebouncedCallback((filters: IPartyRanksFilters, tab: PartyTabs) => {
-    const payload = { ...filters };
+  const searchParties = useDebouncedCallback((filters: IPartyRanksFiltersLocal, tab: PartyTabs) => {
+    const { creator, ...rest } = filters;
+    const payload = { creatorId: creator?._id, ...rest };
     switch (tab) {
       case PartyTabs.Active:
         payload.active = true;
@@ -72,8 +80,8 @@ export const PartiesListPage = () => {
   };
 
   const handleChangeFilter =
-    <T extends keyof IPartyRanksFilters>(filterName: T) =>
-    (value: IPartyRanksFilters[T]) => {
+    <T extends keyof IPartyRanksFiltersLocal>(filterName: T) =>
+    (value: IPartyRanksFiltersLocal[T]) => {
       setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
     };
 
@@ -134,7 +142,8 @@ export const PartiesListPage = () => {
                 <UsersAutocomplete
                   label={t('MAIN.FILTER_CREATOR')}
                   multiple={false}
-                  onChange={(value) => handleChangeFilter('creatorId')(value?._id)}
+                  value={filters.creator}
+                  onChange={(value) => handleChangeFilter('creator')(value)}
                 />
               </Grid>
               <Grid item xs={3}>
@@ -174,7 +183,7 @@ export const PartiesListPage = () => {
           </Grid>
         ))}
       </Grid>
-      <AddNewParty onAddNew={handleNew} />
+      {currentUser?.role === UserRole.Creator && <AddNewParty onAddNew={handleNew} />}
     </>
   );
 };

@@ -1,7 +1,7 @@
 import { ChangeEventHandler, useRef, useState } from 'react';
 import { ControllerRenderProps } from 'react-hook-form';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { debounceTime, finalize, map, skip, skipUntil, switchMap } from 'rxjs/operators';
+import { debounceTime, finalize, map, skipUntil, switchMap } from 'rxjs/operators';
 
 import { Autocomplete, Avatar, Chip, ListItem, ListItemAvatar, ListItemText, TextField } from '@mui/material';
 
@@ -20,7 +20,7 @@ export const UsersAutocomplete = ({ label, multiple = true, onChange, value, ...
   const focusRef = useRef(new Subject<void>());
   const [loading, setLoading] = useState(true);
   const { searchUsers } = useInjectable(AppTypes.UsersService);
-  const searchValue = useSubscription(searchRef.current);
+  const searchValue = useSubscription(searchRef.current, '');
   const users = useSubscription(
     searchRef.current.pipe(
       skipUntil(focusRef.current),
@@ -50,7 +50,7 @@ export const UsersAutocomplete = ({ label, multiple = true, onChange, value, ...
       {...rest}
       onFocus={handleFocus}
       onInput={handleSearchChange}
-      inputValue={multiple ? searchValue : value?.displayName}
+      inputValue={!value ? searchValue : value?.displayName}
       onChange={handleChange}
       value={value}
       multiple={multiple}

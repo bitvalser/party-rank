@@ -17,6 +17,7 @@ appPartiesRouter.post('/search', protect(), catchRoute(appPartiesController.sear
 appPartiesRouter.get('/:id', protect(), catchRoute(appPartiesController.getPartyRankById));
 appPartiesRouter.delete('/:id', protect(), catchRoute(appPartiesController.deletePartyRankById));
 appPartiesRouter.patch('/:id', protect(), catchRoute(appPartiesController.updatePartyRank));
+appPartiesRouter.post('/:id/add-user', protect(), catchRoute(appPartiesController.addUserToPartyRank));
 appPartiesRouter.post('/:id/register', protect(), catchRoute(appPartiesController.registerToPartyRank));
 appPartiesRouter.post('/:id/unregister', protect(), catchRoute(appPartiesController.unregisterFromPartyRank));
 appPartiesRouter.post('/:id/kick', protect(), catchRoute(appPartiesController.kickUserFromPartyRank));

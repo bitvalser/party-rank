@@ -79,7 +79,7 @@ export const RankItemForm = ({ autoplay = true, showAuthor = false, flags = {} }
         {showAuthor && (
           <Grid item>
             <Controller
-              name="authorId"
+              name="author"
               control={control}
               render={({ field }) => (
                 <UsersAutocomplete label={t('ADD_RANK_ITEM.AUTHOR')} multiple={false} {...field} />

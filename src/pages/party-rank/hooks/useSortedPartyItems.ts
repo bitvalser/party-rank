@@ -32,9 +32,6 @@ export const useSortedPartyItems = (
           rankBy.grades[rankId] = [...(rankBy.grades[rankId] || []), value];
         });
       });
-      console.log('partyItems');
-      console.log(rankBy);
-      console.log(partyItems);
 
       return partyItems
         .map((item) => ({

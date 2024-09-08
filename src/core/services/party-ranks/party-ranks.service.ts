@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
 import { ApiResponse } from '../../interfaces/api-response.interface';
+import { AppUser } from '../../interfaces/app-user.interface';
 import { PartyRank } from '../../interfaces/party-rank.interface';
 import { RankItem } from '../../interfaces/rank-item.interface';
 import { UserRank } from '../../interfaces/user-rank.interface';
@@ -126,6 +127,7 @@ export class PartyRanks implements IPartyRanks {
       map(([, parties]) => ({
         ...parties[id],
         memberIds: newMemberIds,
+        members: parties[id].members.filter((member) => member._id !== userId),
       })),
       tap((partyRank) => {
         this.parties$.next({
@@ -139,12 +141,20 @@ export class PartyRanks implements IPartyRanks {
   public addUserRegistration(id: string, userId: string): Observable<PartyRank> {
     const newMemberIds = [...new Set([...(this.parties$.getValue()[id]?.memberIds || []), userId])];
     return of(void 0).pipe(
-      switchMap(() => this.axios.patch<ApiResponse<PartyRank>>(`/parties/${id}`, { memberIds: newMemberIds })),
+      switchMap(() => this.axios.post<ApiResponse<AppUser>>(`/parties/${id}/add-user`, { userId })),
       withLatestFrom(this.parties$),
-      map(([, parties]) => ({
-        ...parties[id],
-        memberIds: newMemberIds,
-      })),
+      map(
+        ([
+          {
+            data: { data: user },
+          },
+          parties,
+        ]) => ({
+          ...parties[id],
+          memberIds: newMemberIds,
+          members: [...parties[id].members, user],
+        }),
+      ),
       tap((partyRank) => {
         this.parties$.next({
           ...this.parties$.getValue(),
@@ -186,7 +196,7 @@ export class PartyRanks implements IPartyRanks {
     );
   }
 
-  public addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author' | 'authorId'>): Observable<RankItem> {
+  public addRankItem(partyId: string, payload: Omit<RankItem, 'id' | 'author'>): Observable<RankItem> {
     return of(void 0).pipe(
       switchMap(() => this.axios.post<ApiResponse<RankItem>>(`/parties/${partyId}/items`, payload)),
       map(({ data: { data: partyItem } }) => partyItem),
@@ -246,7 +256,7 @@ export class PartyRanks implements IPartyRanks {
 
   public deleteUserRank(partyId: string, uid: string): Observable<void> {
     return of(void 0).pipe(
-      switchMap(() => this.axios.delete(`/parties/${partyId}/rank/uid`)),
+      switchMap(() => this.axios.delete(`/parties/${partyId}/rank/${uid}`)),
       map(() => null),
     );
   }

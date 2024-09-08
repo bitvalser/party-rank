@@ -122,7 +122,7 @@ export const EditRankParty = ({ rankParty, onClose = () => null, onEdit = () => 
               flexDirection="column"
             >
               <PartyRankForm ref={formRef} />
-              <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
+              <Grid sx={{ mt: 2 }} container item direction="column" justifyContent="flex-end" flexGrow={1}>
                 <Grid item>
                   <Button
                     sx={{

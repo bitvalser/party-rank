@@ -483,7 +483,6 @@ export const PartyRankResultsPage = () => {
     [],
   );
   const sortedResults = useSortedPartyItems(partyItems, usersRank, partyRank?.memberIds);
-  console.log(sortedResults);
   const reversedItems = useMemo(() => sortedResults.reverse(), [sortedResults]);
 
   if (listLoading || rankLoading) {

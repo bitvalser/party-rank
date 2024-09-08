@@ -131,6 +131,8 @@ export class AppPartyItemsController {
       return sendError(res, 'You are not allowed to delete this item', 403);
     }
 
+    await partyItem.deleteOne();
+
     res.json({
       ok: true,
     });

@@ -130,7 +130,7 @@ export const AddNewParty = ({ onAddNew = () => null }: AddNewPartyProps) => {
                 flexDirection="column"
               >
                 <PartyRankForm ref={formRef} minDate={MIN_DATE} />
-                <Grid container item direction="column" justifyContent="flex-end" flexGrow={1}>
+                <Grid sx={{ mt: 2 }} container item direction="column" justifyContent="flex-end" flexGrow={1}>
                   <Grid item>
                     <Button
                       sx={{

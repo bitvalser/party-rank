@@ -40,10 +40,7 @@ export interface IPartyRanks {
   deletePartyRank(id: string): Observable<void>;
   getParties(filters: Partial<IPartyRanksFilters>): Observable<PartyRank[]>;
   getPartyRank(id: string): Observable<PartyRank>;
-  addRankItem(
-    partyId: string,
-    payload: Omit<RankItem, '_id' | 'author' | 'authorId' | 'partyRankId'>,
-  ): Observable<RankItem>;
+  addRankItem(partyId: string, payload: Omit<RankItem, '_id' | 'author' | 'partyRankId'>): Observable<RankItem>;
   getRankItems(partyId: string): Observable<RankItem[]>;
   deleteRankItem(id: string): Observable<void>;
   getUserRank(partyId: string): Observable<UserRank>;

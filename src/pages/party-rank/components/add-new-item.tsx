@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 
 import { useInjectable } from '../../../core/hooks/useInjectable';
+import { AppUser } from '../../../core/interfaces/app-user.interface';
 import { PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
 import { RankItem as IRankItem, RankItemType } from '../../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../../core/services/types';
@@ -27,7 +28,7 @@ import { RankItem } from './rank-item';
 import { RankItemForm } from './rank-item-form';
 
 export interface RankItemFromValues {
-  authorId: string;
+  author: AppUser;
   name: string;
   type: RankItemType;
   value: string;
@@ -36,7 +37,7 @@ export interface RankItemFromValues {
 }
 
 const DEFAULT_VALUES: RankItemFromValues = {
-  authorId: null,
+  author: null,
   name: '',
   type: RankItemType.Video,
   value: '',
@@ -96,6 +97,7 @@ export const AddNewItem = ({
   };
 
   const onSubmit: SubmitHandler<RankItemFromValues> = (data) => {
+    const { author, ...payload } = data;
     const newConflictItem = fuseSearch.search(data.name, {
       limit: 1,
     })[0];
@@ -103,13 +105,13 @@ export const AddNewItem = ({
       setConflictItem(newConflictItem.item);
     } else {
       setLoading(true);
-      addRankItem(partyId, data)
+      addRankItem(partyId, { ...payload, authorId: author?._id })
         .pipe(finalize(() => setLoading(false)))
         .subscribe((result) => {
           setLoading(false);
           onAddNew(result);
           setShowModal(false);
-          form.reset({ ...DEFAULT_VALUES, authorId: data.authorId });
+          form.reset({ ...DEFAULT_VALUES, author: data.author });
           setConflictItem(null);
         });
     }

@@ -9,15 +9,15 @@ interface UserChipsProps {
   users: AppUser[];
   title: string;
   showAdd?: boolean;
-  onDelete?: (id: string) => void;
+  onDelete?: (user: AppUser) => void;
   onAdd?: () => void;
 }
 
 export const UserChips = ({ users: participants, title, onDelete, onAdd, showAdd = false }: UserChipsProps) => {
   const { t } = useTranslation();
 
-  const handleDelete = (id: string) => () => {
-    onDelete(id);
+  const handleDelete = (user: AppUser) => () => {
+    onDelete(user);
   };
 
   return (
@@ -53,7 +53,7 @@ export const UserChips = ({ users: participants, title, onDelete, onAdd, showAdd
                 avatar={<Avatar alt={user.displayName} src={user.photoURL} />}
                 label={user.displayName}
                 variant="filled"
-                onDelete={onDelete ? handleDelete(user._id) : null}
+                onDelete={onDelete ? handleDelete(user) : null}
               />
             </Grid>
           ))}

@@ -9,9 +9,12 @@ export const userRankScheme = new Schema<IUserRank>(
     favoriteId: { ref: 'PartyRankItem', type: 'ObjectId' },
     ranks: {
       type: Map,
-      of: new Schema({
-        value: Number,
-      }),
+      of: new Schema(
+        {
+          value: Number,
+        },
+        { _id: false },
+      ),
     },
   },
   { collection: 'userRanks' },

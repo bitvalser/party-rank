@@ -76,7 +76,7 @@ export const MediaPreviewModal = ({ onClose, title, src, type, startTime }: Medi
         </Grid>
         <RankPartyPlayer ref={playerRef} type={type} value={src} showTimeControls />
         <Grid item>
-          {!Number.isNaN(startTime) && (
+          {!Number.isNaN(startTime) && startTime > 0 && type !== RankItemType.Image && (
             <Button sx={{ mt: 1, mb: 1 }} onClick={handleSample}>
               {t('RANK.SKIP_TO_SAMPLE')}
             </Button>

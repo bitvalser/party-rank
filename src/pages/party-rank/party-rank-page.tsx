@@ -39,6 +39,7 @@ import { OopsPage } from '../../core/components/oops-page';
 import { TagChips } from '../../core/components/tag-chips.component';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
+import { AppUser } from '../../core/interfaces/app-user.interface';
 import { PartyRankStatus } from '../../core/interfaces/party-rank.interface';
 import { RankItem as IRankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
@@ -95,6 +96,7 @@ export const PartyRankPage = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [userToKick, setUserToKick] = useState<AppUser>(null);
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const updateRanksRef = useRef(new Subject<void>());
   const [sortOder, setSortOder] = useState<string>(null);
@@ -228,7 +230,7 @@ export const PartyRankPage = () => {
   };
 
   const handleClearMark = (rankId: string) => {
-    updateUserRank(id, { [rankId]: null }).subscribe(() => {
+    updateUserRank(id, { ranks: { [rankId]: null } }).subscribe(() => {
       updateRanksRef.current.next();
     });
   };
@@ -302,15 +304,25 @@ export const PartyRankPage = () => {
     updatePartyRank(id, { status: PartyRankStatus.Ongoing }).subscribe();
   };
 
-  const handleRemoveUserRegistration = (userId: string) => {
-    removeUserRegistration(id, userId)
+  const handleKickUser = (user: AppUser) => {
+    setUserToKick(user);
+  };
+
+  const handleCancelKick = () => {
+    setUserToKick(null);
+  };
+
+  const handleRemoveUserRegistration = () => {
+    removeUserRegistration(id, userToKick._id)
       .pipe(
         tap(() => updateRanksRef.current.next()),
         switchMap(() =>
           getRankItems(id).pipe(tap((items) => partyItemsKeysRef.current.next(items.map((item) => item._id)))),
         ),
       )
-      .subscribe();
+      .subscribe(() => {
+        setUserToKick(null);
+      });
   };
 
   const handleShowAddUser = () => {
@@ -476,14 +488,14 @@ export const PartyRankPage = () => {
         </Grid>
       </Grid>
       {isCreator && moderators?.length > 0 && <UserChips users={moderators} title={t('RANK.MODERATORS')} />}
-      {isCreator && members?.length > 0 && status !== PartyRankStatus.Finished && (
+      {isCreator && status !== PartyRankStatus.Finished && (
         <>
           <UserChips
             key={members.join()}
             users={members}
             title={t('RANK.PARTICIPANTS')}
             showAdd={isCreator && [PartyRankStatus.Registration, PartyRankStatus.Ongoing].includes(status)}
-            onDelete={isCreator ? handleRemoveUserRegistration : null}
+            onDelete={isCreator ? handleKickUser : null}
             onAdd={handleShowAddUser}
           />
           {showAddUser && <SelectUserModel onClose={handleCloseAddUser} onSelect={handleAddUser} />}
@@ -729,6 +741,14 @@ export const PartyRankPage = () => {
           title={t('RANK.DELETE_RANK_CONFIRMATION')}
           onClose={handleCloseConfirmDelete}
           onConfirm={handleDelete}
+        />
+      )}
+      {Boolean(userToKick) && (
+        <ConfirmModal
+          title={t('RANK.KICK_USER_TITLE', { name: userToKick.displayName })}
+          text={t('RANK.KICK_USER_TEXT')}
+          onConfirm={handleRemoveUserRegistration}
+          onClose={handleCancelKick}
         />
       )}
     </>

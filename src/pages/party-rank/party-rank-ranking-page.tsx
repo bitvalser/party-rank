@@ -137,7 +137,7 @@ const PartRankRankingPageComponent = memo(
     const doRank = useThrottledCallback(
       (rankId: string, rank: number) => {
         if (rank && rank >= 1) {
-          setCurrentRank((prev) => ({ ...prev, [rankId]: { value: rank } }));
+          setCurrentRank((prev) => ({ ...prev, ranks: { ...prev.ranks, [rankId]: { value: rank } } }));
           updateUserRank(partyRank._id, { ranks: { [rankId]: { value: rank } } }).subscribe();
         }
       },
@@ -453,7 +453,7 @@ export const PartyRankRankingPage = () => {
     ranks: {},
   } as UserRank);
 
-  if (listLoading || rankLoading) {
+  if (listLoading || rankLoading || !partyRank) {
     return <LinearProgress />;
   }
 
@@ -461,7 +461,7 @@ export const PartyRankRankingPage = () => {
     return <Typography>{t('RANK.CONTENDERS_MISSING')}</Typography>;
   }
 
-  if (Array.isArray(partyRank.memberIds) && !partyRank.memberIds.includes(currentUser?._id)) {
+  if (Array.isArray(partyRank?.memberIds) && !partyRank.memberIds.includes(currentUser?._id)) {
     return <Typography>{t('RANK.NO_ACCESS')}</Typography>;
   }
 

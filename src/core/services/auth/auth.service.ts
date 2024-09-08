@@ -45,6 +45,7 @@ export class AuthService implements IAuthService {
   public signOut(): Observable<void> {
     return of(void 0).pipe(
       tap(() => {
+        this.user$.next(null);
         this.token$.next(null);
       }),
     );

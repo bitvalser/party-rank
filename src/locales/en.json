@@ -32,9 +32,9 @@
   },
   "MAIN": {
     "RANKS_LIST": "Ranks List",
-    "ENTRIES_LIST": "Entries List",
+    "ENTRIES_LIST": "Entry List",
     "SETTINGS": "Settings",
-    "UPLOAD_MEDIA": "UploadMedia",
+    "UPLOAD_MEDIA": "Upload Media",
     "FILTERS": "Filters",
     "FILTER_NAME": "Name",
     "FILTER_CREATOR": "Creator",
@@ -109,11 +109,15 @@
     "NO_ACCESS": "You do not have access to this page!",
     "LEADERBOARD_LOCKED": "The leaderboard is now private and only available to you",
     "FINAL_TOP": "Final Top",
+    "COPY_NAME": "Copy name",
     "VOTING_PROGRESS": "Voting progress",
     "SEE_MARKS": "See marks",
     "REMOVE_MARKS": "Remove marks",
     "ARE_YOU_REALLY_WANT_TO_REMOVE_MARKS": "Are you sure you want to delete this participant's marks?",
-    "PARTICIPANT_MARKS": "Participant marks {{name}}"
+    "PARTICIPANT_MARKS": "Participant marks {{name}}",
+    "KICK_USER_TITLE": "Kick {{name}}",
+    "KICK_USER_TEXT": "Are you sure you want to kick this user? All his entries and scores will be deleted.",
+    "ROLLBACK_RANK": "Rollback Party Rank"
   },
   "ADD_RANK_ITEM": {
     "TITLE": "Add new entry",
@@ -138,8 +142,6 @@
     "MEDIA_LINK_TIP": "The link must be referred directly to the file (must have .mp4, .ogg, etc extension). You may need to upload the file to the CDN first.",
     "PREVIEW": "Preview",
     "SET_PLAYBACK_TIME": "Set playback time",
-    "COPY_NAME": "Copy name",
-    "ROLLBACK_RANK": "Rollback Party Rank",
     "MUSIC_TYPE_TITLE": "Music type",
     "MUSIC_TYPE": {
       "OPENING": "Opening",
