@@ -15,7 +15,7 @@ export class AppTestController {
 
   public testDBConnection(req: Request, res: Response): void {
     res.json({
-      ok: mongoose.connection.readyState === 2,
+      ok: mongoose.connection.readyState === 1,
     });
   }
 }
