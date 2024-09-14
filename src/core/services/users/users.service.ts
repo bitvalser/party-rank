@@ -19,7 +19,9 @@ export class UsersService implements IUsersService {
 
   public searchUsers(payload: IUsersSearchPayload): Observable<{ count: number; users: AppUser[] }> {
     return of(void 0).pipe(
-      switchMap(() => this.axios.post<ApiResponse<AppUser[]>>('/users/search', payload)),
+      switchMap(() =>
+        this.axios.post<ApiResponse<AppUser[]>>('/users/search', { ...payload, filters: payload.filters || {} }),
+      ),
       map(({ data: { data: users, metadata } }) => ({
         users,
         count: metadata.count,

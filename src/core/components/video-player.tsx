@@ -13,10 +13,12 @@ import { useDebouncedCallback } from 'use-debounce';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Box, IconButton } from '@mui/material';
+import { makeStyles } from '@mui/material/styles';
 
 import { useInjectable } from '../hooks/useInjectable';
 import useSubscription from '../hooks/useSubscription';
 import { AppTypes } from '../services/types';
+import { MediaControls } from './media-controls';
 import { RankPartyPlayerRef } from './rank-party-player';
 
 export interface VideoPlayerProps extends VideoHTMLAttributes<HTMLVideoElement> {
@@ -123,20 +125,22 @@ export const VideoPlayer = memo(
 
       return (
         <>
-          <video
-            ref={videoRef}
-            width="100%"
-            onLoadStart={handleVideoInit}
-            onVolumeChange={(event) => handleVolumeChange((event.target as HTMLVideoElement)?.volume)}
-            height="100%"
-            onPlay={handlePlay}
-            onPause={handlePause}
-            loop
-            autoPlay={autoplay}
-            controls={showTimeControls}
-          >
-            <source src={src} />
-          </video>
+          <media-controller>
+            <video
+              ref={videoRef}
+              src={src}
+              slot="media"
+              width="100%"
+              onLoadStart={handleVideoInit}
+              onVolumeChange={(event) => handleVolumeChange((event.target as HTMLVideoElement)?.volume)}
+              height="100%"
+              onPlay={handlePlay}
+              onPause={handlePause}
+              loop
+              autoPlay={autoplay}
+            ></video>
+            {showTimeControls && <MediaControls />}
+          </media-controller>
           {!hideControls && !showTimeControls && (
             <Box
               sx={{

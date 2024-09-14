@@ -1,5 +1,6 @@
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
+import { Client, Events, GatewayIntentBits } from 'discord.js';
 import * as express from 'express';
 import * as fileUpload from 'express-fileupload';
 import * as http from 'http';
@@ -17,15 +18,20 @@ import { appUsersRouter } from './routes/users.routes';
 class App {
   public app: express.Application;
   public server: http.Server;
+  public botClient: Client;
 
   constructor() {
     this.app = express();
     this.server = http.createServer(this.app);
+    this.botClient = new Client({ intents: [GatewayIntentBits.Guilds] });
+
     mongoose.connect(process.env.MONGODB_URL);
     this.config();
+    this.botClient.login(process.env.DISCORD_BOT_TOKEN);
   }
 
   private config(): void {
+    // Create a new client instance
     this.app.use(bodyParser.json());
     this.app.use(
       cors({
@@ -53,6 +59,11 @@ class App {
         console.error(err.stack);
         res.status(500).send('Something went wrong!');
       }
+    });
+
+    this.botClient.once(Events.ClientReady, (readyClient) => {
+      // eslint-disable-next-line no-console
+      console.log(`Ready! Logged in as ${readyClient.user.tag}`);
     });
   }
 }

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RootFilterQuery, Types } from 'mongoose';
 
 import { sendError } from '../core/response-helper';
+import { AppEvents, appEventEmitter } from '../event-emitter';
 import { PartyRankItemModel, PartyRankModel } from '../models';
 import { IPartyRank, IPartyRankItem, PartyRankStatus } from '../types';
 
@@ -62,6 +63,8 @@ export class AppPartyItemsController {
     });
 
     await newItem.populate('author');
+
+    appEventEmitter.emit(AppEvents.AddNewEntry, { partyRank: partyRank.toObject(), item: newItem.toObject() });
 
     res.json({
       ok: true,
@@ -132,6 +135,8 @@ export class AppPartyItemsController {
     }
 
     await partyItem.deleteOne();
+
+    appEventEmitter.emit(AppEvents.RemoveEntry, { partyRank: partyRank.toObject(), item: partyItem.toObject() });
 
     res.json({
       ok: true,

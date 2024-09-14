@@ -1,3 +1,4 @@
+import 'media-chrome';
 import { I18nextProvider } from 'react-i18next';
 
 import { CssBaseline, GlobalStyles, ThemeProvider, createTheme } from '@mui/material';
@@ -7,6 +8,7 @@ import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { AppRouter } from './app-router';
 import { InversifyContext, appContainer } from './inversify.config';
 import i18n from './locales/i18n';
+import './styles.css';
 
 const breakpoints = createTheme().breakpoints;
 

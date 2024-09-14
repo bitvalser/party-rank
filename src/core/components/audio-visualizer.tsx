@@ -18,6 +18,7 @@ import { Box, IconButton } from '@mui/material';
 import { useInjectable } from '../hooks/useInjectable';
 import useSubscription from '../hooks/useSubscription';
 import { AppTypes } from '../services/types';
+import { MediaControls } from './media-controls';
 import { RankPartyPlayerRef } from './rank-party-player';
 
 interface AudioVisualizerProps extends AudioHTMLAttributes<HTMLAudioElement> {
@@ -224,28 +225,31 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
         overflow: 'hidden',
       }}
     >
-      <audio
-        {...rest}
-        key={`visualizer_${enableVisualizer}`}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          zIndex: 9,
-          left: 0,
-          width: '100%',
-        }}
-        ref={audioRef}
-        autoPlay={canPlay && autoplay}
-        crossOrigin={enableVisualizer ? 'anonymous' : null}
-        loop
-        onVolumeChange={(event) => handleVolumeChange((event.target as HTMLVideoElement)?.volume)}
-        onLoadStart={handleAudioInit}
-        onPlay={handlePlay}
-        onError={() => setEnableVisualizer(false)}
-        onPause={handlePause}
-        controls={showTimeControls}
-        hidden={!showTimeControls}
-      />
+      <media-controller class="audio-container">
+        <audio
+          {...rest}
+          key={`visualizer_${enableVisualizer}`}
+          slot="media"
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            zIndex: 9,
+            left: 0,
+            width: '100%',
+          }}
+          ref={audioRef}
+          autoPlay={canPlay && autoplay}
+          crossOrigin={enableVisualizer ? 'anonymous' : null}
+          loop
+          onVolumeChange={(event) => handleVolumeChange((event.target as HTMLVideoElement)?.volume)}
+          onLoadStart={handleAudioInit}
+          onPlay={handlePlay}
+          onError={() => setEnableVisualizer(false)}
+          onPause={handlePause}
+          hidden={!showTimeControls}
+        />
+        {showTimeControls && <MediaControls />}
+      </media-controller>
       {enableVisualizer && <canvas width="100%" height="100%" ref={canvasRef} />}
       {!hideControls && (
         <Box
@@ -270,12 +274,14 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
                 padding: 3,
                 fontSize: buttonFontSize,
                 background: 'rgba(0, 0, 0, 0.6)',
+                zIndex: 9,
                 transition: (theme) =>
                   theme.transitions.create('opacity', {
                     duration: theme.transitions.duration.shortest,
                   }),
+                opacity: 0,
                 '&:hover': {
-                  opacity: 0.9,
+                  opacity: 1,
                 },
               }}
             >
@@ -291,6 +297,7 @@ export const AudioVisualizer = forwardRef<RankPartyPlayerRef, AudioVisualizerPro
                 padding: 3,
                 fontSize: buttonFontSize,
                 background: 'rgba(0, 0, 0, 0.6)',
+                zIndex: 9,
                 transition: (theme) =>
                   theme.transitions.create('opacity', {
                     duration: theme.transitions.duration.shortest,

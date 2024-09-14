@@ -51,6 +51,7 @@ export const partyRankScheme = new Schema<IPartyRank>(
       type: Boolean,
       default: false,
     },
+    discordIntegrationId: { type: 'ObjectId', ref: 'DiscordIntegration', default: null },
   },
   { collection: 'parties' },
 );

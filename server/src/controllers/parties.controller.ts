@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 import { RootFilterQuery, Types } from 'mongoose';
 
 import { sendError } from '../core/response-helper';
+import { AppEvents, appEventEmitter } from '../event-emitter';
 import { PartyRankItemModel, PartyRankModel, UserModel, UserRankModel } from '../models';
+import { DiscordIntegrationModel } from '../models/discord-integration.model';
 import { IPartyRank, IPartyRankFilters, PartyRankStatus } from '../types';
 
 export class AppPartiesController {
@@ -83,6 +85,8 @@ export class AppPartiesController {
       return sendError(res, 'You cannot update the status of a party rank with the same status.', 400);
     }
 
+    const oldStatus = partyRank.status;
+
     for (let [key, value] of Object.entries({
       content,
       allowComments,
@@ -110,6 +114,10 @@ export class AppPartiesController {
     }
 
     await partyRank.save();
+
+    if (oldStatus !== status) {
+      appEventEmitter.emit(AppEvents.PartyRankStatusUpdate, { oldStatus, partyRank: partyRank.toObject() });
+    }
 
     res.json({
       ok: true,
@@ -161,6 +169,7 @@ export class AppPartiesController {
 
     await PartyRankItemModel.deleteMany({ partyRankId: partyRankId });
     await UserRankModel.deleteMany({ partyRankId: partyRankId });
+    await DiscordIntegrationModel.deleteMany({ partyRankId: partyRankId });
 
     await partyRank.deleteOne();
 
@@ -293,6 +302,7 @@ export class AppPartiesController {
     await PartyRankModel.findByIdAndUpdate(partyRankId, {
       $pull: { memberIds: req.userId },
     });
+
     res.json({
       ok: true,
     });
@@ -312,6 +322,12 @@ export class AppPartiesController {
       return sendError(res, 'Provide user id!', 404);
     }
 
+    const userToKick = await UserModel.findById(userId);
+
+    if (!userToKick) {
+      return sendError(res, 'User not found!', 404);
+    }
+
     if (![...partyRank.moderatorIds, partyRank.creatorId].map((id) => id.toString()).includes(req.userId)) {
       return sendError(res, 'You are not allowed to kick user from this party rank!', 403);
     }
@@ -321,6 +337,11 @@ export class AppPartiesController {
 
     await partyRank.updateOne({
       $pull: { memberIds: userId },
+    });
+
+    appEventEmitter.emit(AppEvents.PartyRankKickUser, {
+      partyRank: partyRank.toObject(),
+      userToKick: userToKick.toObject(),
     });
 
     res.json({

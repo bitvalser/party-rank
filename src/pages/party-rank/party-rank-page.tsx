@@ -36,7 +36,7 @@ import StarterKit from '@tiptap/starter-kit';
 
 import { ConfirmModal } from '../../core/components/confirm-modal';
 import { OopsPage } from '../../core/components/oops-page';
-import { TagChips } from '../../core/components/tag-chips.component';
+import { TagChips } from '../../core/components/tag-chips';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { AppUser } from '../../core/interfaces/app-user.interface';

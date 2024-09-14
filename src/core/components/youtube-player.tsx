@@ -1,6 +1,4 @@
-import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from 'react';
-// @ts-ignore
-import YouTubePlayer from 'youtube-player';
+import { forwardRef, memo, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -9,6 +7,7 @@ import { Box, IconButton, LinearProgress } from '@mui/material';
 import { useInjectable } from '../hooks/useInjectable';
 import useSubscription from '../hooks/useSubscription';
 import { AppTypes } from '../services/types';
+import { MediaControls } from './media-controls';
 import { RankPartyPlayerRef } from './rank-party-player';
 
 export interface YoutubePlayerProps {
@@ -49,66 +48,43 @@ export const YoutubePlayer = memo(
       },
       componentRef,
     ) => {
-      const [paused, setPaused] = useState(true);
+      const [paused, setPaused] = useState(false);
       const { defaultVolume$ } = useInjectable(AppTypes.SettingsService);
       const defaultVolume = useSubscription(defaultVolume$, 1);
       const [ready, setReady] = useState(false);
-      const containerRef = useRef<HTMLDivElement>(null);
-      const playerRef = useRef<any>(null);
+      const playerRef = useRef<HTMLElement & any>(null);
+
+      const youtubeId = useMemo(() => new URLSearchParams((link || '').split('?')?.[1] || '').get('v') || link, []);
 
       useEffect(() => {
-        const youtubeId = new URLSearchParams((link || '').split('?')?.[1] || '').get('v') || link;
-
         if (!youtubeId) return;
 
-        playerRef.current = YouTubePlayer(containerRef.current, {
-          videoId: youtubeId,
-          playerVars: {
-            autoplay: autoplay ? 1 : 0,
-            loop: loop ? 1 : 0,
-            playlist: youtubeId,
-            showinfo: 0,
-            start: startTime ? Math.round(startTime) : 0,
-            controls: showTimeControls ? 1 : 0,
-            enablejsapi: 1,
-          },
-        });
-
-        const stateListener = playerRef.current.on('stateChange', ({ data }: any) => {
-          if (data === 1) {
-            onPlay();
-            setPaused(false);
-            // onManualPlay();
-          }
-          if (data === 2) {
-            onPause();
-            setPaused(true);
-            // onManualPause();
-          }
-        });
-
-        const readyListener = playerRef.current.on('ready', () => {
+        playerRef.current.addEventListener('loadcomplete', () => {
           setReady(true);
-          onReady();
+        });
+        playerRef.current.addEventListener('play', () => {
+          setReady(true);
+          onPlay();
+          setPaused(false);
+        });
+        playerRef.current.addEventListener('pause', () => {
+          onPause();
+          setPaused(true);
         });
 
         return () => {
           if (playerRef.current) {
-            playerRef.current.off(stateListener);
-            playerRef.current.off(readyListener);
-            playerRef.current.getVolume().then((value: number) => {
-              defaultVolume$.next(value / 100);
-            });
-            playerRef.current.destroy();
+            playerRef.current.removeAllEventListeners();
+            defaultVolume$.next(playerRef.current.volume);
             playerRef.current = null;
           }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [link]);
+      }, [youtubeId]);
 
       useEffect(() => {
         if (playerRef.current) {
-          playerRef.current.setVolume((defaultVolume ?? 1) * 100);
+          playerRef.current.volume = defaultVolume ?? 1;
         }
       }, [defaultVolume, ready]);
 
@@ -117,121 +93,137 @@ export const YoutubePlayer = memo(
         () => ({
           play: async () => {
             if (playerRef.current) {
-              playerRef.current.playVideo();
+              playerRef.current.play();
             }
           },
           pause: () => {
             if (playerRef.current) {
-              playerRef.current.pauseVideo();
+              playerRef.current.pause();
             }
           },
           setVolume: (value: number) => {
             if (playerRef.current) {
-              playerRef.current.setVolume(value * 100);
+              playerRef.current.volume = value ?? 1;
             }
           },
           getCurrentTimestamp: () => {
             if (playerRef.current) {
-              return playerRef.current.getCurrentTime();
+              return playerRef.current.currentTime;
             }
             return null;
           },
           playWithTimestamp: (time: number) => {
             if (playerRef.current) {
-              playerRef.current.seekTo(Math.round(time));
+              playerRef.current.currentTime = Math.round(time);
             }
           },
         }),
         [],
       );
 
-      useEffect(() => {
-        if (containerRef.current) {
-          if (playerRef.current) {
-            playerRef.current.getIframe().then((element: HTMLIFrameElement) => {
-              element.style.width = typeof width === 'number' ? `${width}px` : width;
-              element.style.height = typeof height === 'number' ? `${height}px` : height;
-            });
-          }
-        }
-      }, [width, height]);
-
       const handleButtonPause = () => {
         if (playerRef.current) {
-          playerRef.current.pauseVideo();
+          playerRef.current.pause();
         }
       };
 
       const handleButtonPlay = () => {
         if (playerRef.current) {
-          playerRef.current.playVideo();
+          playerRef.current.play();
         }
       };
 
       return (
-        <Box
-          sx={{
-            width,
-            height,
-            opacity: ready ? 1 : 0,
-          }}
-        >
-          {!ready && <LinearProgress />}
-          <Box ref={containerRef} />
-          {!paused && !hideControls && (
-            <IconButton
-              onClick={handleButtonPause}
-              disableRipple
+        <>
+          {!ready && (
+            <LinearProgress
               sx={{
-                borderRadius: '50%',
+                zIndex: 99,
                 position: 'absolute',
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                padding: 3,
-                fontSize,
-                zIndex: 2,
-                background: 'rgba(0, 0, 0, 0.6)',
-                transition: (theme) =>
-                  theme.transitions.create('opacity', {
-                    duration: theme.transitions.duration.shortest,
-                  }),
-                opacity: 0,
-                '&:hover': {
-                  opacity: 1,
-                },
+                top: 0,
+                width: '100%',
               }}
-            >
-              <PauseIcon fontSize="inherit" />
-            </IconButton>
+            />
           )}
-          {paused && !hideControls && (
-            <IconButton
-              onClick={handleButtonPlay}
-              disableRipple
-              sx={{
-                borderRadius: '50%',
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                padding: 3,
-                zIndex: 2,
-                position: 'absolute',
-                fontSize,
-                background: 'rgba(0, 0, 0, 0.6)',
-                transition: (theme) =>
-                  theme.transitions.create('opacity', {
-                    duration: theme.transitions.duration.shortest,
-                  }),
-                '&:hover': {
-                  opacity: 0.9,
-                },
-              }}
-            >
-              <PlayArrowIcon fontSize="inherit" />
-            </IconButton>
-          )}
-        </Box>
+          <Box
+            sx={{
+              width,
+              height,
+              opacity: ready ? 1 : 0,
+            }}
+          >
+            <media-controller>
+              <youtube-video
+                class="youtube-video"
+                ref={playerRef}
+                src={link}
+                slot="media"
+                crossorigin
+                autoplay
+                loop={loop ? 1 : 0}
+                start={startTime ? Math.round(startTime) : 0}
+                controls={0}
+                enablejsapi={1}
+                playsinline
+                preload
+              ></youtube-video>
+              {showTimeControls && <MediaControls />}
+            </media-controller>
+            {!paused && !hideControls && (
+              <IconButton
+                onClick={handleButtonPause}
+                disableRipple
+                sx={{
+                  borderRadius: '50%',
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  padding: 3,
+                  fontSize,
+                  zIndex: 2,
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  transition: (theme) =>
+                    theme.transitions.create('opacity', {
+                      duration: theme.transitions.duration.shortest,
+                    }),
+                  opacity: 0,
+                  '&:hover': {
+                    opacity: 1,
+                  },
+                }}
+              >
+                <PauseIcon fontSize="inherit" />
+              </IconButton>
+            )}
+            {paused && !hideControls && (
+              <IconButton
+                onClick={handleButtonPlay}
+                disableRipple
+                sx={{
+                  borderRadius: '50%',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  padding: 3,
+                  zIndex: 2,
+                  position: 'absolute',
+                  fontSize,
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  transition: (theme) =>
+                    theme.transitions.create('opacity', {
+                      duration: theme.transitions.duration.shortest,
+                    }),
+                  '&:hover': {
+                    opacity: 0.9,
+                  },
+                }}
+              >
+                <PlayArrowIcon fontSize="inherit" />
+              </IconButton>
+            )}
+          </Box>
+        </>
       );
     },
   ),

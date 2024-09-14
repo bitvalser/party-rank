@@ -37,4 +37,5 @@ export interface IPartyRank {
   isPrivate: boolean;
   allowComments: boolean;
   content: string;
+  discordIntegrationId?: Types.ObjectId;
 }

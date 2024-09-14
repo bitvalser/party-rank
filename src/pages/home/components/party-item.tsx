@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Avatar, Button, Card, CardActions, CardContent, Chip, Grid, Typography } from '@mui/material';
 
-import { TagChips } from '../../../core/components/tag-chips.component';
+import { TagChips } from '../../../core/components/tag-chips';
 import { PartyRank, PartyRankStatus } from '../../../core/interfaces/party-rank.interface';
 
 interface PartyItemProps {

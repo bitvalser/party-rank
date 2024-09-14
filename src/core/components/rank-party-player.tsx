@@ -178,6 +178,7 @@ export const RankPartyPlayer = memo(
                 width: '100%',
                 top: 0,
                 left: 0,
+                zIndex: 1,
               }}
             />
           )}

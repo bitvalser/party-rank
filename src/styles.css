@@ -1,0 +1,21 @@
+media-controller {
+  width: 100%;
+  --media-primary-color: #90caf9;
+  --media-secondary-color: #121212;
+  --media-control-hover-background: #212121;
+}
+
+youtube-video {
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16/9;
+  pointer-events: none;
+}
+
+.audio-container {
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+  z-index: 2;
+  background: transparent;
+}

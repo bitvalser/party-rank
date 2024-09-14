@@ -35,7 +35,7 @@ module.exports = () => {
         },
       }),
       new CopyPluginWebpackPlugin({
-        patterns: [{ from: '../public', filter: (resourcePath) => !resourcePath.includes('index.html') }],
+        patterns: [{ from: '../public', filter: (resourcePath) => !resourcePath.includes('index.html') }, { from: '../libs' }],
       }),
     ],
   });
