@@ -50,6 +50,7 @@ function serializeIframeUrl(attrs) {
     loop: attrs.loop,
     mute: attrs.muted,
     playsinline: attrs.playsinline,
+    start: attrs.start,
     preload: attrs.preload ?? 'metadata',
     // origin: globalThis.location?.origin,
     enablejsapi: 1,
