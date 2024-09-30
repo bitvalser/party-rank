@@ -33,6 +33,7 @@ import { PartyRank, PartyRankStatus } from '../../core/interfaces/party-rank.int
 import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
+import { seededRandom } from '../../core/utils/seed-rand-array';
 import { JumpToList } from './components/jump-to-list';
 import { PreviewCommentsViewer } from './components/preview-comments-viewer';
 import { RankItemComment } from './components/rank-item-comment';
@@ -248,6 +249,7 @@ const PartRankRankingPageComponent = memo(
             </Grid>
             {Boolean(currentIndex === i || currentIndex + 1 === i) && (
               <RankPartyPlayer
+                key={item._id}
                 ref={(ref) => (currentPlayerRef.current[i - currentIndex] = ref as any)}
                 type={item.type}
                 value={item.value}
@@ -273,103 +275,106 @@ const PartRankRankingPageComponent = memo(
                 </Button>
               </Box>
             )} */}
+          </Box>
+        ))}
+        {Boolean(items[currentIndex]) && (
+          <Box
+            sx={(theme) => ({
+              zIndex: 15,
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              bottom: '60px',
+              [theme.breakpoints.down('md')]: {
+                bottom: '20vh',
+              },
+              '&:hover': {
+                '& > div': {
+                  transform: 'translateY(0)',
+                },
+              },
+            })}
+          >
             <Box
-              sx={(theme) => ({
-                zIndex: 15,
-                position: 'absolute',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                bottom: '60px',
-                [theme.breakpoints.down('md')]: {
-                  bottom: '20vh',
-                },
-                '&:hover': {
-                  '& > div': {
-                    transform: 'translateY(0)',
-                  },
-                },
-              })}
+              component="div"
+              sx={{
+                transform: autoHideRankSection ? 'translateY(calc(20vh + 80px))' : 'none',
+                transition: (theme) =>
+                  theme.transitions.create('transform', {
+                    duration: theme.transitions.duration.shortest,
+                  }),
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+              }}
             >
-              <Box
-                component="div"
+              <IconButton
                 sx={{
-                  transform: autoHideRankSection ? 'translateY(calc(20vh + 80px))' : 'none',
-                  transition: (theme) =>
-                    theme.transitions.create('transform', {
-                      duration: theme.transitions.duration.shortest,
-                    }),
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'flex-end',
+                  mr: 2,
+                  p: 1,
+                  mb: 1,
+                  fontSize: '36px',
+                  backgroundColor: (theme) => theme.palette.grey[900],
+                }}
+                disabled={items[currentIndex].authorId === currentUser?._id}
+                onClick={() => doFavorite(items[currentIndex]._id)}
+              >
+                {currentRank.favoriteId === items[currentIndex]._id ? (
+                  <FavoriteIcon color="error" fontSize="inherit" />
+                ) : (
+                  <FavoriteBorderIcon color="error" fontSize="inherit" />
+                )}
+              </IconButton>
+              <Grid container direction="column">
+                {currentUser && partyRank.allowComments && (
+                  <RankItemComment
+                    key={currentIndex}
+                    partyRankId={partyRank._id}
+                    rankItem={items[currentIndex]}
+                    currentUser={currentUser}
+                    rankItemCommentsManager={rankItemCommentsManager}
+                  />
+                )}
+                <Card>
+                  <Grid
+                    sx={{
+                      p: 2,
+                      pt: 1,
+                      pb: 1,
+                    }}
+                    container
+                    direction="column"
+                  >
+                    <Typography>{t('RANK.YOUR_RANK')}</Typography>
+                    <Rating
+                      value={currentRank.ranks[items[currentIndex]._id]?.value ?? null}
+                      onChange={(event, value) => doRank(items[currentIndex]._id, value)}
+                      precision={0.5}
+                      max={10}
+                      size="large"
+                    />
+                  </Grid>
+                </Card>
+              </Grid>
+              <Box
+                sx={{
+                  backgroundColor: (theme) => theme.palette.grey[900],
+                  borderRadius: '50%',
+                  p: 1,
+                  ml: 2,
+                  mb: 1,
                 }}
               >
-                <IconButton
-                  sx={{
-                    mr: 2,
-                    p: 1,
-                    mb: 1,
-                    fontSize: '36px',
-                    backgroundColor: (theme) => theme.palette.grey[900],
-                  }}
-                  disabled={item.authorId === currentUser?._id}
-                  onClick={() => doFavorite(item._id)}
-                >
-                  {currentRank.favoriteId === item._id ? (
-                    <FavoriteIcon color="error" fontSize="inherit" />
-                  ) : (
-                    <FavoriteBorderIcon color="error" fontSize="inherit" />
-                  )}
-                </IconButton>
-                <Grid container direction="column">
-                  {currentUser && currentIndex === i && partyRank.allowComments && (
-                    <RankItemComment
-                      partyRankId={partyRank._id}
-                      rankItem={item}
-                      currentUser={currentUser}
-                      rankItemCommentsManager={rankItemCommentsManager}
-                    />
-                  )}
-                  <Card>
-                    <Grid
-                      sx={{
-                        p: 2,
-                        pt: 1,
-                        pb: 1,
-                      }}
-                      container
-                      direction="column"
-                    >
-                      <Typography>{t('RANK.YOUR_RANK')}</Typography>
-                      <Rating
-                        value={currentRank.ranks[item._id]?.value}
-                        onChange={(event, value) => doRank(item._id, value)}
-                        precision={0.5}
-                        max={10}
-                        size="large"
-                      />
-                    </Grid>
-                  </Card>
-                </Grid>
-                <Box
-                  sx={{
-                    backgroundColor: (theme) => theme.palette.grey[900],
-                    borderRadius: '50%',
-                    p: 1,
-                    ml: 2,
-                    mb: 1,
-                  }}
-                >
-                  <GradeMark
-                    size={38}
-                    fontSize="18px"
-                    value={currentRank.ranks[item._id]?.value ?? 0}
-                    showDecimal={1}
-                  />
-                </Box>
+                <GradeMark
+                  size={38}
+                  fontSize="18px"
+                  value={currentRank.ranks[items[currentIndex]._id]?.value ?? 0}
+                  showDecimal={1}
+                />
               </Box>
             </Box>
           </Box>
-        ))}
+        )}
         {items[currentIndex]?.startTime > 0 && (
           <Tooltip title={t('RANK.SKIP_TO_SAMPLE')} placement="top">
             <IconButton
@@ -444,7 +449,11 @@ export const PartyRankRankingPage = () => {
       ),
       merge(partyItemsKeysRef.current, partyItems$).pipe(
         withLatestFrom(partyItemsKeysRef.current, partyItems$),
-        map(([, keys, items]) => keys.map((key) => items[key])),
+        map(([, keys, items]) =>
+          seededRandom({ seed: id })
+            .shuffle(keys)
+            .map((key) => items[key]),
+        ),
       ),
     ),
     [],
