@@ -155,7 +155,7 @@ export const ParticipantsRanks = memo(({ ranks, sizeFactor, rankId }: Participan
     [ranks],
   );
 
-  const items = useMemo(() => order.map((id) => rankById[id]), [rankById, order]);
+  const items = useMemo(() => order.map((id) => rankById[id]).filter(Boolean), [rankById, order]);
   const [lowRank, highRank] = useMemo<[number, number]>(() => {
     const sorted = [...items].sort((rankA, rankB) => (rankA.value > rankB.value ? 1 : -1));
     return [sorted[0]?.value, sorted[sorted.length - 1]?.value];

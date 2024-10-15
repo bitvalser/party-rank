@@ -21,9 +21,13 @@ export const UserRankResult = memo(({ partyItems = [], user, userRank, getAverag
     if (getAverage) {
       return getAverage(userRank);
     }
-    const values = Object.values(getUserRanksFromResult(userRank));
-    return values.reduce((acc, { value }) => acc + value, 0) / values.length || 0;
-  }, [getAverage, userRank]);
+    const entries = Object.entries(getUserRanksFromResult(userRank));
+    const itemIds = partyItems.map((item) => item._id);
+    return (
+      entries.filter(([itemId]) => itemIds.includes(itemId)).reduce((acc, [, { value }]) => acc + value, 0) /
+        entries.length || 0
+    );
+  }, [getAverage, partyItems, userRank]);
   const favoriteItem = partyItems.find((item) => item._id === userRank.favoriteId);
 
   return (
