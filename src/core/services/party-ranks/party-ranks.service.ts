@@ -12,6 +12,8 @@ import { IAuthService } from '../auth/auth.types';
 import { AppTypes } from '../types';
 import { IItemsFilters, IPartyRanks } from './party-ranks.types';
 
+const ANISONG_LINKS_HOSTNAME = 'eudist.animemusicquiz.com/';
+
 @injectable()
 export class PartyRanks implements IPartyRanks {
   @inject(AppTypes.AuthService)
@@ -213,6 +215,21 @@ export class PartyRanks implements IPartyRanks {
     return of(void 0).pipe(
       switchMap(() => this.axios.get<ApiResponse<RankItem[]>>(`/parties/${partyId}/items`)),
       map(({ data: { data: items } }) => items),
+      // catbox.video links fix
+      map((items) =>
+        items.map((item) => {
+          let value = item.value;
+          if (value.includes('catbox.video')) {
+            const newLinkUrl = new URL(value);
+            newLinkUrl.hostname = ANISONG_LINKS_HOSTNAME;
+            value = newLinkUrl.href;
+          }
+          return {
+            ...item,
+            value,
+          };
+        }),
+      ),
       tap((items) => {
         this.partyItems$.next(items.reduce((acc, val) => ({ ...acc, [val._id]: val }), this.partyItems$.getValue()));
       }),
