@@ -149,7 +149,6 @@ appEventEmitter.on(AppEvents.AddNewEntry, async (data: { partyRank: IPartyRank; 
       const discordIntegration = await DiscordIntegrationModel.findById(partyRank.discordIntegrationId);
       if (!discordIntegration) return;
       const channel = await getChannelById(discordIntegration.channelId);
-      console.log(channel);
       if (channel.isTextBased() && channel.isSendable()) {
         channel.send({
           embeds: [
