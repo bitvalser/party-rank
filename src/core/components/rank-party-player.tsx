@@ -94,7 +94,7 @@ export const RankPartyPlayer = memo(
         setClientBoundingRect(containerRef.current.getBoundingClientRect());
         updatePlayerRef();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, []);
+      }, [type]);
 
       useEffect(() => {
         if (playerRef.current) {
