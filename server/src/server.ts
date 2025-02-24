@@ -1,6 +1,5 @@
 import App from './app';
-
-// import './bot';
+import './bot';
 
 const PORT = process.env.PORT || 8081;
 
