@@ -8,5 +8,6 @@ export const appUsersRouter = Router();
 const appUsersController = new AppUsersController();
 
 appUsersRouter.get('/me', protect(), catchRoute(appUsersController.getMe));
+appUsersRouter.get('/profile/:id', catchRoute(appUsersController.getProfileById));
 appUsersRouter.get('/:id', catchRoute(appUsersController.getUserById));
 appUsersRouter.post('/search', catchRoute(appUsersController.searchUsers));

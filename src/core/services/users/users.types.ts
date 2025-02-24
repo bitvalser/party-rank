@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-import { AppUser } from '../../interfaces/app-user.interface';
+import { AppUser, UserProfile } from '../../interfaces/app-user.interface';
 
 export interface IUsersSearchPayload {
   filters?: Partial<{ name: string }>;
@@ -11,4 +11,5 @@ export interface IUsersSearchPayload {
 
 export interface IUsersService {
   searchUsers(payload: IUsersSearchPayload): Observable<{ count: number; users: AppUser[] }>;
+  getUserProfileById(userId: string): Observable<UserProfile>;
 }

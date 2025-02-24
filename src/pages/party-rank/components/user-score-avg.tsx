@@ -2,7 +2,7 @@ import { Fragment, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { finalize, map } from 'rxjs/operators';
 
-import { Card, CardContent, Divider, Grid, LinearProgress, Typography } from '@mui/material';
+import { ButtonBase, Card, CardContent, Divider, Grid, LinearProgress, Typography } from '@mui/material';
 
 import { useInjectable } from '../../../core/hooks/useInjectable';
 import useSubscription from '../../../core/hooks/useSubscription';
@@ -41,6 +41,10 @@ export const UserScoreAvg = ({ id, partyItems }: UserScoreAvgProps) => {
 
   const mapRankToAverage: UserRankResultProps['getAverage'] = useCallback((item) => item.average, []);
 
+  const handleViewProfile = (userId: string) => () => {
+    window.open(`/profile/${userId}`, '_blank');
+  };
+
   return (
     <Card
       sx={{
@@ -67,12 +71,14 @@ export const UserScoreAvg = ({ id, partyItems }: UserScoreAvgProps) => {
           {usersRank.map((userRank, i) => (
             <Fragment key={userRank.author._id}>
               {i !== 0 && <Divider sx={{ mt: 1 }} />}
-              <UserRankResult
-                user={userRank.author}
-                userRank={userRank}
-                partyItems={partyItems}
-                getAverage={mapRankToAverage}
-              />
+              <ButtonBase component="div" onClick={handleViewProfile(userRank.author._id)}>
+                <UserRankResult
+                  user={userRank.author}
+                  userRank={userRank}
+                  partyItems={partyItems}
+                  getAverage={mapRankToAverage}
+                />
+              </ButtonBase>
             </Fragment>
           ))}
         </Grid>

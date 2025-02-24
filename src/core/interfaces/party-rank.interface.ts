@@ -25,5 +25,6 @@ export interface PartyRank {
   finishedDate?: string;
   showTable: boolean;
   allowComments: boolean;
+  isPrivate: boolean;
   content: string;
 }

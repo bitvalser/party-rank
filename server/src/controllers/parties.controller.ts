@@ -115,7 +115,7 @@ export class AppPartiesController {
 
     await partyRank.save();
 
-    if (oldStatus !== status) {
+    if (status && oldStatus !== status) {
       appEventEmitter.emit(AppEvents.PartyRankStatusUpdate, { oldStatus, partyRank: partyRank.toObject() });
     }
 

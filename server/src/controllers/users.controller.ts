@@ -1,13 +1,15 @@
 import { Request, Response } from 'express';
 import { RootFilterQuery } from 'mongoose';
 
-import { UserModel } from '../models';
+import { sendError } from '../core/response-helper';
+import { DiscordOauthModel, PartyRankModel, UserModel, UserRankModel } from '../models';
 import { IUser } from '../types';
 
 export class AppUsersController {
   constructor() {
     this.getUserById = this.getUserById.bind(this);
     this.getMe = this.getMe.bind(this);
+    this.getProfileById = this.getProfileById.bind(this);
     this.searchUsers = this.searchUsers.bind(this);
   }
 
@@ -17,6 +19,47 @@ export class AppUsersController {
     res.json({
       ok: true,
       data: user,
+    });
+  }
+
+  public async getProfileById(req: Request, res: Response): Promise<void> {
+    const userId = req.params.id;
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return sendError(res, 'User profile not found!', 404);
+    }
+
+    const userRanks = await UserRankModel.find({ userId: userId });
+    const discordOauth = await DiscordOauthModel.findOne({ uid: userId });
+    const parties = await PartyRankModel.find({
+      $or: [
+        {
+          creatorId: userId,
+        },
+        {
+          memberIds: userId,
+        },
+      ],
+    });
+
+    res.json({
+      ok: true,
+      data: {
+        profile: {
+          ...user.toObject(),
+          discordId: discordOauth?.id,
+        },
+        allRanks: userRanks.flatMap((rank) => Array.from(rank.ranks.values()).map((item) => item.value)),
+        ranksByPartyId: userRanks.reduce(
+          (acc, rank) => ({
+            ...acc,
+            [rank.partyRankId.toString()]: Array.from(rank.ranks.values()).map((item) => item.value),
+          }),
+          {},
+        ),
+        parties,
+      },
     });
   }
 

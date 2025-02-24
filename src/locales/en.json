@@ -42,6 +42,7 @@
     "FILTER_CLEAR": "Clear filters",
     "FILTER_I_WAS_PARTICIPANT": "PartyRanks I participated in",
     "EXIT": "Exit",
+    "PROFILE": "My profile",
     "TABS": {
       "ALL": "All",
       "ACTIVE": "Active",
@@ -117,7 +118,8 @@
     "PARTICIPANT_MARKS": "Participant marks {{name}}",
     "KICK_USER_TITLE": "Kick {{name}}",
     "KICK_USER_TEXT": "Are you sure you want to kick this user? All his entries and scores will be deleted.",
-    "ROLLBACK_RANK": "Rollback Party Rank"
+    "ROLLBACK_RANK": "Rollback Party Rank",
+    "VIEW_PROFILE": "View profile"
   },
   "ADD_RANK_ITEM": {
     "TITLE": "Add new entry",
@@ -177,5 +179,14 @@
     "OPEN_TAB": "Open in a new tab",
     "COPE_LINK": "Copy link",
     "DELETE_FILE": "Delete media file"
+  },
+  "PROFILE": {
+    "ALL_TIME_GRADES": "All time grades",
+    "GRADES_COUNT_ALL_TIME": "Total number of marks given",
+    "AVG_ALL_TIME": "AVG all time",
+    "PARTY_RANKS": "Party ranks({{count}})",
+    "STATISTICS": "Statistics",
+    "PARTY_MEMBER": "Member",
+    "PARTY_CREATOR": "Creator"
   }
 }

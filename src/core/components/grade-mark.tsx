@@ -9,7 +9,7 @@ interface GradeMarkProps {
   isAuthorRank?: boolean;
 }
 
-const COLORS = [
+export const GRADE_MARK_COLORS = [
   '#FF0000',
   '#FF3300',
   '#FF6600',
@@ -31,7 +31,7 @@ export const GradeMark = ({
   showDecimal = 1,
 }: GradeMarkProps) => {
   const value = propsValue ?? 0;
-  const color = isAuthorRank ? '#00fff9' : value > 0 ? COLORS[Math.round(value - 1)] || '#000' : '#fff';
+  const color = isAuthorRank ? '#00fff9' : value > 0 ? GRADE_MARK_COLORS[Math.round(value - 1)] || '#000' : '#fff';
 
   return (
     <Box

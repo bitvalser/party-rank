@@ -11,6 +11,7 @@ import { PartyRankPage } from '../party-rank/party-rank-page';
 import { PartyRankTablePage } from '../party-rank/party-rank-table-page';
 import { ItemsListPage } from './items-list-page';
 import { PartiesListPage } from './parties-list-page';
+import { ProfilePage } from './profile-page';
 import { SettingsPage } from './settings-page';
 import { UploadPage } from './upload-page';
 
@@ -25,6 +26,11 @@ export const HomePage = () => {
   const handleLogout = () => {
     setAnchorElUser(null);
     signOut().subscribe();
+  };
+
+  const handleProfile = () => {
+    setAnchorElUser(null);
+    navigate(`/profile/${user._id}`);
   };
 
   const handleCloseUserMenu = () => {
@@ -143,6 +149,9 @@ export const HomePage = () => {
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
+                <MenuItem onClick={handleProfile}>
+                  <Typography textAlign="center"> {t('MAIN.PROFILE')}</Typography>
+                </MenuItem>
                 <MenuItem onClick={handleLogout}>
                   <Typography textAlign="center"> {t('MAIN.EXIT')}</Typography>
                 </MenuItem>
@@ -168,6 +177,7 @@ export const HomePage = () => {
         <Routes>
           <Route path="/party-rank/:id/table" Component={PartyRankTablePage} />
           <Route path="/party-rank/:id" Component={PartyRankPage} />
+          <Route path="/profile/:id" Component={ProfilePage} />
           <Route path="/settings" Component={SettingsPage} />
           <Route path="/upload" Component={UploadPage} />
           <Route path="/items" Component={ItemsListPage} />

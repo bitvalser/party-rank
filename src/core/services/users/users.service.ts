@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { ApiResponse } from '../../interfaces/api-response.interface';
-import { AppUser } from '../../interfaces/app-user.interface';
+import { AppUser, UserProfile } from '../../interfaces/app-user.interface';
 import { AppTypes } from '../types';
 import { IUsersSearchPayload, IUsersService } from './users.types';
 
@@ -15,6 +15,7 @@ export class UsersService implements IUsersService {
 
   public constructor() {
     this.searchUsers = this.searchUsers.bind(this);
+    this.getUserProfileById = this.getUserProfileById.bind(this);
   }
 
   public searchUsers(payload: IUsersSearchPayload): Observable<{ count: number; users: AppUser[] }> {
@@ -26,6 +27,13 @@ export class UsersService implements IUsersService {
         users,
         count: metadata.count,
       })),
+    );
+  }
+
+  public getUserProfileById(userId: string): Observable<UserProfile> {
+    return of(void 0).pipe(
+      switchMap(() => this.axios.get<ApiResponse<UserProfile>>(`/users/profile/${userId}`)),
+      map(({ data: { data } }) => data),
     );
   }
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { finalize } from 'rxjs/operators';
-import { useDebounce, useDebouncedCallback } from 'use-debounce';
+import { useDebounce } from 'use-debounce';
 
 import {
   Button,
@@ -15,11 +15,10 @@ import {
 } from '@mui/material';
 
 import { OopsPage } from '../../core/components/oops-page';
-import { TagsAutocomplete } from '../../core/components/tags-autocomplete';
 import { useInjectable } from '../../core/hooks/useInjectable';
 import { useOnScreen } from '../../core/hooks/useOnScreen';
 import { RankItem as IRankItem } from '../../core/interfaces/rank-item.interface';
-import { IItemsFilters, IPartyRanksFilters } from '../../core/services/party-ranks/party-ranks.types';
+import { IItemsFilters } from '../../core/services/party-ranks/party-ranks.types';
 import { AppTypes } from '../../core/services/types';
 import { RankItem } from '../party-rank/components/rank-item';
 
