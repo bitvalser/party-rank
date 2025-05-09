@@ -41,7 +41,7 @@ class App {
     );
     this.app.use(
       fileUpload({
-        limits: { fileSize: 20 * 1024 * 1024 },
+        limits: { fileSize: 100 * 1024 * 1024 },
         useTempFiles: true,
         tempFileDir: '/temp-assets/',
         abortOnLimit: true,

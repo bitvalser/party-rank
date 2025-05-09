@@ -36,6 +36,7 @@ export const MediaPreviewModal = ({ onClose, title, src, type, startTime }: Medi
           minWidth: 596,
           maxWidth: 1200,
           minHeight: 400,
+          maxHeight: '80vh',
           borderRadius: '4px',
           paddingBottom: 0,
           display: 'flex',

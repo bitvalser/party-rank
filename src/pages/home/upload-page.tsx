@@ -29,6 +29,7 @@ import { AppTypes } from '../../core/services/types';
 
 const MAX_FILES = 60;
 const MAX_FILE_SIZE = 16 * 1024 * 1024;
+const WHITE_LIST_USERS = ['66ddc6c322126122fe1f917a'];
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -44,13 +45,16 @@ const VisuallyHiddenInput = styled('input')({
 
 export const UploadPage = () => {
   const { uploadFile, deleteFile, getAllFiles } = useInjectable(AppTypes.UploadService);
+  const { user$ } = useInjectable(AppTypes.AuthService);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string }>(null);
   const fileInputRef = useRef<HTMLInputElement>();
   const updateListsRef = useRef(new Subject<void>());
   const files = useSubscription(merge(of(void 0), updateListsRef.current).pipe(switchMap(() => getAllFiles())), []);
+  const currentUser = useSubscription(user$);
   const { t } = useTranslation();
+  const allowAnyway = WHITE_LIST_USERS.includes(currentUser?._id);
 
   const getRankTypeByMediaUrl = (url: string): RankItemType => {
     if (url.includes('.mp3')) {
@@ -62,7 +66,7 @@ export const UploadPage = () => {
   const handleFileChange = () => {
     if (fileInputRef.current.files.length === 1) {
       const fileToUpload = fileInputRef.current.files[0];
-      if (fileToUpload.size > MAX_FILE_SIZE) {
+      if (fileToUpload.size > MAX_FILE_SIZE && !allowAnyway) {
         setError(t('UPLOAD.SIZE_ERROR'));
         return;
       }
@@ -137,7 +141,7 @@ export const UploadPage = () => {
               <Button
                 component="label"
                 role={undefined}
-                disabled={uploading || files.length >= MAX_FILES}
+                disabled={(uploading || files.length >= MAX_FILES) && !allowAnyway}
                 variant="contained"
                 fullWidth
                 tabIndex={-1}
