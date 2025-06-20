@@ -108,6 +108,7 @@ export const RankItem = memo(
 
     const handleView: MouseEventHandler = (event) => {
       event.stopPropagation();
+      event.preventDefault();
       setShowPreview(true);
     };
 

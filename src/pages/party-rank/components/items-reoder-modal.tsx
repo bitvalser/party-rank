@@ -12,7 +12,6 @@ import { RankItem as IRankItem } from '../../../core/interfaces/rank-item.interf
 import { AppTypes } from '../../../core/services/types';
 import { getItemsOrder } from '../../../core/utils/get-items-order';
 import { reorderArray } from '../../../core/utils/reorder-array';
-import { seededRandom } from '../../../core/utils/seed-rand-array';
 import { RankItem } from './rank-item';
 
 interface ItemsReorderModalProps {
@@ -32,6 +31,7 @@ const SortableRankItem: FC<{
       mr: 1,
       zIndex: 999999,
       userSelect: 'none',
+      cursor: 'grab',
     }}
   >
     <RankItem data={item} namePrefix={`[${itemIndex + 1}] `} showAuthor={false} showCopy={false} />
@@ -126,7 +126,7 @@ export const ItemsReorderModal = memo(({ items: rankItems, partyRank, onClose }:
             overflow: 'auto',
           }}
         >
-          <SortableList axis="y" items={items} onSortEnd={handleDragEnd} />
+          <SortableList axis="y" distance={10} items={items} onSortEnd={handleDragEnd} />
         </Grid>
         <Grid sx={{ p: 1 }} container direction="row" justifyContent="flex-end">
           <Grid item>
