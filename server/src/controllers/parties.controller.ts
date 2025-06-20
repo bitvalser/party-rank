@@ -69,6 +69,7 @@ export class AppPartiesController {
       status,
       memberIds,
       isPrivate,
+      itemsOrder,
     } = req.body;
 
     const partyRank = await PartyRankModel.findById(partyRankId);
@@ -78,7 +79,7 @@ export class AppPartiesController {
     }
 
     if (![...partyRank.moderatorIds, partyRank.creatorId].map((id) => id.toString()).includes(req.userId)) {
-      return sendError(res, 'You are not allowed to edit this party rank', 404);
+      return sendError(res, 'You are not allowed to edit this party rank', 403);
     }
 
     if (partyRank.status === status) {
@@ -100,6 +101,7 @@ export class AppPartiesController {
       moderatorIds,
       memberIds,
       isPrivate,
+      itemsOrder,
     })) {
       if (value !== undefined) {
         let newValue = value;

@@ -23,6 +23,7 @@ export interface IPartyRank {
   creator?: IUser;
   members?: IUser[];
   moderators?: IUser[];
+  itemsOrder?: string[];
   moderatorIds: Types.ObjectId[];
   memberIds?: Types.ObjectId[];
   name: string;

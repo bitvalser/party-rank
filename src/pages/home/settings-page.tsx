@@ -41,6 +41,7 @@ export const SettingsPage = () => {
     useVideoStartTime$,
     autoHideRankSection$,
     showCommentsOnResult$,
+    disablePreloadForYouTube$,
   } = useInjectable(AppTypes.SettingsService);
   const playDuration = useSubscription(playDuration$, 0);
   const controllablePlayer = useSubscription(controllablePlayer$, false);
@@ -48,6 +49,7 @@ export const SettingsPage = () => {
   const autoHideRankSection = useSubscription(autoHideRankSection$, false);
   const showCommentsOnResult = useSubscription(showCommentsOnResult$, true);
   const useVideoStartTime = useSubscription(useVideoStartTime$, true);
+  const disablePreloadForYouTube = useSubscription(disablePreloadForYouTube$, false);
   const defaultVolume = useSubscription(defaultVolume$, 1);
   const [durationValue, setDurationValue] = useState(null);
   const [volumeValue, setVolumeValue] = useState(null);
@@ -85,6 +87,10 @@ export const SettingsPage = () => {
 
   const handleChangeShowComments = (event: any, value: boolean) => {
     showCommentsOnResult$.next(value);
+  };
+
+  const handleChangeDisablePreloadForYouTube = (event: any, value: boolean) => {
+    disablePreloadForYouTube$.next(value);
   };
 
   const handleChangeUseVideoStartTime = (event: any, value: boolean) => {
@@ -183,6 +189,14 @@ export const SettingsPage = () => {
               <FormControlLabel
                 control={<Checkbox checked={showCommentsOnResult} onChange={handleChangeShowComments} />}
                 label={t('SETTINGS.SHOW_COMMENTS_ON_RESULT')}
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                control={
+                  <Checkbox checked={disablePreloadForYouTube} onChange={handleChangeDisablePreloadForYouTube} />
+                }
+                label={t('SETTINGS.DISABLE_PRELOAD_FOR_YT')}
               />
             </Grid>
           </Grid>

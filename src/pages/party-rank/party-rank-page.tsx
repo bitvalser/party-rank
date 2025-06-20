@@ -48,6 +48,7 @@ import { getUserRanksFromResult } from '../../core/utils/get-user-ranks';
 import { AddNewItem, AddNewItemProps } from './components/add-new-item';
 import { EditRankItem } from './components/edit-rank-item';
 import { EditRankParty } from './components/edit-rank-party';
+import { ItemsReorderModal } from './components/items-reoder-modal';
 import { ParticipantsList } from './components/participants-list';
 import { RankItem } from './components/rank-item';
 import { SelectUserModel } from './components/select-user-modal';
@@ -96,6 +97,7 @@ export const PartyRankPage = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showReorder, setShowReorder] = useState(false);
   const [userToKick, setUserToKick] = useState<AppUser>(null);
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const updateRanksRef = useRef(new Subject<void>());
@@ -342,6 +344,14 @@ export const PartyRankPage = () => {
     setSortOder((prevOrder) => (prevOrder === null ? 'asc' : prevOrder === 'asc' ? 'desc' : null));
   };
 
+  const handleReorderModal = () => {
+    setShowReorder(true);
+  };
+
+  const handleCloseReorder = () => {
+    setShowReorder(false);
+  };
+
   return (
     <>
       <Grid sx={{ overflow: 'hidden' }} container direction="row" rowSpacing={2}>
@@ -463,6 +473,13 @@ export const PartyRankPage = () => {
                 <Button onClick={handleFinish} size="small">
                   {t('RANK.FINISH_RANK')}
                 </Button>
+              )}
+              {status !== PartyRankStatus.Finished && isCreator && (
+                <Tooltip title={t('RANK.REORDER_TOOLTIP')}>
+                  <Button onClick={handleReorderModal} size="small">
+                    {t('RANK.REORDER')}
+                  </Button>
+                </Tooltip>
               )}
               {status === PartyRankStatus.Finished && (showTable || isCreator) && (
                 <Button onClick={handleTableView} size="small">
@@ -736,6 +753,7 @@ export const PartyRankPage = () => {
         />
       )}
       {showEdit && <EditRankParty rankParty={partyRank} onClose={handleCloseEdit} onEdit={handleCloseEdit} />}
+      {showReorder && <ItemsReorderModal partyRank={partyRank} items={partyItems} onClose={handleCloseReorder} />}
       {confirmDelete && (
         <ConfirmModal
           title={t('RANK.DELETE_RANK_CONFIRMATION')}

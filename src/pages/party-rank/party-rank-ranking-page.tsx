@@ -33,6 +33,7 @@ import { PartyRank, PartyRankStatus } from '../../core/interfaces/party-rank.int
 import { RankItem } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
+import { getItemsOrder } from '../../core/utils/get-items-order';
 import { seededRandom } from '../../core/utils/seed-rand-array';
 import { JumpToList } from './components/jump-to-list';
 import { PreviewCommentsViewer } from './components/preview-comments-viewer';
@@ -449,11 +450,7 @@ export const PartyRankRankingPage = () => {
       ),
       merge(partyItemsKeysRef.current, partyItems$).pipe(
         withLatestFrom(partyItemsKeysRef.current, partyItems$),
-        map(([, keys, items]) =>
-          seededRandom({ seed: id })
-            .shuffle(keys)
-            .map((key) => items[key]),
-        ),
+        map(([, keys, items]) => getItemsOrder(partyRank, keys).map((key) => items[key])),
       ),
     ),
     [],

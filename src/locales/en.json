@@ -28,6 +28,7 @@
     "APP": "App",
     "LANGUAGE": "Language",
     "SHOW_COMMENTS_ON_RESULT": "Show comments",
+    "DISABLE_PRELOAD_FOR_YT": "Disable preload next video for YT",
     "RANKING_AUTO_HIDE_RANK_SECTION": "Hide the rating section when the cursor is outside the section area"
   },
   "MAIN": {
@@ -119,7 +120,10 @@
     "KICK_USER_TITLE": "Kick {{name}}",
     "KICK_USER_TEXT": "Are you sure you want to kick this user? All his entries and scores will be deleted.",
     "ROLLBACK_RANK": "Rollback Party Rank",
-    "VIEW_PROFILE": "View profile"
+    "VIEW_PROFILE": "View profile",
+    "REORDER": "Reorder items",
+    "REORDER_TOOLTIP": "Change the order in which items will be displayed during ranking",
+    "REORDER_SAVE": "Save order"
   },
   "ADD_RANK_ITEM": {
     "TITLE": "Add new entry",

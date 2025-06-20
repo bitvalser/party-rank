@@ -32,4 +32,9 @@ export class SettingsService implements ISettingsService {
     'settings:showCommentsOnResult',
     true,
   );
+  public disablePreloadForYouTube$: CachedSubject<boolean> = new CachedSubject(
+    localStorage,
+    'settings:disablePreloadForYouTube',
+    true,
+  );
 }

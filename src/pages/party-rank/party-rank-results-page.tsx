@@ -20,7 +20,7 @@ import { useInjectable } from '../../core/hooks/useInjectable';
 import useSubscription from '../../core/hooks/useSubscription';
 import { AppUser } from '../../core/interfaces/app-user.interface';
 import { PartyRank, PartyRankStatus } from '../../core/interfaces/party-rank.interface';
-import { RankItem } from '../../core/interfaces/rank-item.interface';
+import { RankItem, RankItemType } from '../../core/interfaces/rank-item.interface';
 import { UserRank } from '../../core/interfaces/user-rank.interface';
 import { AppTypes } from '../../core/services/types';
 import { getUserRanksFromResult } from '../../core/utils/get-user-ranks';
@@ -40,6 +40,7 @@ interface PartyRankResultsPageComponentProps {
   playDuration: number;
   useVideoStartTime: boolean;
   showCommentsOnResult: boolean;
+  disablePreloadForYouTube: boolean;
 }
 
 const controlButtonSx: SxProps<Theme> = {
@@ -72,6 +73,7 @@ const PartyRankResultsPageComponent = memo(
     playDuration,
     useVideoStartTime,
     showCommentsOnResult,
+    disablePreloadForYouTube,
   }: PartyRankResultsPageComponentProps) => {
     const currentPlayerRef = useRef<RankPartyPlayerRef[]>(Array.from({ length: 2 }));
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -325,7 +327,10 @@ const PartyRankResultsPageComponent = memo(
                   {item.grade && <GradeMark size={40} showDecimal={2} fontSize="14px" value={item.grade} />}
                 </Grid>
               </Grid>
-              {Boolean(currentIndex === i || currentIndex + 1 === i) && (
+              {Boolean(
+                currentIndex === i ||
+                  (currentIndex + 1 === i && (item.type !== RankItemType.YouTube || !disablePreloadForYouTube)),
+              ) && (
                 <RankPartyPlayer
                   ref={(ref) => (currentPlayerRef.current[i - currentIndex] = ref as any)}
                   type={item.type}
@@ -456,12 +461,12 @@ export const PartyRankResultsPage = () => {
   const [listLoading, setListLoading] = useState(true);
   const [rankLoading, setRankLoading] = useState(true);
   const { getRankItems, getPartyRank, getUserRanks, partyItems$ } = useInjectable(AppTypes.PartyRanks);
-  const { controllablePlayer$, playDuration$, useVideoStartTime$, showCommentsOnResult$ } = useInjectable(
-    AppTypes.SettingsService,
-  );
+  const { controllablePlayer$, playDuration$, useVideoStartTime$, showCommentsOnResult$, disablePreloadForYouTube$ } =
+    useInjectable(AppTypes.SettingsService);
   const playDuration = useSubscription(playDuration$.pipe(map((time) => time * 1000)), 15);
   const controllablePlayer = useSubscription(controllablePlayer$, false);
   const useVideoStartTime = useSubscription(useVideoStartTime$, true);
+  const disablePreloadForYouTube = useSubscription(disablePreloadForYouTube$, false);
   const partyRank = useSubscription(getPartyRank(id));
   const { t } = useTranslation();
   const showCommentsOnResult = useSubscription(showCommentsOnResult$, true);
@@ -510,6 +515,7 @@ export const PartyRankResultsPage = () => {
       initialControllable={controllablePlayer}
       useVideoStartTime={useVideoStartTime}
       showCommentsOnResult={showCommentsOnResult}
+      disablePreloadForYouTube={disablePreloadForYouTube}
     />
   );
 };

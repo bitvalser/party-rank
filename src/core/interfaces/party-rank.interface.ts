@@ -12,6 +12,7 @@ export interface PartyRank {
   creatorId: string;
   moderatorIds: string[];
   memberIds: string[];
+  itemsOrder?: string[];
   moderators?: AppUser[];
   members?: AppUser[];
   creator?: AppUser;

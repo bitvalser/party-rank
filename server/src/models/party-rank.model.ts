@@ -32,6 +32,7 @@ export const partyRankScheme = new Schema<IPartyRank>(
       type: Date,
       default: () => new Date(),
     },
+    itemsOrder: { type: [String], default: [] },
     memberIds: [{ type: 'ObjectId', ref: 'User', default: [] }],
     moderatorIds: [{ type: 'ObjectId', ref: 'User', default: [] }],
     name: {

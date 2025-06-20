@@ -26,11 +26,13 @@ import { UsersList } from './users-list';
 interface RankItemProps {
   sx?: SxProps;
   data: IRankItem;
+  namePrefix?: string;
   partyStatus?: PartyRankStatus;
   isCreator?: boolean;
   grade?: number;
   isFavorite?: boolean;
   showAuthor?: boolean;
+  showCopy?: boolean;
   showRedirect?: boolean;
   showPreviewIcon?: boolean;
   oneLine?: boolean;
@@ -46,11 +48,13 @@ export const RankItem = memo(
   ({
     sx,
     data,
+    namePrefix = '',
     partyStatus = null,
     isCreator = false,
     showPreviewIcon = true,
     oneLine = false,
     showRedirect = false,
+    showCopy = true,
     grade = null,
     isFavorite = false,
     onDelete = () => null,
@@ -102,7 +106,8 @@ export const RankItem = memo(
       onEdit(_id);
     };
 
-    const handleView = () => {
+    const handleView: MouseEventHandler = (event) => {
+      event.stopPropagation();
       setShowPreview(true);
     };
 
@@ -187,6 +192,7 @@ export const RankItem = memo(
               component="div"
               whiteSpace={oneLine ? 'nowrap' : 'initial'}
             >
+              {namePrefix}
               {name}
             </Typography>
           </Grid>
@@ -254,11 +260,13 @@ export const RankItem = memo(
                 <TimerOffIcon sx={{ mr: 2 }} color="warning" fontSize="medium" />
               </Tooltip>
             )}
-            <Tooltip placement="top" title={t('RANK.COPY_NAME')}>
-              <IconButton onClick={handleCopyName} aria-label="view">
-                <ContentCopyIcon fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
+            {showCopy && (
+              <Tooltip placement="top" title={t('RANK.COPY_NAME')}>
+                <IconButton onClick={handleCopyName} aria-label="view">
+                  <ContentCopyIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            )}
             {showPreviewIcon && (
               <Tooltip placement="top" title={t('RANK.MEDIA_PREVIEW')}>
                 <IconButton onClick={handleView} aria-label="view">

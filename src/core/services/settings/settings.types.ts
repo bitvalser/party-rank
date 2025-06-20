@@ -8,4 +8,5 @@ export interface ISettingsService {
   useVideoStartTime$: CachedSubject<boolean>;
   autoHideRankSection$: CachedSubject<boolean>;
   showCommentsOnResult$: CachedSubject<boolean>;
+  disablePreloadForYouTube$: CachedSubject<boolean>;
 }
