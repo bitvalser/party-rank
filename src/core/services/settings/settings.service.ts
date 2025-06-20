@@ -35,6 +35,6 @@ export class SettingsService implements ISettingsService {
   public disablePreloadForYouTube$: CachedSubject<boolean> = new CachedSubject(
     localStorage,
     'settings:disablePreloadForYouTube',
-    true,
+    false,
   );
 }
