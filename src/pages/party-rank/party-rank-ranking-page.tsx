@@ -1,7 +1,18 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { BehaviorSubject, concat, finalize, map, merge, tap, withLatestFrom } from 'rxjs';
+import {
+  BehaviorSubject,
+  concat,
+  finalize,
+  map,
+  merge,
+  skipUntil,
+  skipWhile,
+  switchMap,
+  tap,
+  withLatestFrom,
+} from 'rxjs';
 import { useThrottledCallback } from 'use-debounce';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -434,7 +445,7 @@ export const PartyRankRankingPage = () => {
   const partyItemsKeysRef = useRef(new BehaviorSubject<string[]>([]));
   const [listLoading, setListLoading] = useState(true);
   const [rankLoading, setRankLoading] = useState(true);
-  const { getRankItems, getPartyRank, getUserRank, partyItems$ } = useInjectable(AppTypes.PartyRanks);
+  const { getRankItems, getPartyRank, getUserRank, partyItems$, parties$ } = useInjectable(AppTypes.PartyRanks);
   const { user$ } = useInjectable(AppTypes.AuthService);
   const { votingPlayerAutoplay$, autoHideRankSection$ } = useInjectable(AppTypes.SettingsService);
   const currentUser = useSubscription(user$);
@@ -449,8 +460,9 @@ export const PartyRankRankingPage = () => {
         tap((items) => partyItemsKeysRef.current.next(items.map((item) => item._id))),
       ),
       merge(partyItemsKeysRef.current, partyItems$).pipe(
-        withLatestFrom(partyItemsKeysRef.current, partyItems$),
-        map(([, keys, items]) => getItemsOrder(partyRank, keys).map((key) => items[key])),
+        withLatestFrom(partyItemsKeysRef.current, partyItems$, parties$),
+        skipWhile(([, , , parties]) => !parties[id]),
+        map(([, keys, items, parties]) => getItemsOrder(parties[id], keys).map((key) => items[key])),
       ),
     ),
     [],

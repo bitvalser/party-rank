@@ -119,7 +119,13 @@ export const ItemsReorderModal = memo(({ items: rankItems, partyRank, onClose }:
             <CloseIcon />
           </IconButton>
         </Grid>
-        <Grid container xs>
+        <Grid
+          container
+          xs
+          sx={{
+            overflow: 'auto',
+          }}
+        >
           <SortableList axis="y" items={items} onSortEnd={handleDragEnd} />
         </Grid>
         <Grid sx={{ p: 1 }} container direction="row" justifyContent="flex-end">
