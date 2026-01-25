@@ -4,6 +4,7 @@ import { AppPartiesController } from '../controllers/parties.controller';
 import { AppPartyItemsController } from '../controllers/party-items.controller';
 import { AppUserRankController } from '../controllers/user-rank.controller';
 import { catchRoute } from '../core/catch-route';
+import { ensureToken } from '../core/ensure-token';
 import { protect } from '../core/protect-middleware';
 import { UserRole } from '../types';
 
@@ -14,7 +15,7 @@ const appUserRankController = new AppUserRankController();
 
 appPartiesRouter.post('/', protect({ role: [UserRole.Creator] }), catchRoute(appPartiesController.createPartyRank));
 appPartiesRouter.post('/search', protect(), catchRoute(appPartiesController.searchPartyRanks));
-appPartiesRouter.get('/:id', catchRoute(appPartiesController.getPartyRankById));
+appPartiesRouter.get('/:id', [ensureToken({ optional: true })], catchRoute(appPartiesController.getPartyRankById));
 appPartiesRouter.delete('/:id', protect(), catchRoute(appPartiesController.deletePartyRankById));
 appPartiesRouter.patch('/:id', protect(), catchRoute(appPartiesController.updatePartyRank));
 appPartiesRouter.post('/:id/add-user', protect(), catchRoute(appPartiesController.addUserToPartyRank));
