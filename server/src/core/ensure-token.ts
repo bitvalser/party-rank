@@ -19,6 +19,8 @@ export const ensureToken =
     } else {
       if (!optional) {
         res.sendStatus(401);
+      } else {
+        next();
       }
     }
   };

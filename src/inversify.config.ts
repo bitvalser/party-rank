@@ -46,7 +46,9 @@ const authService = appContainer.get<IAuthService>(AppTypes.AuthService);
 
 axios.interceptors.request.use((config) => {
   const token = authService.getAuthToken();
-  config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
