@@ -226,7 +226,7 @@ export class AppPartiesController {
     const searchFilters: RootFilterQuery<IPartyRank> = { isPrivate: false };
 
     if (filters.name) {
-      searchFilters.name = { $regex: filters.name, $options: 'i' };
+      searchFilters.name = { $regex: (filters.name || '').replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, '\\$&'), $options: 'i' };
     }
 
     if (filters.creatorId) {

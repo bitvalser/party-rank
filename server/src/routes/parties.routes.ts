@@ -14,7 +14,7 @@ const appUserRankController = new AppUserRankController();
 
 appPartiesRouter.post('/', protect({ role: [UserRole.Creator] }), catchRoute(appPartiesController.createPartyRank));
 appPartiesRouter.post('/search', protect(), catchRoute(appPartiesController.searchPartyRanks));
-appPartiesRouter.get('/:id', protect(), catchRoute(appPartiesController.getPartyRankById));
+appPartiesRouter.get('/:id', catchRoute(appPartiesController.getPartyRankById));
 appPartiesRouter.delete('/:id', protect(), catchRoute(appPartiesController.deletePartyRankById));
 appPartiesRouter.patch('/:id', protect(), catchRoute(appPartiesController.updatePartyRank));
 appPartiesRouter.post('/:id/add-user', protect(), catchRoute(appPartiesController.addUserToPartyRank));
