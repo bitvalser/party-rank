@@ -3,7 +3,7 @@ import * as fsPromises from 'fs/promises';
 import { nanoid } from 'nanoid';
 
 import { sendError } from '../core/response-helper';
-import { CdnItemModel } from '../models/cdn.model';
+import { CdnItemModel, DEFAULT_CDN_UPLOAD_LIMIT } from '../models/cdn.model';
 
 const ASSETS_FOLDER = '/var/www/html/assets';
 const ALLOWED_EXTENSIONS = ['mp3', 'mp4'];
@@ -22,13 +22,17 @@ export class AppUploadController {
       res.json({
         ok: true,
         data: [],
+        metadata: { limit: DEFAULT_CDN_UPLOAD_LIMIT, count: 0 },
       });
       return;
     }
 
+    const limit = userEntry.uploadLimit ?? DEFAULT_CDN_UPLOAD_LIMIT;
+
     res.json({
       ok: true,
       data: Array.from(userEntry.assets.values()),
+      metadata: { limit, count: userEntry.assets.size },
     });
   }
 
@@ -76,6 +80,11 @@ export class AppUploadController {
         userId: req.userId,
         assets: new Map(),
       });
+    }
+
+    const uploadLimit = userEntry.uploadLimit ?? DEFAULT_CDN_UPLOAD_LIMIT;
+    if (userEntry.assets.size >= uploadLimit) {
+      return sendError(res, 'Upload limit reached.', 400);
     }
 
     userEntry.assets.set(fileId, {

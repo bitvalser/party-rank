@@ -178,6 +178,7 @@
     "UPLOAD_FILE": "Upload media file",
     "UPLOAD_FILE_BUTTON": "Upload file",
     "LIMIT_ERROR": "Files limit reached",
+    "FILE_COUNT": "{{current}} / {{max}} files",
     "MY_FILES": "My files",
     "MEDIA_PREVIEW": "Media preview",
     "OPEN_TAB": "Open in a new tab",

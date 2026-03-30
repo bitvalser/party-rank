@@ -27,7 +27,6 @@ import useSubscription from '../../core/hooks/useSubscription';
 import { RankItemType } from '../../core/interfaces/rank-item.interface';
 import { AppTypes } from '../../core/services/types';
 
-const MAX_FILES = 60;
 const MAX_FILE_SIZE = 16 * 1024 * 1024;
 const WHITE_LIST_USERS = ['66ddc6c322126122fe1f917a'];
 
@@ -51,7 +50,10 @@ export const UploadPage = () => {
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string }>(null);
   const fileInputRef = useRef<HTMLInputElement>();
   const updateListsRef = useRef(new Subject<void>());
-  const files = useSubscription(merge(of(void 0), updateListsRef.current).pipe(switchMap(() => getAllFiles())), []);
+  const { files, limit: uploadLimit } = useSubscription(
+    merge(of(void 0), updateListsRef.current).pipe(switchMap(() => getAllFiles())),
+    { files: [], limit: 60 },
+  );
   const currentUser = useSubscription(user$);
   const { t } = useTranslation();
   const allowAnyway = WHITE_LIST_USERS.includes(currentUser?._id);
@@ -77,7 +79,7 @@ export const UploadPage = () => {
         .subscribe({
           next: (result) => {
             if (!result.ok) {
-              setError(error?.message || t('UPLOAD.UPLOAD_ERROR'));
+              setError(result?.message || t('UPLOAD.UPLOAD_ERROR'));
             } else {
               updateListsRef.current.next();
             }
@@ -126,6 +128,9 @@ export const UploadPage = () => {
             <Typography variant="h5" component="div">
               {t('UPLOAD.UPLOAD_FILE')}
             </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {t('UPLOAD.FILE_COUNT', { current: files.length, max: uploadLimit })}
+            </Typography>
           </Grid>
           <Grid
             sx={{
@@ -141,7 +146,7 @@ export const UploadPage = () => {
               <Button
                 component="label"
                 role={undefined}
-                disabled={(uploading || files.length >= MAX_FILES) && !allowAnyway}
+                disabled={uploading || files.length >= uploadLimit}
                 variant="contained"
                 fullWidth
                 tabIndex={-1}
@@ -156,7 +161,7 @@ export const UploadPage = () => {
                 <FormHelperText error>{error}</FormHelperText>
               </Grid>
             )}
-            {files.length >= MAX_FILES && (
+            {files.length >= uploadLimit && (
               <Grid item>
                 <FormHelperText error>{t('UPLOAD.LIMIT_ERROR')}</FormHelperText>
               </Grid>

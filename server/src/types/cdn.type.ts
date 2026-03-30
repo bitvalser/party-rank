@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 
 export interface ICdnItem {
   userId: Types.ObjectId;
+  uploadLimit?: number;
   assets: Map<
     string,
     {

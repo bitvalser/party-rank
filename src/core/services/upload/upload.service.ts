@@ -6,7 +6,7 @@ import { map, switchMap } from 'rxjs/operators';
 import { ApiResponse } from '../../interfaces/api-response.interface';
 import { MediaFile } from '../../interfaces/media-file.interface';
 import { AppTypes } from '../types';
-import { IUploadService } from './upload.types';
+import { CdnFilesPayload, IUploadService } from './upload.types';
 
 @injectable()
 export class UploadService implements IUploadService {
@@ -37,10 +37,13 @@ export class UploadService implements IUploadService {
     );
   }
 
-  public getAllFiles(): Observable<MediaFile[]> {
+  public getAllFiles(): Observable<CdnFilesPayload> {
     return of(void 0).pipe(
       switchMap(() => this.axios.get<ApiResponse<MediaFile[]>>('/cdn/all')),
-      map(({ data: { data: files } }) => files),
+      map(({ data: { data: files, metadata } }) => ({
+        files: files ?? [],
+        limit: metadata?.limit ?? 60,
+      })),
     );
   }
 }

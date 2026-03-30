@@ -10,7 +10,7 @@ import {
   UserModel,
   UserRankModel,
 } from '../src/models';
-import { CdnItemModel } from '../src/models/cdn.model';
+import { CdnItemModel, DEFAULT_CDN_UPLOAD_LIMIT } from '../src/models/cdn.model';
 import { IDiscordOauth, IPartyRankItem, IUser, IUserRank, UserRole } from '../src/types';
 
 const backupJson = backupJsonFile as any;
@@ -50,6 +50,7 @@ const exportToMongoDb = async () => {
   const cdnAssets = Object.entries(backupJson.__collections__.cdn).map(
     ([key, { __collections__, ...values }]: any) => ({
       userId: new Types.ObjectId(oldUsersIdMap[key] as string),
+      uploadLimit: DEFAULT_CDN_UPLOAD_LIMIT,
       assets: values,
     }),
   );
